@@ -16,6 +16,7 @@ from datetime import datetime
 from pathlib import Path
 
 from scanner import sources
+from scanner.curated import curated_for
 from scanner.diff import (
     diff_results,
     load_history,
@@ -23,7 +24,9 @@ from scanner.diff import (
     save_history,
 )
 from scanner.fetch import Fetcher
-from scanner.parse import empty_result, parse_tier
+from scanner.merge import merge_tier_fields
+from scanner.parse import parse_source
+from scanner.scoring import score_tier
 from report.excel_writer import write_report
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -36,39 +39,59 @@ log = logging.getLogger("scanner")
 
 
 def scan_banks(banks: list, fetcher: Fetcher, scan_dt: str) -> tuple:
-    """Сканирует список банков/подписок. Возвращает (results, sources_ok, sources_failed)."""
+    """Сканирует список банков/подписок по всем источникам каждого тира.
+    Возвращает (results, sources_ok, sources_failed)."""
     results, ok, failed = {}, [], {}
     for bank in banks:
         log.info("── %s", bank["name"])
         for tier in bank["tiers"]:
-            source_id = tier["tier_id"]
-            fetch_result = fetcher.fetch(tier["urls"], source_id, scan_dt[:10])
-            if fetch_result.status == "ok":
-                fields = parse_tier(fetch_result.html, tier, bank,
-                                    fetch_result.url)
-                found = sum(1 for v in fields.values() if v != sources.NOT_FOUND)
-                log.info("  [ok] %s — %s (%d/%d полей, via %s)",
-                         tier["tier_name"], fetch_result.url, found,
-                         len(fields), fetch_result.fetched_via)
-                ok.append(f"{bank['name']} / {tier['tier_name']}")
-                status = "ok"
-            else:
-                fields = empty_result(bank)
-                log.warning("  [fail] %s — %s (%s)", tier["tier_name"],
-                            fetch_result.status, fetch_result.error)
-                failed[f"{bank['name']} / {tier['tier_name']}"] = (
-                    f"{fetch_result.status}: {fetch_result.error}"
-                )
-                status = f"недоступен ({fetch_result.error})"
-            results[tier["tier_id"]] = {
+            parsed_sources = []
+            ok_urls = []
+            for src in sources.tier_sources(bank, tier):
+                src_id = src["source_id"]
+                raw_name = f"{tier['tier_id']}__{src_id}"
+                fetch_result = fetcher.fetch(src["urls"], raw_name, scan_dt[:10])
+                src_label = f"{bank['name']} / {tier['tier_name']} [{src_id}]"
+                if fetch_result.status == "ok":
+                    fields, quality = parse_source(
+                        fetch_result.html, tier, bank, src_id, fetch_result.url)
+                    found = sum(1 for v in fields.values()
+                                if v != sources.NOT_FOUND)
+                    log.info("  [ok] %s [%s] — %d полей (%s, via %s)",
+                             tier["tier_name"], src_id, found, quality,
+                             fetch_result.fetched_via)
+                    parsed_sources.append({
+                        "source_id": src_id,
+                        "url": fetch_result.url,
+                        "quality": quality,
+                        "fields": fields,
+                    })
+                    ok.append(src_label)
+                    ok_urls.append(fetch_result.url)
+                else:
+                    log.warning("  [fail] %s [%s] — %s (%s)", tier["tier_name"],
+                                src_id, fetch_result.status, fetch_result.error)
+                    failed[src_label] = (
+                        f"{fetch_result.status}: {fetch_result.error}")
+
+            field_ids = (list(sources.LIFESTYLE_FIELDS) + ["bank_overlap"]
+                         if bank["type"] == "lifestyle"
+                         else list(sources.BANK_FIELDS))
+            merged = merge_tier_fields(parsed_sources, curated_for(tier["tier_id"]),
+                                       field_ids, scan_dt)
+            entry = {
                 "bank": bank["name"],
                 "tier": tier["tier_name"],
                 "segment": tier.get("segment"),
-                "fields": fields,
-                "source_url": fetch_result.url,
-                "status": status,
+                "fields": merged,
+                "source_url": "; ".join(dict.fromkeys(ok_urls)),
+                "status": "ok" if parsed_sources else "недоступен",
+                "sources_ok": len(parsed_sources),
                 "scan_date": scan_dt,
             }
+            if bank["type"] != "lifestyle":
+                entry["score"] = score_tier(merged)
+            results[tier["tier_id"]] = entry
     return results, ok, failed
 
 
@@ -129,7 +152,8 @@ def run_scan(mode: str, bank_id: str = None):
 
     fields_updated = sum(
         1 for entry in results.values()
-        for v in entry["fields"].values() if v != sources.NOT_FOUND
+        for v in entry["fields"].values()
+        if (v.get("value") if isinstance(v, dict) else v) != sources.NOT_FOUND
     )
     new_scan["meta"]["fields_updated"] = fields_updated
     new_scan["meta"]["changes_found"] = len(changes)

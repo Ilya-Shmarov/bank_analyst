@@ -134,6 +134,7 @@ class PremiumBankingInfoParser:
         if title_parts:
             result["positioning"] = " — ".join(title_parts)[:MAX_VALUE_LEN]
 
+        dl_found = False
         for dl in soup.find_all("dl"):
             for dt in dl.find_all("dt"):
                 dd = dt.find_next_sibling("dd")
@@ -143,6 +144,7 @@ class PremiumBankingInfoParser:
                 value = normalize_text(dd.get_text(" | ", strip=True))
                 if not label or not value:
                     continue
+                dl_found = True
                 self._assign(result, label, value)
 
         # Стоимость обслуживания часто указана внутри условий ("... ₽ в мес")
@@ -150,7 +152,45 @@ class PremiumBankingInfoParser:
             fee = re.search(r"\d[\d\s]*₽ в мес", result["entry_conditions"])
             if fee:
                 result["service_cost"] = fee.group(0)
+
+        if dl_found:
+            self._extract_embedded(result, html_to_text(html))
         return result
+
+    # Детали, которые ПБИ прячет внутри сводных блоков («Другие привилегии»
+    # и т.п.) — вытаскиваем в профильные поля, чтобы они не терялись
+    EMBEDDED_RULES = [
+        # консьерж с названием сервиса: "консьерж Aspire", "Консьерж Pb Service"
+        ("concierge", r"консьерж(?:-сервис)?\s+[A-Za-zА-ЯЁ][\w .]{1,30}"),
+        # повышенный курс обмена бонусов
+        ("cashback", r"обмен \d+ бонус\w*[^;|]{0,60}"),
+        # опция «Авто» с составом
+        ("auto", r"опция «Авто»[^)]{0,140}\)"),
+    ]
+
+    def _extract_embedded(self, result: dict, text: str):
+        for field_id, pattern in self.EMBEDDED_RULES:
+            matches = []
+            seen = set()
+            for m in re.finditer(pattern, text, re.IGNORECASE):
+                snippet = normalize_text(m.group(0))
+                if snippet.lower() not in seen:
+                    seen.add(snippet.lower())
+                    matches.append(snippet)
+                if len(matches) >= 2:
+                    break
+            if matches:
+                joined = " ; ".join(matches)[:MAX_VALUE_LEN]
+                if result[field_id] == NOT_FOUND:
+                    result[field_id] = joined
+                elif joined.lower() not in result[field_id].lower():
+                    result[field_id] = (result[field_id] + " ; " + joined)[:MAX_VALUE_LEN * 2]
+
+        # Страница уровня на ПБИ описывает состав пакета исчерпывающе:
+        # если консьерж нигде не упомянут — фиксируем отсутствие явно
+        if result["concierge"] == NOT_FOUND and "консьерж" not in text.lower():
+            result["concierge"] = ("нет — консьерж не указан в составе пакета "
+                                   "(по странице уровня ПБИ)")
 
     def _assign(self, result: dict, label: str, value: str):
         low = label.lower()
@@ -176,11 +216,16 @@ _default_parser = GenericParser()
 _pbi_parser = PremiumBankingInfoParser()
 
 
-def parse_tier(html: str, tier: dict, bank: dict, source_url: str = "") -> dict:
-    if "premiumbanking.info" in source_url and bank["type"] != "lifestyle":
-        return _pbi_parser.parse(html, tier, bank)
+def parse_source(html: str, tier: dict, bank: dict, source_id: str,
+                 source_url: str = "") -> tuple:
+    """Парсит один источник тира. Возвращает (fields, quality):
+    quality="structured" — структурированный парсер (dt/dd ПБИ),
+    quality="snippet" — цитаты по ключевым словам (GenericParser)."""
+    if bank["type"] != "lifestyle" and (
+            source_id == "pbi" or "premiumbanking.info" in source_url):
+        return _pbi_parser.parse(html, tier, bank), "structured"
     parser = PARSER_REGISTRY.get(bank["id"], _default_parser)
-    return parser.parse(html, tier, bank)
+    return parser.parse(html, tier, bank), "snippet"
 
 
 def empty_result(bank: dict) -> dict:

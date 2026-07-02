@@ -53,6 +53,7 @@ class Fetcher:
         self.raw_dir = raw_dir
         self.pause = pause
         self._robots_cache = {}
+        self._url_cache = {}  # url -> FetchResult: общие страницы качаем 1 раз за скан
         self._last_request_ts = 0.0
         self._session = requests.Session()
         self._session.headers.update(HEADERS)
@@ -93,13 +94,20 @@ class Fetcher:
         """Пробует candidate-URL по порядку до первого успешного.
         Если все URL отдали блокировку (403/429/498 или сброс соединения),
         делает второй проход через Playwright — рендер как обычный браузер,
-        без обхода капчи."""
+        без обхода капчи. Успешные URL кэшируются на время скана."""
+        for url in urls:
+            if url in self._url_cache:
+                cached = self._url_cache[url]
+                log.info("  [cache] %s", url)
+                return cached
         result = self._fetch_via_requests(urls, source_id, scan_date)
         if result.status == "unavailable":
             pw_result = self._fetch_via_playwright_pass(urls, source_id, scan_date,
                                                         result.tried_urls)
             if pw_result is not None:
-                return pw_result
+                result = pw_result
+        if result.status == "ok":
+            self._url_cache[result.url] = result
         return result
 
     def _fetch_via_requests(self, urls: list, source_id: str,

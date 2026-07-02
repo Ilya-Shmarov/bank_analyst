@@ -3,15 +3,15 @@
 Генерация Excel-отчёта (openpyxl).
 
 Файл каждый раз регенерируется из полной истории data/history.json,
-поэтому changelog и данные прошлых сканов не теряются между запусками,
-а форматирование остаётся консистентным.
+поэтому changelog и данные прошлых сканов не теряются между запусками.
 
 Листы:
-  1. Сводная            — тиры всех банков, сгруппированные по сегментам капитала
-  2. <Банк>             — детализация по каждому банку (все тиры x все поля)
+  1. Сводная            — тиры по сегментам капитала + итоговый балл + расхождения
+  2. <Банк>             — детализация: значение + источник + дата проверки
   3. Lifestyle          — экосистемные подписки
-  4. Изменения          — changelog всех сканов (было/стало с датами)
-  5. Метаданные         — дата запуска, статус источников
+  4. Изменения          — changelog (было/стало, источник, ручные уточнения)
+  5. Методика оценки    — формула, веса, пороги, разбивка балла по тирам
+  6. Метаданные         — дата запуска, статус источников
 """
 
 from pathlib import Path
@@ -20,6 +20,8 @@ from openpyxl import Workbook
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 
+from scanner.merge import field_value
+from scanner.scoring import METHODOLOGY_TEXT, THRESHOLDS, WEIGHTS
 from scanner.sources import (
     BANK_FIELDS,
     BANKS,
@@ -31,6 +33,7 @@ from scanner.sources import (
 HEADER_FILL = PatternFill("solid", fgColor="1F4E79")
 SEGMENT_FILL = PatternFill("solid", fgColor="D6E4F0")
 OUR_FILL = PatternFill("solid", fgColor="E2EFDA")
+DIVERGENT_FILL = PatternFill("solid", fgColor="FCE4D6")
 NOT_FOUND_FONT = Font(color="999999", italic=True)
 HEADER_FONT = Font(color="FFFFFF", bold=True)
 WRAP = Alignment(wrap_text=True, vertical="top")
@@ -44,13 +47,15 @@ def write_report(history: dict, output_path: Path):
     wb = Workbook()
     wb.remove(wb.active)
 
-    last_scan = history["scans"][-1] if history["scans"] else {"results": {}, "meta": {}, "date": ""}
+    last_scan = history["scans"][-1] if history["scans"] else {
+        "results": {}, "meta": {}, "date": ""}
     results = last_scan.get("results", {})
 
     _write_summary(wb, results, last_scan.get("date", ""))
     _write_bank_sheets(wb, results)
     _write_lifestyle(wb, results)
     _write_changelog(wb, history.get("changelog", []))
+    _write_methodology(wb, results)
     _write_meta(wb, history)
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -82,6 +87,35 @@ def _write_value_cell(ws, row, col, value):
     return cell
 
 
+def _annotated(field) -> str:
+    """Значение поля + провенанс: источник, дата проверки, примечание."""
+    if not isinstance(field, dict):
+        return field if field is not None else NOT_FOUND
+    value = field.get("value", NOT_FOUND)
+    if value == NOT_FOUND:
+        return NOT_FOUND
+    parts = [value]
+    src = field.get("source_name", "")
+    if src:
+        parts.append(f"[источник: {src}, проверено: {field.get('date_checked', '')}]")
+    if field.get("note"):
+        parts.append(f"[прим.: {field['note']}]")
+    return "\n".join(parts)
+
+
+def _divergence_info(fields: dict) -> tuple:
+    """(да/нет, комментарий по полям с расхождениями источников)."""
+    comments = []
+    for fid, field in fields.items():
+        if isinstance(field, dict) and field.get("divergent"):
+            label = BANK_FIELDS.get(fid, {}).get("label", fid)
+            alts = "; ".join(
+                f"{a['source_name']}: {a['value'][:80]}"
+                for a in field.get("alternatives", []))
+            comments.append(f"{label} — основное: {field['value'][:80]} | {alts}")
+    return ("да" if comments else "нет"), "\n".join(comments)
+
+
 def _tier_entries(results, types):
     for bank in BANKS:
         if bank["type"] not in types:
@@ -96,13 +130,14 @@ def _tier_entries(results, types):
 
 def _write_summary(wb, results, scan_date):
     ws = wb.create_sheet("Сводная")
-    headers = ["Сегмент капитала", "Банк", "Тир", "Дата скана", "Статус источника"] + [
-        spec["label"] for spec in BANK_FIELDS.values()
-    ] + ["Источник"]
+    headers = (["Сегмент капитала", "Банк", "Тир", "Дата скана",
+                "Источников OK", "Итоговый балл (0–5)",
+                "Расхождение источников", "Комментарий по расхождениям"]
+               + [spec["label"] for spec in BANK_FIELDS.values()])
     for col, header in enumerate(headers, start=1):
         ws.cell(row=1, column=col, value=header)
     _style_header_row(ws, len(headers))
-    _set_widths(ws, [14, 16, 24, 12, 14] + [38] * len(BANK_FIELDS) + [40])
+    _set_widths(ws, [14, 14, 24, 11, 11, 11, 13, 45] + [40] * len(BANK_FIELDS))
     ws.freeze_panes = "D2"
 
     row = 2
@@ -118,17 +153,22 @@ def _write_summary(wb, results, scan_date):
                 cell.font = Font(bold=True)
                 row += 1
                 segment_row_written = True
+            divergent, div_comment = _divergence_info(entry["fields"])
+            score = entry.get("score", {}).get("total", "")
             values = [
                 "", bank["name"], tier["tier_name"],
                 entry.get("scan_date", scan_date)[:10],
-                entry.get("status", ""),
+                entry.get("sources_ok", ""),
+                score, divergent, div_comment,
             ] + [
-                entry["fields"].get(field_id, NOT_FOUND) for field_id in BANK_FIELDS
-            ] + [entry.get("source_url", "")]
+                _annotated(entry["fields"].get(fid)) for fid in BANK_FIELDS
+            ]
             for col, value in enumerate(values, start=1):
                 cell = _write_value_cell(ws, row, col, value)
                 if bank["type"] == "our" and col in (2, 3):
                     cell.fill = OUR_FILL
+                if col == 7 and divergent == "да":
+                    cell.fill = DIVERGENT_FILL
             row += 1
 
 
@@ -147,8 +187,10 @@ def _write_bank_sheets(wb, results):
         meta_rows = [
             ("Сегмент капитала", lambda t, e: t["segment"] or ""),
             ("Дата скана", lambda t, e: e.get("scan_date", "")[:10]),
-            ("Статус источника", lambda t, e: e.get("status", "")),
-            ("Источник", lambda t, e: e.get("source_url", "")),
+            ("Источников OK", lambda t, e: str(e.get("sources_ok", ""))),
+            ("Итоговый балл (0–5)",
+             lambda t, e: str(e.get("score", {}).get("total", ""))),
+            ("Источники (URL)", lambda t, e: e.get("source_url", "")),
         ]
         row = 2
         for label, getter in meta_rows:
@@ -159,14 +201,16 @@ def _write_bank_sheets(wb, results):
                 _write_value_cell(ws, row, col, getter(tier, entry) if entry else "")
             row += 1
 
-        for field_id, spec in BANK_FIELDS.items():
+        for fid, spec in BANK_FIELDS.items():
             ws.cell(row=row, column=1, value=spec["label"]).font = Font(bold=True)
             ws.cell(row=row, column=1).alignment = WRAP
             ws.cell(row=row, column=1).border = THIN_BORDER
             for col, tier in enumerate(bank["tiers"], start=2):
                 entry = results.get(tier["tier_id"])
-                value = entry["fields"].get(field_id, NOT_FOUND) if entry else NOT_FOUND
-                _write_value_cell(ws, row, col, value)
+                field = entry["fields"].get(fid) if entry else None
+                cell = _write_value_cell(ws, row, col, _annotated(field))
+                if isinstance(field, dict) and field.get("divergent"):
+                    cell.fill = DIVERGENT_FILL
             row += 1
 
 
@@ -189,7 +233,7 @@ def _write_lifestyle(wb, results):
             entry.get("scan_date", "")[:10],
             entry.get("status", ""),
         ] + [
-            entry["fields"].get(field_id, NOT_FOUND) for field_id in columns
+            _annotated(entry["fields"].get(fid)) for fid in columns
         ] + [entry.get("source_url", "")]
         for col, value in enumerate(values, start=1):
             _write_value_cell(ws, row, col, value)
@@ -199,11 +243,11 @@ def _write_lifestyle(wb, results):
 def _write_changelog(wb, changelog):
     ws = wb.create_sheet("Изменения")
     headers = ["Дата скана", "Предыдущий скан", "Банк/подписка", "Тир",
-               "Поле", "Было", "Стало"]
+               "Поле", "Было", "Стало", "Источник нового значения"]
     for col, header in enumerate(headers, start=1):
         ws.cell(row=1, column=col, value=header)
     _style_header_row(ws, len(headers))
-    _set_widths(ws, [17, 17, 20, 22, 30, 45, 45])
+    _set_widths(ws, [17, 17, 20, 22, 30, 42, 42, 30])
     ws.freeze_panes = "A2"
 
     if not changelog:
@@ -213,14 +257,86 @@ def _write_changelog(wb, changelog):
     for row, change in enumerate(changelog, start=2):
         values = [change["scan_date"][:16], change["prev_date"][:16],
                   change["bank"], change["tier"], change["field"],
-                  change["old"], change["new"]]
+                  change["old"], change["new"], change.get("source", "")]
         for col, value in enumerate(values, start=1):
-            _write_value_cell(ws, row, col, value)
+            cell = _write_value_cell(ws, row, col, value)
+            if "ручное уточнение" in str(change.get("source", "")) and col == 8:
+                cell.fill = DIVERGENT_FILL
+
+
+def _write_methodology(wb, results):
+    ws = wb.create_sheet("Методика оценки")
+    _set_widths(ws, [26, 22, 34, 10, 9, 13])
+
+    row = 1
+    ws.cell(row=row, column=1, value="Методика собственной оценки пакетов")
+    ws.cell(row=row, column=1).font = Font(bold=True, size=13)
+    row += 2
+    for line in METHODOLOGY_TEXT:
+        cell = ws.cell(row=row, column=1, value=line)
+        cell.alignment = WRAP
+        ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=6)
+        row += 1
+    row += 1
+
+    ws.cell(row=row, column=1, value="Веса категорий (сумма = 1.0)").font = Font(bold=True)
+    row += 1
+    for category, weight in WEIGHTS.items():
+        label = BANK_FIELDS.get(category, {}).get("label", category)
+        ws.cell(row=row, column=1, value=label)
+        ws.cell(row=row, column=2, value=weight)
+        row += 1
+    row += 1
+
+    ws.cell(row=row, column=1, value="Пороговые таблицы (метрика ≥ порога → балл)").font = Font(bold=True)
+    row += 1
+    for table_key, table in THRESHOLDS.items():
+        ws.cell(row=row, column=1, value=table_key)
+        ws.cell(row=row, column=2,
+                value="; ".join(f"≥{minimum} → {score}" for minimum, score in table))
+        row += 1
+    ws.cell(row=row, column=1, value="особые правила")
+    ws.cell(row=row, column=2,
+            value="безлимит → 5; консьерж есть/нет → 5/0; страховка по покрытию "
+                  "(≈1 млн → 5 … 30–90 тыс → 2); авто: 3 базово +1 помощь на "
+                  "дорогах +1 кэшбэк дороги/парковки; «не найдено» → 0")
+    ws.cell(row=row, column=2).alignment = WRAP
+    row += 2
+
+    ws.cell(row=row, column=1, value="Разбивка балла по тирам").font = Font(bold=True)
+    row += 1
+    headers = ["Банк / тир", "Категория", "Извлечённая метрика", "Балл 0–5",
+               "Вес", "Вклад в итог"]
+    for col, header in enumerate(headers, start=1):
+        ws.cell(row=row, column=col, value=header)
+    _style_header_row(ws, len(headers), row=row)
+    row += 1
+
+    for bank, tier, entry in _tier_entries(results, {"our", "bank"}):
+        score = entry.get("score")
+        if not score:
+            continue
+        first_row = row
+        for category, detail in score["breakdown"].items():
+            label = BANK_FIELDS.get(category, {}).get("label", category)
+            values = ["", label, detail["metric"], detail["score"],
+                      detail["weight"], detail["contribution"]]
+            for col, value in enumerate(values, start=1):
+                _write_value_cell(ws, row, col, value)
+            row += 1
+        name_cell = ws.cell(row=first_row, column=1,
+                            value=f"{bank['name']} / {tier['tier_name']}")
+        name_cell.font = Font(bold=True)
+        name_cell.alignment = WRAP
+        total_cell = ws.cell(row=row, column=1, value="ИТОГО")
+        total_cell.font = Font(bold=True)
+        ws.cell(row=row, column=6, value=score["total"]).font = Font(bold=True)
+        row += 2
 
 
 def _write_meta(wb, history):
     ws = wb.create_sheet("Метаданные")
-    _set_widths(ws, [30, 90])
+    _set_widths(ws, [30, 110])
     ws.cell(row=1, column=1, value="Параметр")
     ws.cell(row=1, column=2, value="Значение")
     _style_header_row(ws, 2)

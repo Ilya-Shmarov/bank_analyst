@@ -21,7 +21,19 @@ history.json:
 import json
 from pathlib import Path
 
+from scanner.merge import field_value
+
 MAX_SCANS_KEPT = 20
+
+
+def _change_source(field) -> str:
+    """Откуда взято новое значение (для changelog); ручные уточнения помечаются."""
+    if not isinstance(field, dict):
+        return ""
+    name = field.get("source_name", "")
+    if field.get("source_id") == "curated":
+        return f"{name} — ручное уточнение от {field.get('date_checked', '')}"
+    return name
 
 
 def load_history(path: Path) -> dict:
@@ -57,9 +69,12 @@ def diff_results(prev_scan: dict, new_scan: dict, field_labels: dict) -> list:
                 "new": "тир добавлен в скан",
             })
             continue
-        for field_id, new_value in new_entry.get("fields", {}).items():
-            old_value = prev_entry.get("fields", {}).get(field_id)
-            if old_value is not None and old_value != new_value:
+        for field_id, new_field in new_entry.get("fields", {}).items():
+            old_field = prev_entry.get("fields", {}).get(field_id)
+            if old_field is None:
+                continue
+            old_value, new_value = field_value(old_field), field_value(new_field)
+            if old_value != new_value:
                 changes.append({
                     "scan_date": new_scan["date"],
                     "prev_date": prev_scan.get("date", ""),
@@ -68,6 +83,7 @@ def diff_results(prev_scan: dict, new_scan: dict, field_labels: dict) -> list:
                     "field": field_labels.get(field_id, field_id),
                     "old": old_value,
                     "new": new_value,
+                    "source": _change_source(new_field),
                 })
 
     for tier_id, prev_entry in prev_results.items():

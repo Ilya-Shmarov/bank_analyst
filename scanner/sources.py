@@ -2,13 +2,21 @@
 """
 Реестр источников: банки, тиры, экосистемные подписки и URL для скана.
 
-Добавление нового банка/подписки = добавление записи в BANKS.
-Каждый тир может иметь несколько candidate-URL — fetch пробует по порядку
-до первого успешного ответа (URL банков периодически меняются).
+Мультиисточниковая модель:
+  - у каждого тира есть список источников (`sources`): официальный сайт банка,
+    premiumbanking.info (ПБИ) и т.д. Каждый источник скачивается и парсится
+    отдельно, данные сливаются в merge.py с фиксацией, откуда взята каждая цифра;
+  - у банка могут быть `extra_sources` (Banki.ru, Sravni.ru, Bankiros) —
+    страницы уровня банка, применяются ко всем его тирам как кросс-проверка;
+  - внутри одного источника несколько URL — это fallback-цепочка (пробуем
+    по порядку до первого успешного). Комплементарные страницы (например,
+    отдельная страница вкладов) оформляются отдельным источником.
+
+Приоритет источников при слиянии — см. SOURCE_META и scanner/merge.py.
 
 `segment` — сегмент капитала по классификации premiumbanking.info
-(0–3, 3–10, 10–25, 25–100 млн ₽). Это конфигурация раскладки для сводной
-таблицы, а не данные из источников — правьте под свою методологию.
+(0–3, 3–10, 10–25, 25–100 млн ₽): конфигурация раскладки сводной таблицы,
+сверена с порогами входа на июль 2026.
 """
 
 # Пауза между HTTP-запросами, сек (rate limiting)
@@ -21,6 +29,19 @@ NOT_FOUND = "не найдено"
 
 # Сегменты капитала в порядке отображения в сводной таблице
 SEGMENTS = ["0–3 млн ₽", "3–10 млн ₽", "10–25 млн ₽", "25–100 млн ₽"]
+
+# Источники данных. priority: меньше = приоритетнее при слиянии
+# (curated — верифицированные вручную факты с ссылкой на первоисточник,
+#  official — сайт банка как первоисточник цифр).
+SOURCE_META = {
+    "curated": {"name": "Ручная проверка (первоисточник)", "priority": 0},
+    "official": {"name": "Официальный сайт банка", "priority": 1},
+    "pbi": {"name": "premiumbanking.info", "priority": 2},
+    "banki_ru": {"name": "Banki.ru", "priority": 3},
+    "sravni_ru": {"name": "Sravni.ru", "priority": 4},
+    "bankiros": {"name": "Bankiros.ru", "priority": 5},
+    "frankrg": {"name": "Frank RG", "priority": 6},
+}
 
 # Поля, которые собираем по каждому банковскому тиру.
 # keywords — маркеры для извлечения релевантных фрагментов текста страницы.
@@ -43,7 +64,7 @@ BANK_FIELDS = {
     "lounge_access": {
         "label": "Бизнес-залы (визиты, спутники)",
         "keywords": ["бизнес-зал", "бизнес зал", "lounge", "проход",
-                     "аэропорт", "mir pass", "every lounge", "грабли"],
+                     "аэропорт", "mir pass", "every lounge"],
     },
     "concierge": {
         "label": "Консьерж-сервис",
@@ -66,7 +87,8 @@ BANK_FIELDS = {
     },
     "auto": {
         "label": "Автоуслуги",
-        "keywords": ["авто", "каршеринг", "парковк", "водитель"],
+        "keywords": ["авто", "каршеринг", "парковк", "водитель",
+                     "помощь на дорог"],
     },
     "taxi_restaurants": {
         "label": "Такси и рестораны (компенсации)",
@@ -83,7 +105,7 @@ BANK_FIELDS = {
                      "подключить за", "стоимость опции"],
     },
     "aggregator_value": {
-        "label": "Оценка ценности пакета в год (ПБИ)",
+        "label": "Оценка ценности пакета в год (ПБИ, справочно)",
         "keywords": ["ценность"],
     },
     "other_notes": {
@@ -122,7 +144,6 @@ LIFESTYLE_FIELDS = {
 }
 
 # Джобы, по которым lifestyle-подписки пересекаются с банковскими привилегиями.
-# Используется для колонки "Пересечения с банковскими привилегиями".
 LIFESTYLE_BANK_OVERLAP_JOBS = {
     "cashback": "кэшбэк на повседневные покупки (vs кэшбэк банковских пакетов)",
     "delivery": "доставка продуктов/товаров (vs возмещение Самоката и опций доставки)",
@@ -130,59 +151,92 @@ LIFESTYLE_BANK_OVERLAP_JOBS = {
     "taxi": "такси и городской транспорт (vs компенсация такси в аэропорт/на ЖД)",
 }
 
+
+def _src(source_id, *urls):
+    return {"source_id": source_id, "urls": list(urls)}
+
+
+# Официальные страницы Сбера (проверены 2026-07-02)
+_SBER_PREMIER_OFFICIAL = "https://www.sberbank.ru/ru/person/sb_premier_new"
+_SBER_FIRST_OFFICIAL = "https://www.sberbank.ru/first"
+_SBER_PREMIUM_OFFICIAL = "https://www.sberbank.ru/ru/person/premium"
+_SBER_PREMIUM_VKLAD = "https://www.sberbank.ru/ru/person/premium/premium_vklad"
+_SBER_FIRST_VKLADY = "https://www.sberbank.ru/ru/person/sb1/vklad/vse_vklady"
+
 # Структура тиров сверена с premiumbanking.info (июль 2026):
 # у Сбера 6 уровней, у ВТБ 8 (Привилегия 1–4 + Прайм+ 5–8), у Т-Банка
 # статусы Bronze/Silver/Gold/Diamond, у Озон Банка — линейка Ultra.
-# Первый URL каждого тира — страница уровня на premiumbanking.info
-# (приоритетный агрегатор по ТЗ), затем официальный сайт банка как сверка/fallback.
 BANKS = [
     # ---------- НАША ЛИНЕЙКА ----------
     {
         "id": "sber",
         "name": "Сбер",
         "type": "our",
+        "extra_sources": [
+            _src("banki_ru", "https://www.banki.ru/banks/bank/sberbank/"),
+            _src("sravni_ru",
+                 "https://www.sravni.ru/enciklopediya/info/sberbank-premer-chto-ehto-takoe/"),
+            _src("bankiros", "https://bankiros.ru/bank/sberbank"),
+        ],
         "tiers": [
             {
                 "tier_id": "sber_premier_1",
                 "tier_name": "СберПремьер — уровень 1",
                 "segment": "0–3 млн ₽",
-                "urls": ["https://premiumbanking.info/sber/1",
-                         "https://www.sberbank.ru/ru/person/sb_premier_new"],
+                "sources": [
+                    _src("official", _SBER_PREMIER_OFFICIAL),
+                    _src("official", _SBER_PREMIUM_VKLAD),
+                    _src("pbi", "https://premiumbanking.info/sber/1"),
+                ],
             },
             {
                 "tier_id": "sber_premier_2",
                 "tier_name": "СберПремьер — уровень 2",
                 "segment": "3–10 млн ₽",
-                "urls": ["https://premiumbanking.info/sber/2",
-                         "https://www.sberbank.ru/ru/person/sb_premier_new"],
+                "sources": [
+                    _src("official", _SBER_PREMIER_OFFICIAL),
+                    _src("official", _SBER_PREMIUM_VKLAD),
+                    _src("pbi", "https://premiumbanking.info/sber/2"),
+                ],
             },
             {
                 "tier_id": "sber_premier_3",
                 "tier_name": "СберПремьер — уровень 3",
                 "segment": "3–10 млн ₽",
-                "urls": ["https://premiumbanking.info/sber/3",
-                         "https://www.sberbank.ru/ru/person/sb_premier_new"],
+                "sources": [
+                    _src("official", _SBER_PREMIER_OFFICIAL),
+                    _src("official", _SBER_PREMIUM_VKLAD),
+                    _src("pbi", "https://premiumbanking.info/sber/3"),
+                ],
             },
             {
                 "tier_id": "sber_first_4",
                 "tier_name": "СберПервый — уровень 4",
                 "segment": "10–25 млн ₽",
-                "urls": ["https://premiumbanking.info/sber/4",
-                         "https://www.sberbank.ru/first"],
+                "sources": [
+                    _src("official", _SBER_FIRST_OFFICIAL),
+                    _src("official", _SBER_FIRST_VKLADY),
+                    _src("pbi", "https://premiumbanking.info/sber/4"),
+                ],
             },
             {
                 "tier_id": "sber_first_5",
                 "tier_name": "СберПервый — уровень 5",
                 "segment": "25–100 млн ₽",
-                "urls": ["https://premiumbanking.info/sber/5",
-                         "https://www.sberbank.ru/first"],
+                "sources": [
+                    _src("official", _SBER_FIRST_OFFICIAL),
+                    _src("official", _SBER_FIRST_VKLADY),
+                    _src("pbi", "https://premiumbanking.info/sber/5"),
+                ],
             },
             {
                 "tier_id": "sber_private_6",
                 "tier_name": "Sber Private Banking — уровень 6",
                 "segment": "25–100 млн ₽",
-                "urls": ["https://premiumbanking.info/sber/6",
-                         "https://www.sberbank.ru/ru/person/premium"],
+                "sources": [
+                    _src("official", "https://sberpb.ru/", _SBER_PREMIUM_OFFICIAL),
+                    _src("pbi", "https://premiumbanking.info/sber/6"),
+                ],
             },
         ],
     },
@@ -191,34 +245,46 @@ BANKS = [
         "id": "tbank",
         "name": "Т-Банк",
         "type": "bank",
+        "extra_sources": [
+            _src("banki_ru", "https://www.banki.ru/banks/bank/tinkoff/",
+                 "https://www.banki.ru/banks/bank/t-bank/"),
+        ],
         "tiers": [
             {
                 "tier_id": "tbank_bronze",
                 "tier_name": "Premium Bronze",
                 "segment": "0–3 млн ₽",
-                "urls": ["https://premiumbanking.info/tbank/1",
-                         "https://www.tbank.ru/premium/"],
+                "sources": [
+                    _src("official", "https://www.tbank.ru/premium/"),
+                    _src("pbi", "https://premiumbanking.info/tbank/1"),
+                ],
             },
             {
                 "tier_id": "tbank_silver",
                 "tier_name": "Premium Silver",
                 "segment": "3–10 млн ₽",
-                "urls": ["https://premiumbanking.info/tbank/2",
-                         "https://www.tbank.ru/premium/"],
+                "sources": [
+                    _src("official", "https://www.tbank.ru/premium/"),
+                    _src("pbi", "https://premiumbanking.info/tbank/2"),
+                ],
             },
             {
                 "tier_id": "tbank_gold",
                 "tier_name": "Premium Gold",
                 "segment": "3–10 млн ₽",
-                "urls": ["https://premiumbanking.info/tbank/3",
-                         "https://www.tbank.ru/premium/"],
+                "sources": [
+                    _src("official", "https://www.tbank.ru/premium/"),
+                    _src("pbi", "https://premiumbanking.info/tbank/3"),
+                ],
             },
             {
                 "tier_id": "tbank_diamond",
                 "tier_name": "Private (Diamond)",
                 "segment": "10–25 млн ₽",
-                "urls": ["https://premiumbanking.info/tbank/4",
-                         "https://www.tbank.ru/private/"],
+                "sources": [
+                    _src("official", "https://www.tbank.ru/private/"),
+                    _src("pbi", "https://premiumbanking.info/tbank/4"),
+                ],
             },
         ],
     },
@@ -226,41 +292,55 @@ BANKS = [
         "id": "alfa",
         "name": "Альфа-Банк",
         "type": "bank",
+        "extra_sources": [
+            _src("banki_ru", "https://www.banki.ru/banks/bank/alfabank/"),
+            _src("bankiros", "https://bankiros.ru/bank/alfa-bank"),
+        ],
         "tiers": [
             {
                 "tier_id": "alfa_only_1",
                 "tier_name": "Alfa Only — уровень 1",
                 "segment": "0–3 млн ₽",
-                "urls": ["https://premiumbanking.info/alfabank/1",
-                         "https://alfabank.ru/everyday/alfa-only/"],
+                "sources": [
+                    _src("official", "https://alfabank.ru/everyday/alfa-only/"),
+                    _src("pbi", "https://premiumbanking.info/alfabank/1"),
+                ],
             },
             {
                 "tier_id": "alfa_only_2",
                 "tier_name": "Alfa Only — уровень 2",
                 "segment": "3–10 млн ₽",
-                "urls": ["https://premiumbanking.info/alfabank/2",
-                         "https://alfabank.ru/everyday/alfa-only/"],
+                "sources": [
+                    _src("official", "https://alfabank.ru/everyday/alfa-only/"),
+                    _src("pbi", "https://premiumbanking.info/alfabank/2"),
+                ],
             },
             {
                 "tier_id": "alfa_only_3",
                 "tier_name": "Alfa Only — уровень 3",
                 "segment": "3–10 млн ₽",
-                "urls": ["https://premiumbanking.info/alfabank/3",
-                         "https://alfabank.ru/everyday/alfa-only/"],
+                "sources": [
+                    _src("official", "https://alfabank.ru/everyday/alfa-only/"),
+                    _src("pbi", "https://premiumbanking.info/alfabank/3"),
+                ],
             },
             {
                 "tier_id": "alfa_only_4",
                 "tier_name": "Alfa Only — уровень 4",
                 "segment": "10–25 млн ₽",
-                "urls": ["https://premiumbanking.info/alfabank/4",
-                         "https://alfabank.ru/everyday/alfa-only/"],
+                "sources": [
+                    _src("official", "https://alfabank.ru/everyday/alfa-only/"),
+                    _src("pbi", "https://premiumbanking.info/alfabank/4"),
+                ],
             },
             {
                 "tier_id": "alfa_aclub",
                 "tier_name": "A-Club (private)",
                 "segment": "25–100 млн ₽",
-                "urls": ["https://alfabank.ru/aclub/",
-                         "https://www.aclub.ru/"],
+                "sources": [
+                    _src("official", "https://alfabank.ru/aclub/",
+                         "https://www.aclub.ru/"),
+                ],
             },
         ],
     },
@@ -268,62 +348,82 @@ BANKS = [
         "id": "vtb",
         "name": "ВТБ",
         "type": "bank",
+        "extra_sources": [
+            _src("banki_ru", "https://www.banki.ru/banks/bank/vtb/"),
+            _src("bankiros", "https://bankiros.ru/bank/vtb"),
+        ],
         "tiers": [
             {
                 "tier_id": "vtb_privilege_1",
                 "tier_name": "Привилегия — уровень 1",
                 "segment": "0–3 млн ₽",
-                "urls": ["https://premiumbanking.info/vtb/1",
-                         "https://www.vtb.ru/privilegia/"],
+                "sources": [
+                    _src("official", "https://www.vtb.ru/privilegia/"),
+                    _src("pbi", "https://premiumbanking.info/vtb/1"),
+                ],
             },
             {
                 "tier_id": "vtb_privilege_2",
                 "tier_name": "Привилегия — уровень 2",
                 "segment": "0–3 млн ₽",
-                "urls": ["https://premiumbanking.info/vtb/2",
-                         "https://www.vtb.ru/privilegia/"],
+                "sources": [
+                    _src("official", "https://www.vtb.ru/privilegia/"),
+                    _src("pbi", "https://premiumbanking.info/vtb/2"),
+                ],
             },
             {
                 "tier_id": "vtb_privilege_3",
                 "tier_name": "Привилегия — уровень 3",
                 "segment": "3–10 млн ₽",
-                "urls": ["https://premiumbanking.info/vtb/3",
-                         "https://www.vtb.ru/privilegia/"],
+                "sources": [
+                    _src("official", "https://www.vtb.ru/privilegia/"),
+                    _src("pbi", "https://premiumbanking.info/vtb/3"),
+                ],
             },
             {
                 "tier_id": "vtb_privilege_4",
                 "tier_name": "Привилегия — уровень 4",
                 "segment": "10–25 млн ₽",
-                "urls": ["https://premiumbanking.info/vtb/4",
-                         "https://www.vtb.ru/privilegia/"],
+                "sources": [
+                    _src("official", "https://www.vtb.ru/privilegia/"),
+                    _src("pbi", "https://premiumbanking.info/vtb/4"),
+                ],
             },
             {
                 "tier_id": "vtb_prime_5",
                 "tier_name": "Прайм+ — уровень 5",
                 "segment": "3–10 млн ₽",
-                "urls": ["https://premiumbanking.info/vtb/5",
-                         "https://private.vtb.ru/"],
+                "sources": [
+                    _src("official", "https://private.vtb.ru/"),
+                    _src("pbi", "https://premiumbanking.info/vtb/5"),
+                ],
             },
             {
                 "tier_id": "vtb_prime_6",
                 "tier_name": "Прайм+ — уровень 6",
                 "segment": "10–25 млн ₽",
-                "urls": ["https://premiumbanking.info/vtb/6",
-                         "https://private.vtb.ru/"],
+                "sources": [
+                    _src("official", "https://private.vtb.ru/"),
+                    _src("pbi", "https://premiumbanking.info/vtb/6"),
+                ],
             },
             {
                 "tier_id": "vtb_prime_7",
                 "tier_name": "Прайм+ — уровень 7",
                 "segment": "25–100 млн ₽",
-                "urls": ["https://premiumbanking.info/vtb/7",
-                         "https://private.vtb.ru/"],
+                "sources": [
+                    _src("official", "https://private.vtb.ru/"),
+                    _src("pbi", "https://premiumbanking.info/vtb/7"),
+                ],
             },
             {
                 "tier_id": "vtb_prime_8",
                 "tier_name": "Прайм+ — уровень 8",
                 "segment": "25–100 млн ₽",
-                "urls": ["https://premiumbanking.info/vtb/8",
-                         "https://private.vtb.ru/"],
+                "sources": [
+                    _src("official", "https://private.vtb.ru/"),
+                    _src("pbi", "https://premiumbanking.info/vtb/8"),
+                ],
             },
         ],
     },
@@ -331,34 +431,46 @@ BANKS = [
         "id": "gazprombank",
         "name": "Газпромбанк",
         "type": "bank",
+        "extra_sources": [
+            _src("banki_ru", "https://www.banki.ru/banks/bank/gazprombank/"),
+            _src("bankiros", "https://bankiros.ru/bank/gazprombank"),
+        ],
         "tiers": [
             {
                 "tier_id": "gpb_premium_1",
                 "tier_name": "Премиум — уровень 1",
                 "segment": "0–3 млн ₽",
-                "urls": ["https://premiumbanking.info/gazprombank/1",
-                         "https://www.gazprombank.ru/premium/"],
+                "sources": [
+                    _src("official", "https://www.gazprombank.ru/premium/"),
+                    _src("pbi", "https://premiumbanking.info/gazprombank/1"),
+                ],
             },
             {
                 "tier_id": "gpb_premium_2",
                 "tier_name": "Премиум — уровень 2",
                 "segment": "3–10 млн ₽",
-                "urls": ["https://premiumbanking.info/gazprombank/2",
-                         "https://www.gazprombank.ru/premium/"],
+                "sources": [
+                    _src("official", "https://www.gazprombank.ru/premium/"),
+                    _src("pbi", "https://premiumbanking.info/gazprombank/2"),
+                ],
             },
             {
                 "tier_id": "gpb_premium_3",
                 "tier_name": "Премиум — уровень 3",
                 "segment": "10–25 млн ₽",
-                "urls": ["https://premiumbanking.info/gazprombank/3",
-                         "https://www.gazprombank.ru/premium/"],
+                "sources": [
+                    _src("official", "https://www.gazprombank.ru/premium/"),
+                    _src("pbi", "https://premiumbanking.info/gazprombank/3"),
+                ],
             },
             {
                 "tier_id": "gpb_private",
                 "tier_name": "Private Banking",
                 "segment": "25–100 млн ₽",
-                "urls": ["https://premiumbanking.info/gazprombank/4",
-                         "https://www.gazprombank.ru/private/"],
+                "sources": [
+                    _src("official", "https://www.gazprombank.ru/private/"),
+                    _src("pbi", "https://premiumbanking.info/gazprombank/4"),
+                ],
             },
         ],
     },
@@ -366,34 +478,43 @@ BANKS = [
         "id": "ozonbank",
         "name": "Озон Банк",
         "type": "bank",
+        "extra_sources": [],
         "tiers": [
             {
                 "tier_id": "ozonbank_ultra_bronze",
                 "tier_name": "Ultra Bronze",
                 "segment": "0–3 млн ₽",
-                "urls": ["https://premiumbanking.info/ozon/1",
-                         "https://finance.ozon.ru/"],
+                "sources": [
+                    _src("official", "https://finance.ozon.ru/"),
+                    _src("pbi", "https://premiumbanking.info/ozon/1"),
+                ],
             },
             {
                 "tier_id": "ozonbank_ultra_silver",
                 "tier_name": "Ultra Silver",
                 "segment": "3–10 млн ₽",
-                "urls": ["https://premiumbanking.info/ozon/2",
-                         "https://finance.ozon.ru/"],
+                "sources": [
+                    _src("official", "https://finance.ozon.ru/"),
+                    _src("pbi", "https://premiumbanking.info/ozon/2"),
+                ],
             },
             {
                 "tier_id": "ozonbank_ultra_gold",
                 "tier_name": "Ultra Gold",
                 "segment": "3–10 млн ₽",
-                "urls": ["https://premiumbanking.info/ozon/3",
-                         "https://finance.ozon.ru/"],
+                "sources": [
+                    _src("official", "https://finance.ozon.ru/"),
+                    _src("pbi", "https://premiumbanking.info/ozon/3"),
+                ],
             },
             {
                 "tier_id": "ozonbank_ultra_platinum",
                 "tier_name": "Ultra Platinum",
                 "segment": "10–25 млн ₽",
-                "urls": ["https://premiumbanking.info/ozon/4",
-                         "https://finance.ozon.ru/"],
+                "sources": [
+                    _src("official", "https://finance.ozon.ru/"),
+                    _src("pbi", "https://premiumbanking.info/ozon/4"),
+                ],
             },
         ],
     },
@@ -401,27 +522,36 @@ BANKS = [
         "id": "raiffeisen",
         "name": "Райффайзен Банк",
         "type": "bank",
+        "extra_sources": [
+            _src("banki_ru", "https://www.banki.ru/banks/bank/raiffeisen/"),
+        ],
         "tiers": [
             {
                 "tier_id": "raif_premium_1",
                 "tier_name": "Premium (за плату)",
                 "segment": "0–3 млн ₽",
-                "urls": ["https://premiumbanking.info/raiffeisen/1",
-                         "https://www.raiffeisen.ru/premium/"],
+                "sources": [
+                    _src("official", "https://www.raiffeisen.ru/premium/"),
+                    _src("pbi", "https://premiumbanking.info/raiffeisen/1"),
+                ],
             },
             {
                 "tier_id": "raif_premium_2",
                 "tier_name": "Premium (за траты)",
                 "segment": "0–3 млн ₽",
-                "urls": ["https://premiumbanking.info/raiffeisen/2",
-                         "https://www.raiffeisen.ru/premium/"],
+                "sources": [
+                    _src("official", "https://www.raiffeisen.ru/premium/"),
+                    _src("pbi", "https://premiumbanking.info/raiffeisen/2"),
+                ],
             },
             {
                 "tier_id": "raif_premium_3",
                 "tier_name": "Premium (за остаток)",
                 "segment": "0–3 млн ₽",
-                "urls": ["https://premiumbanking.info/raiffeisen/3",
-                         "https://www.raiffeisen.ru/premium/"],
+                "sources": [
+                    _src("official", "https://www.raiffeisen.ru/premium/"),
+                    _src("pbi", "https://premiumbanking.info/raiffeisen/3"),
+                ],
             },
         ],
     },
@@ -435,7 +565,7 @@ BANKS = [
                 "tier_id": "yandex_plus_main",
                 "tier_name": "Яндекс Плюс",
                 "segment": None,
-                "urls": ["https://plus.yandex.ru/"],
+                "sources": [_src("official", "https://plus.yandex.ru/")],
             },
         ],
     },
@@ -448,9 +578,9 @@ BANKS = [
                 "tier_id": "ozon_premium_main",
                 "tier_name": "Ozon Premium",
                 "segment": None,
-                "urls": [
-                    "https://www.ozon.ru/premium/",
-                    "https://www.ozon.ru/landing/premium/",
+                "sources": [
+                    _src("official", "https://www.ozon.ru/premium/",
+                         "https://www.ozon.ru/landing/premium/"),
                 ],
             },
         ],
@@ -464,29 +594,33 @@ BANKS = [
                 "tier_id": "wb_club",
                 "tier_name": "WB Клуб",
                 "segment": None,
-                "urls": [
-                    "https://www.wildberries.ru/services/wb-club",
-                    "https://www.wildberries.ru/",
+                "sources": [
+                    _src("official", "https://www.wildberries.ru/services/wb-club",
+                         "https://www.wildberries.ru/"),
                 ],
             },
         ],
     },
 ]
 
-# Агрегаторы — сканируются отдельно, результат идёт в метаданные и raw-архив
-# (структурированный парсинг агрегаторов подключается отдельным парсером).
+# Агрегаторы рыночного уровня — сканируются в --scan-all, raw-снимок для аудита
 AGGREGATORS = [
     {
         "id": "premiumbanking_info",
-        "name": "premiumbanking.info (приоритетный агрегатор)",
+        "name": "premiumbanking.info (обзорная)",
         "urls": ["https://premiumbanking.info/"],
     },
     {
         "id": "frankrg",
-        "name": "Frank RG",
+        "name": "Frank RG (рейтинги Premium/Private Banking)",
         "urls": ["https://frankrg.com/"],
     },
 ]
+
+
+def tier_sources(bank: dict, tier: dict) -> list:
+    """Все источники тира: собственные + банковские extra_sources."""
+    return list(tier.get("sources", [])) + list(bank.get("extra_sources", []))
 
 
 def get_bank(bank_id: str):
