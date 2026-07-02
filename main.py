@@ -214,9 +214,13 @@ def run_scan(mode: str, bank_id: str = None):
     # рыночного лога (--build-digest остаётся для ручной пересборки)
     try:
         from digest.build_digest import build_digest
-        digest_stats = build_digest(MARKET_LOG_PATH, DIGEST_PATH)
+        note = _empty_digest_note(len(history["scans"]))
+        digest_stats = build_digest(MARKET_LOG_PATH, DIGEST_PATH,
+                                    empty_note=note)
         log.info("Дайджест пересобран: %s (рыночных изменений за период: %d)",
                  DIGEST_PATH, digest_stats["total"])
+        if digest_stats["total"] == 0 and note:
+            log.info("ℹ %s", note)
     except Exception as exc:  # noqa: BLE001 — дайджест не должен ронять скан
         log.warning("Дайджест пересобрать не удалось: %s", exc)
 
@@ -229,6 +233,21 @@ def run_scan(mode: str, bank_id: str = None):
              len(changes) - len(market_changes))
     log.info("Отчёт: %s", OUTPUT_PATH)
     log.info("Рыночный лог: %s | Техлог: %s", MARKET_LOG_PATH, SERVICE_LOG_PATH)
+
+
+def _empty_digest_note(scans_count: int) -> str:
+    """Объяснение пустого дайджеста для консоли и HTML-баннера."""
+    from scanner.diff import MARKET_LOG_STARTED
+    if scans_count < 2:
+        return ("Найден только 1 скан — для сравнения условий нужно минимум "
+                "два; запустите повторный скан позже, и изменения появятся "
+                "в дайджесте.")
+    return (f"Сканов в истории: {scans_count}; рыночный лог ведётся с "
+            f"{MARKET_LOG_STARTED} (после разделения рыночных и технических "
+            f"событий). Сравнения «через» рефакторинги схемы до этой даты "
+            f"не учитываются — изменения условий у банков начнут появляться "
+            f"здесь со следующих сканов, как только банки реально поменяют "
+            f"условия.")
 
 
 def _fill_stats_entries(changes: list, new_scan: dict) -> list:
@@ -301,12 +320,17 @@ def main():
         list_sources()
     elif args.build_digest:
         from digest.build_digest import build_digest
+        history = load_history(HISTORY_PATH)
+        note = _empty_digest_note(len(history["scans"]))
         stats = build_digest(MARKET_LOG_PATH, DIGEST_PATH,
-                             use_ai_summary=args.use_ai_summary)
+                             use_ai_summary=args.use_ai_summary,
+                             empty_note=note)
         log.info("Дайджест собран: %s", DIGEST_PATH)
         log.info("Изменений за период: %d (банков: %d), AI-саммари: %s",
                  stats["total"], stats["banks"],
                  "да" if stats["ai_used"] else "нет (шаблонные формулировки)")
+        if stats["total"] == 0:
+            log.info("ℹ %s", note)
         for cat, n in stats["by_category"].items():
             log.info("  %s: %d", cat, n)
     elif args.scan_bank:

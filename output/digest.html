@@ -34,6 +34,9 @@ h2 { font-size:19px; margin-bottom:12px; border-bottom:2px solid var(--line);
 .src { margin-top:8px; font-size:13px; }
 .src a { color:var(--accent); text-decoration:none; }
 .empty { color:var(--muted); font-style:italic; }
+.notice { background:#fff8e6; border:1px solid #e8d9a8; border-radius:12px;
+          padding:16px 18px; margin-top:20px; }
+.notice b { display:block; margin-bottom:6px; }
 footer { margin-top:36px; color:var(--muted); font-size:13px; }
 details.sys summary { cursor:pointer; color:var(--muted); font-size:14px;
                       margin-bottom:10px; }
@@ -41,12 +44,18 @@ details.sys summary { cursor:pointer; color:var(--muted); font-size:14px;
 <header>
   <h1>Дайджест изменений: премиум-банкинг</h1>
   <div class="meta">Период: 03.05.2026 — 02.07.2026 (последние 60 дней) ·
-  сгенерировано 02.07.2026 16:43</div>
+  сгенерировано 02.07.2026 17:03</div>
   <div class="stats">
     <div class="stat"><b>0</b>изменений</div>
     <div class="stat"><b>0</b>банков/подписок</div>
   </div>
 </header>
+
+<div class="notice">
+  <b>Рыночных изменений за период пока не зафиксировано</b>
+  <div>Дайджест показывает только рыночные изменения — когда условие продукта у банка сменилось с одного найденного значения на другое между двумя сканами. Технические события сервиса (дозаполнение полей, правки схемы, статусы источников) сюда не попадают by design и живут в data/service_log.json.</div>
+  <div>Сканов в истории: 20; рыночный лог ведётся с 2026-07-02 (после разделения рыночных и технических событий). Сравнения «через» рефакторинги схемы до этой даты не учитываются — изменения условий у банков начнут появляться здесь со следующих сканов, как только банки реально поменяют условия.</div>
+</div>
 <section><h2>⚠️ Уход / сокращение привилегии (0)</h2>
 <div class="empty">Изменений в этой категории нет</div>
 </section>

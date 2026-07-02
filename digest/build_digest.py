@@ -113,8 +113,10 @@ def ai_humanize(changes: list) -> dict:
 
 
 def build_digest(market_log_path: Path, output_path: Path,
-                 use_ai_summary: bool = False) -> dict:
-    """Собирает дайджест из лога рыночных изменений. Возвращает статистику."""
+                 use_ai_summary: bool = False, empty_note: str = "") -> dict:
+    """Собирает дайджест из лога рыночных изменений. Возвращает статистику.
+    empty_note — объяснение для пользователя, почему дайджест пуст
+    (показывается баннером в HTML, когда изменений за период нет)."""
     market_changes = []
     if Path(market_log_path).exists():
         with open(market_log_path, encoding="utf-8") as fh:
@@ -158,7 +160,7 @@ def build_digest(market_log_path: Path, output_path: Path,
     banks = sorted({c["bank"] for c in recent if c["bank"] != "— система —"})
 
     html_text = _render(rules, grouped, summaries, recent,
-                        period_from, period_to, banks)
+                        period_from, period_to, banks, empty_note)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(html_text, encoding="utf-8")
 
@@ -201,6 +203,9 @@ h2 { font-size:19px; margin-bottom:12px; border-bottom:2px solid var(--line);
 .src { margin-top:8px; font-size:13px; }
 .src a { color:var(--accent); text-decoration:none; }
 .empty { color:var(--muted); font-style:italic; }
+.notice { background:#fff8e6; border:1px solid #e8d9a8; border-radius:12px;
+          padding:16px 18px; margin-top:20px; }
+.notice b { display:block; margin-bottom:6px; }
 footer { margin-top:36px; color:var(--muted); font-size:13px; }
 details.sys summary { cursor:pointer; color:var(--muted); font-size:14px;
                       margin-bottom:10px; }
@@ -235,7 +240,8 @@ def _card(change: dict, summary: str) -> str:
 </div>"""
 
 
-def _render(rules, grouped, summaries, recent, period_from, period_to, banks):
+def _render(rules, grouped, summaries, recent, period_from, period_to, banks,
+            empty_note=""):
     parts = [f"""<!DOCTYPE html>
 <html lang="ru"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -250,6 +256,21 @@ def _render(rules, grouped, summaries, recent, period_from, period_to, banks):
     <div class="stat"><b>{len(banks)}</b>банков/подписок</div>
   </div>
 </header>"""]
+
+    if not recent:
+        default_reason = (
+            "Дайджест показывает только рыночные изменения — когда условие "
+            "продукта у банка сменилось с одного найденного значения на "
+            "другое между двумя сканами. Технические события сервиса "
+            "(дозаполнение полей, правки схемы, статусы источников) сюда "
+            "не попадают by design и живут в data/service_log.json.")
+        note_html = f"<div>{_esc(empty_note)}</div>" if empty_note else ""
+        parts.append(f"""
+<div class="notice">
+  <b>Рыночных изменений за период пока не зафиксировано</b>
+  <div>{_esc(default_reason)}</div>
+  {note_html}
+</div>""")
 
     for cat in rules["categories"]:
         items = grouped.get(cat["id"], [])

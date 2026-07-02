@@ -59,10 +59,14 @@ def change_kind(field_id: str, old_value: str, new_value: str) -> str:
     return "market"
 
 
+# Дата, с которой ведётся рыночный лог (разделение market/service).
+# Сравнения «через» рефакторинги схемы до этой даты не учитываются.
+MARKET_LOG_STARTED = "2026-07-02"
+
+
 def append_log(path: Path, entries: list, cap: int = None):
-    """Дописывает записи в JSON-лог (массив)."""
-    if not entries:
-        return
+    """Дописывает записи в JSON-лог (массив). Файл создаётся даже при нуле
+    записей — отсутствие файла не должно выглядеть как ошибка пайплайна."""
     existing = []
     if path.exists():
         with open(path, encoding="utf-8") as fh:
