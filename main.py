@@ -22,6 +22,7 @@ from scanner.diff import (
     load_history,
     merge_partial_scan,
     save_history,
+    schema_changes,
 )
 from scanner.fetch import Fetcher
 from scanner.merge import merge_tier_fields
@@ -147,7 +148,9 @@ def run_scan(mode: str, bank_id: str = None):
 
     changes = []
     if history["scans"]:
-        changes = diff_results(history["scans"][-1], new_scan, field_labels)
+        prev = history["scans"][-1]
+        changes = schema_changes(prev, new_scan, field_labels)
+        changes += diff_results(prev, new_scan, field_labels)
         history["changelog"].extend(changes)
 
     fields_updated = sum(

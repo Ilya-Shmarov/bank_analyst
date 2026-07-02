@@ -100,6 +100,43 @@ def diff_results(prev_scan: dict, new_scan: dict, field_labels: dict) -> list:
     return changes
 
 
+def schema_changes(prev_scan: dict, new_scan: dict, field_labels: dict) -> list:
+    """Изменения методологии отчёта: поля, появившиеся/исчезнувшие в схеме.
+    Фиксируются одной системной записью на поле — это не изменение условий
+    у банка, а рефакторинг структуры данных."""
+    def field_ids(scan):
+        ids = set()
+        for entry in scan.get("results", {}).values():
+            ids.update(entry.get("fields", {}).keys())
+        return ids
+
+    prev_ids, new_ids = field_ids(prev_scan), field_ids(new_scan)
+    changes = []
+    for fid in sorted(new_ids - prev_ids):
+        changes.append({
+            "scan_date": new_scan["date"],
+            "prev_date": prev_scan.get("date", ""),
+            "bank": "— система —",
+            "tier": "все банки",
+            "field": field_labels.get(fid, fid),
+            "old": "(поля не было в схеме отчёта)",
+            "new": "поле добавлено в схему",
+            "source": "изменение методологии отчёта",
+        })
+    for fid in sorted(prev_ids - new_ids):
+        changes.append({
+            "scan_date": new_scan["date"],
+            "prev_date": prev_scan.get("date", ""),
+            "bank": "— система —",
+            "tier": "все банки",
+            "field": field_labels.get(fid, fid),
+            "old": "поле было в схеме",
+            "new": "(поле удалено из схемы отчёта)",
+            "source": "изменение методологии отчёта",
+        })
+    return changes
+
+
 def merge_partial_scan(history: dict, new_scan: dict) -> dict:
     """При точечном скане (--scan-bank/--scan-lifestyle) дополняем новый скан
     последними известными данными по остальным тирам, чтобы отчёт оставался полным,

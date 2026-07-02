@@ -75,6 +75,13 @@ BANK_FIELDS = {
         "keywords": ["кэшбэк", "кешбэк", "cashback", "бонус", "баллы",
                      "категори", "спасибо"],
     },
+    "card_terms": {
+        "label": "Карты (тип, лимиты переводов/снятия, выпуск)",
+        "keywords": ["металлическ", "лимит на перевод", "переводы до",
+                     "переводы без комиссии", "снятие наличн", "снять наличн",
+                     "перевыпуск", "выпуск карты", "пластиков", "премиальная карта",
+                     "лимитированн"],
+    },
     "deposits": {
         "label": "Спецусловия по вкладам / накопительным счетам",
         "keywords": ["вклад", "накопительн", "ставка", "процент годовых",
@@ -162,6 +169,8 @@ _SBER_FIRST_OFFICIAL = "https://www.sberbank.ru/first"
 _SBER_PREMIUM_OFFICIAL = "https://www.sberbank.ru/ru/person/premium"
 _SBER_PREMIUM_VKLAD = "https://www.sberbank.ru/ru/person/premium/premium_vklad"
 _SBER_FIRST_VKLADY = "https://www.sberbank.ru/ru/person/sb1/vklad/vse_vklady"
+# Тарифы Премиальной СберКарты — первоисточник карточных лимитов всех уровней
+_SBER_CARD_OFFICIAL = "https://www.sberbank.ru/ru/person/bank_cards/debit/sberkarta_premium"
 
 # Структура тиров сверена с premiumbanking.info (июль 2026):
 # у Сбера 6 уровней, у ВТБ 8 (Привилегия 1–4 + Прайм+ 5–8), у Т-Банка
@@ -186,6 +195,7 @@ BANKS = [
                 "sources": [
                     _src("official", _SBER_PREMIER_OFFICIAL),
                     _src("official", _SBER_PREMIUM_VKLAD),
+                    _src("official", _SBER_CARD_OFFICIAL),
                     _src("pbi", "https://premiumbanking.info/sber/1"),
                 ],
             },
@@ -196,6 +206,7 @@ BANKS = [
                 "sources": [
                     _src("official", _SBER_PREMIER_OFFICIAL),
                     _src("official", _SBER_PREMIUM_VKLAD),
+                    _src("official", _SBER_CARD_OFFICIAL),
                     _src("pbi", "https://premiumbanking.info/sber/2"),
                 ],
             },
@@ -206,6 +217,7 @@ BANKS = [
                 "sources": [
                     _src("official", _SBER_PREMIER_OFFICIAL),
                     _src("official", _SBER_PREMIUM_VKLAD),
+                    _src("official", _SBER_CARD_OFFICIAL),
                     _src("pbi", "https://premiumbanking.info/sber/3"),
                 ],
             },
@@ -216,6 +228,7 @@ BANKS = [
                 "sources": [
                     _src("official", _SBER_FIRST_OFFICIAL),
                     _src("official", _SBER_FIRST_VKLADY),
+                    _src("official", _SBER_CARD_OFFICIAL),
                     _src("pbi", "https://premiumbanking.info/sber/4"),
                 ],
             },
@@ -226,6 +239,7 @@ BANKS = [
                 "sources": [
                     _src("official", _SBER_FIRST_OFFICIAL),
                     _src("official", _SBER_FIRST_VKLADY),
+                    _src("official", _SBER_CARD_OFFICIAL),
                     _src("pbi", "https://premiumbanking.info/sber/5"),
                 ],
             },
@@ -235,6 +249,7 @@ BANKS = [
                 "segment": "25–100 млн ₽",
                 "sources": [
                     _src("official", "https://sberpb.ru/", _SBER_PREMIUM_OFFICIAL),
+                    _src("official", _SBER_CARD_OFFICIAL),
                     _src("pbi", "https://premiumbanking.info/sber/6"),
                 ],
             },
