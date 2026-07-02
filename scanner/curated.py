@@ -526,6 +526,97 @@ _COMPETITOR_FACTS = {
 
 CURATED_FACTS.update(_COMPETITOR_FACTS)
 
+# ============================================================================
+# МЕЖДУНАРОДНЫЕ БАНКИ (2026-07-02). Пороги — в оригинальной валюте
+# (пересчёт — по курсам ЦБ на дату скана, лист «Методика»). «Не публикуется»
+# для private-banking — особенность модели (индивидуальные условия), это
+# НЕ «не найдено».
+# ============================================================================
+
+_NOT_PUBLISHED_PB = (
+    "Не публикуется — обслуживание по индивидуальному предложению/приглашению "
+    "(стандартная модель международного private banking: тарифной сетки в "
+    "открытом доступе нет, условия обсуждаются с банком)")
+
+_INTL_FACTS = {
+    "hsbc_premier_elite": {
+        "positioning": _fact(
+            "Верхний retail-wealth уровень HSBC; заменил HSBC Jade с декабря "
+            "2023 (существующие клиенты Jade переведены без потери привилегий)",
+            "https://www.hsbc.com.hk/jade/",
+            "Смена бренда Jade → Premier Elite подтверждена FAQ банка"),
+        "entry_conditions": _fact(
+            "От US$1 млн инвестируемых активов (в Гонконге — Total Relationship "
+            "Balance от HKD 7,8 млн). Порог в оригинальной валюте",
+            "https://www.hsbc.com.hk/jade/",
+            "Пересчёт в ₽ — по курсу ЦБ на дату скана (метаданные скана)"),
+    },
+    "citi_citigold": {
+        "entry_conditions": _fact(
+            "Минимальный среднемесячный совокупный баланс от US$200 000 на "
+            "связанных депозитных, пенсионных и инвестиционных счетах",
+            "https://www.citi.com/banking/citigold", ""),
+    },
+    "citi_cpc": {
+        "entry_conditions": _fact(
+            "Минимальный среднемесячный совокупный баланс от US$1 млн",
+            "https://www.citi.com/banking/citigold-private-client", ""),
+    },
+    "citi_private_bank": {
+        "entry_conditions": _fact(_NOT_PUBLISHED_PB,
+                                  "https://www.privatebank.citibank.com/",
+                                  "Особенность модели, не пробел данных"),
+    },
+    "chase_private_client": {
+        "entry_conditions": _fact(
+            "Среднедневной баланс от US$150 000 в счетах и инвестициях Chase",
+            "https://www.chase.com/personal/checking/private-client", ""),
+    },
+    "jpm_private_bank": {
+        "entry_conditions": _fact(_NOT_PUBLISHED_PB,
+                                  "https://privatebank.jpmorgan.com/",
+                                  "Особенность модели, не пробел данных"),
+    },
+    "bofa_preferred_rewards": {
+        "entry_conditions": _fact(
+            "Многоуровневая программа по совокупному балансу: младшие уровни "
+            "от ~US$20–30 тыс, высший уровень — от US$1 млн",
+            "https://www.bankofamerica.com/preferred-rewards/",
+            "Точные названия/пороги уровней сверять на официальной странице "
+            "при следующем скане"),
+    },
+    "bofa_private_bank": {
+        "entry_conditions": _fact(_NOT_PUBLISHED_PB,
+                                  "https://www.privatebank.bankofamerica.com/",
+                                  "Особенность модели, не пробел данных"),
+    },
+    "ubs_gwm": {
+        "entry_conditions": _fact(_NOT_PUBLISHED_PB,
+                                  "https://www.ubs.com/global/en/wealth-management.html",
+                                  "Крупнейший private banking мира после "
+                                  "объединения с Credit Suisse"),
+    },
+    "sc_priority": {
+        "entry_conditions": _fact(
+            "От S$200 000 в депозитах и/или инвестициях (или ипотека от "
+            "S$1,5 млн в банке) — условия для Сингапура",
+            "https://www.sc.com/sg/priority-banking/",
+            "Пороги отличаются по странам присутствия"),
+    },
+    "db_wealth": {
+        "entry_conditions": _fact(_NOT_PUBLISHED_PB,
+                                  "https://www.deutschewealth.com/",
+                                  "Особенность модели, не пробел данных"),
+    },
+    "bnp_wealth": {
+        "entry_conditions": _fact(_NOT_PUBLISHED_PB,
+                                  "https://wealthmanagement.bnpparibas/en.html",
+                                  "Особенность модели, не пробел данных"),
+    },
+}
+
+CURATED_FACTS.update(_INTL_FACTS)
+
 
 def curated_for(tier_id: str) -> dict:
     return CURATED_FACTS.get(tier_id, {})

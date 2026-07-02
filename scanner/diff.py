@@ -84,6 +84,8 @@ def diff_results(prev_scan: dict, new_scan: dict, field_labels: dict) -> list:
                     "old": old_value,
                     "new": new_value,
                     "source": _change_source(new_field),
+                    "source_url": (new_field.get("source_url", "")
+                                   if isinstance(new_field, dict) else ""),
                 })
 
     for tier_id, prev_entry in prev_results.items():

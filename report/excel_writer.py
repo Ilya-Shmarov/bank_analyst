@@ -25,6 +25,7 @@ from scanner.scoring import METHODOLOGY_TEXT, THRESHOLDS, WEIGHTS
 from scanner.sources import (
     BANK_FIELDS,
     BANKS,
+    INTL_SEGMENTS,
     LIFESTYLE_FIELDS,
     NOT_FOUND,
     REFERENCE_FIELDS,
@@ -57,11 +58,19 @@ def write_report(history: dict, output_path: Path):
     _write_lifestyle(wb, results)
     _write_changelog(wb, history.get("changelog", []))
     _write_manual_check(wb, results)
-    _write_methodology(wb, results)
+    _write_methodology(wb, results, _last_cbr_rates(history))
     _write_meta(wb, history)
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     wb.save(output_path)
+
+
+def _last_cbr_rates(history: dict) -> dict:
+    for scan in reversed(history.get("scans", [])):
+        rates = scan.get("meta", {}).get("cbr_rates")
+        if rates:
+            return rates
+    return {}
 
 
 # ---------- helpers ----------
@@ -142,41 +151,55 @@ def _write_summary(wb, results, scan_date):
     _set_widths(ws, [14, 14, 24, 11, 11, 11, 13, 45] + [40] * len(BANK_FIELDS))
     ws.freeze_panes = "D2"
 
-    row = 2
-    for segment in SEGMENTS:
-        segment_row_written = False
-        for bank, tier, entry in _tier_entries(results, {"our", "bank"}):
-            if tier["segment"] != segment:
-                continue
-            if not segment_row_written:
-                cell = ws.cell(row=row, column=1, value=segment)
-                for col in range(1, len(headers) + 1):
-                    ws.cell(row=row, column=col).fill = SEGMENT_FILL
-                cell.font = Font(bold=True)
-                row += 1
-                segment_row_written = True
-            divergent, div_comment = _divergence_info(entry["fields"])
-            score = entry.get("score", {}).get("total", "")
-            values = [
-                "", bank["name"], tier["tier_name"],
-                entry.get("scan_date", scan_date)[:10],
-                entry.get("sources_ok", ""),
-                score, divergent, div_comment,
-            ] + [
-                _annotated(entry["fields"].get(fid)) for fid in BANK_FIELDS
-            ]
-            for col, value in enumerate(values, start=1):
-                cell = _write_value_cell(ws, row, col, value)
-                if bank["type"] == "our" and col in (2, 3):
-                    cell.fill = OUR_FILL
-                if col == 7 and divergent == "да":
-                    cell.fill = DIVERGENT_FILL
+    def write_block(segments, types, block_title=None):
+        nonlocal row
+        if block_title:
+            cell = ws.cell(row=row, column=1, value=block_title)
+            for col in range(1, len(headers) + 1):
+                ws.cell(row=row, column=col).fill = HEADER_FILL
+                ws.cell(row=row, column=col).font = HEADER_FONT
+            cell.font = Font(color="FFFFFF", bold=True, size=12)
             row += 1
+        for segment in segments:
+            segment_row_written = False
+            for bank, tier, entry in _tier_entries(results, types):
+                if tier["segment"] != segment:
+                    continue
+                if not segment_row_written:
+                    cell = ws.cell(row=row, column=1, value=segment)
+                    for col in range(1, len(headers) + 1):
+                        ws.cell(row=row, column=col).fill = SEGMENT_FILL
+                    cell.font = Font(bold=True)
+                    row += 1
+                    segment_row_written = True
+                divergent, div_comment = _divergence_info(entry["fields"])
+                score = entry.get("score", {}).get("total", "")
+                values = [
+                    "", bank["name"], tier["tier_name"],
+                    entry.get("scan_date", scan_date)[:10],
+                    entry.get("sources_ok", ""),
+                    score, divergent, div_comment,
+                ] + [
+                    _annotated(entry["fields"].get(fid)) for fid in BANK_FIELDS
+                ]
+                for col, value in enumerate(values, start=1):
+                    cell = _write_value_cell(ws, row, col, value)
+                    if bank["type"] == "our" and col in (2, 3):
+                        cell.fill = OUR_FILL
+                    if col == 7 and divergent == "да":
+                        cell.fill = DIVERGENT_FILL
+                row += 1
+
+    row = 2
+    write_block(SEGMENTS, {"our", "bank"})
+    write_block(INTL_SEGMENTS, {"intl"},
+                block_title="МЕЖДУНАРОДНЫЕ БАНКИ — пороги в валюте, баллы не "
+                            "считаются (см. лист «Методика оценки»)")
 
 
 def _write_bank_sheets(wb, results):
     for bank in BANKS:
-        if bank["type"] not in {"our", "bank"}:
+        if bank["type"] not in {"our", "bank", "intl"}:
             continue
         ws = wb.create_sheet(bank["name"][:31])
         headers = ["Поле"] + [t["tier_name"] for t in bank["tiers"]]
@@ -307,7 +330,25 @@ def _write_manual_check(wb, results):
                                        "или помечены как отсутствующие")
 
 
-def _write_methodology(wb, results):
+INTL_METHODOLOGY_TEXT = [
+    "",
+    "МЕЖДУНАРОДНЫЕ БАНКИ — методологические оговорки:",
+    "1. Абсолютные пороги входа зарубежных банков (USD/SGD/HKD и т.д.) "
+    "НЕЛЬЗЯ сравнивать 1:1 с рублёвыми порогами: без поправки на масштаб "
+    "экономики, доходы сегмента и стоимость обслуживания прямое сопоставление "
+    "вводит в заблуждение. Сравнение — по относительному позиционированию "
+    "сегмента: mass affluent / HNWI / UHNWI.",
+    "2. По этой же причине международные банки НЕ участвуют в балльной "
+    "оценке (пороговые таблицы откалиброваны под рублёвый рынок).",
+    "3. «Не публикуется — по индивидуальному предложению» у private-банков — "
+    "особенность бизнес-модели (private banking работает без открытой "
+    "тарифной сетки), а не пробел данных.",
+    "4. Пороги фиксируются в оригинальной валюте; для справочного пересчёта "
+    "в рубли используйте курсы ЦБ на дату скана (строка ниже).",
+]
+
+
+def _write_methodology(wb, results, cbr_rates=None):
     ws = wb.create_sheet("Методика оценки")
     _set_widths(ws, [26, 22, 34, 10, 9, 13])
 
@@ -315,9 +356,18 @@ def _write_methodology(wb, results):
     ws.cell(row=row, column=1, value="Методика собственной оценки пакетов")
     ws.cell(row=row, column=1).font = Font(bold=True, size=13)
     row += 2
-    for line in METHODOLOGY_TEXT:
+    for line in METHODOLOGY_TEXT + INTL_METHODOLOGY_TEXT:
         cell = ws.cell(row=row, column=1, value=line)
         cell.alignment = WRAP
+        ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=6)
+        row += 1
+    if cbr_rates:
+        date = cbr_rates.get("date", "")
+        rates_line = "Курсы ЦБ РФ на " + date + ": " + "; ".join(
+            f"{code} = {value} ₽" for code, value in cbr_rates.items()
+            if code != "date")
+        cell = ws.cell(row=row, column=1, value=rates_line)
+        cell.font = Font(bold=True)
         ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=6)
         row += 1
     row += 1

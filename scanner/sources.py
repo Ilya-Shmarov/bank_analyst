@@ -34,6 +34,12 @@ REFERENCE_FIELDS = {"aggregator_value", "other_notes", "last_change_date"}
 # Сегменты капитала в порядке отображения в сводной таблице
 SEGMENTS = ["0–3 млн ₽", "3–10 млн ₽", "10–25 млн ₽", "25–100 млн ₽"]
 
+# Сегменты международного блока — сравнение по относительному позиционированию
+# (mass affluent / HNWI / UHNWI), а не по абсолютным порогам: прямое
+# сопоставление валютных порогов с рублёвыми вводит в заблуждение (см. лист
+# «Методика оценки» отчёта)
+INTL_SEGMENTS = ["mass affluent (межд.)", "HNWI (межд.)", "UHNWI (межд.)"]
+
 # Источники данных. priority: меньше = приоритетнее при слиянии
 # (curated — верифицированные вручную факты с ссылкой на первоисточник,
 #  official — сайт банка как первоисточник цифр).
@@ -53,22 +59,26 @@ BANK_FIELDS = {
     "positioning": {
         "label": "Позиционирование (на кого рассчитан)",
         "keywords": ["для клиентов", "капитал", "состоятельн", "премиальн",
-                     "privat", "уровень дохода", "статус"],
+                     "privat", "уровень дохода", "статус",
+                     "wealth", "private bank"],
     },
     "entry_conditions": {
         "label": "Условия входа / поддержания уровня",
         "keywords": ["остаток", "оборот", "баланс", "бесплатное обслуживание",
-                     "условия обслуживания", "суммарный", "среднемесячн"],
+                     "условия обслуживания", "суммарный", "среднемесячн",
+                     "minimum balance", "eligibility", "qualify", "relationship balance", "investable assets"],
     },
     "service_cost": {
         "label": "Стоимость обслуживания",
         "keywords": ["стоимость обслуживания", "плата за обслуживание",
-                     "руб/мес", "₽/мес", "рублей в месяц", "ежемесячная плата"],
+                     "руб/мес", "₽/мес", "рублей в месяц", "ежемесячная плата",
+                     "monthly fee", "monthly service fee", "fee waived", "annual fee"],
     },
     "lounge_access": {
         "label": "Бизнес-залы (визиты, спутники)",
         "keywords": ["бизнес-зал", "бизнес зал", "lounge", "проход",
-                     "аэропорт", "mir pass", "every lounge"],
+                     "аэропорт", "mir pass", "every lounge",
+                     "priority pass", "airport lounge"],
     },
     "concierge": {
         "label": "Консьерж-сервис",
@@ -77,24 +87,28 @@ BANK_FIELDS = {
     "cashback": {
         "label": "Кэшбэк (ставка, категории, механика)",
         "keywords": ["кэшбэк", "кешбэк", "cashback", "бонус", "баллы",
-                     "категори", "спасибо"],
+                     "категори", "спасибо",
+                     "rewards", "points", "cash back"],
     },
     "card_terms": {
         "label": "Карты (тип, лимиты переводов/снятия, выпуск)",
         "keywords": ["металлическ", "лимит на перевод", "переводы до",
                      "переводы без комиссии", "снятие наличн", "снять наличн",
                      "перевыпуск", "выпуск карты", "пластиков", "премиальная карта",
-                     "лимитированн"],
+                     "лимитированн",
+                     "metal card", "debit card", "withdrawal limit"],
     },
     "deposits": {
         "label": "Спецусловия по вкладам / накопительным счетам",
         "keywords": ["вклад", "накопительн", "ставка", "процент годовых",
-                     "% годовых", "надбавка"],
+                     "% годовых", "надбавка",
+                     "interest rate", "savings rate", "apy"],
     },
     "insurance": {
         "label": "Страхование (мед., ВЗР)",
         "keywords": ["страхов", "взр", "путешеств", "медицинск", "телемедицин",
-                     "чекап", "check-up"],
+                     "чекап", "check-up",
+                     "travel insurance", "medical cover"],
     },
     "auto": {
         "label": "Автоуслуги",
@@ -572,6 +586,217 @@ BANKS = [
                     _src("official", "https://www.raiffeisen.ru/premium/"),
                     _src("pbi", "https://premiumbanking.info/raiffeisen/3"),
                 ],
+            },
+        ],
+    },
+    # ---------- МЕЖДУНАРОДНЫЕ БАНКИ (type="intl") ----------
+    # Схема атрибутов та же (BANK_FIELDS); сегменты — относительное
+    # позиционирование (mass affluent / HNWI / UHNWI), баллы не считаются.
+    # Пороги в оригинальной валюте; курсы ЦБ на дату скана — в метаданных.
+    {
+        "id": "hsbc",
+        "name": "HSBC",
+        "type": "intl",
+        "tiers": [
+            {
+                "tier_id": "hsbc_premier",
+                "tier_name": "Premier",
+                "segment": "mass affluent (межд.)",
+                "sources": [
+                    _src("official", "https://www.hsbc.co.uk/current-accounts/products/premier/",
+                         "https://www.us.hsbc.com/premier/"),
+                ],
+            },
+            {
+                "tier_id": "hsbc_premier_elite",
+                "tier_name": "Premier Elite (экс-Jade)",
+                "segment": "HNWI (межд.)",
+                "sources": [
+                    _src("official", "https://www.hsbc.com.hk/jade/"),
+                ],
+            },
+            {
+                "tier_id": "hsbc_gpb",
+                "tier_name": "Global Private Banking",
+                "segment": "UHNWI (межд.)",
+                "sources": [
+                    _src("official", "https://www.privatebanking.hsbc.com/"),
+                ],
+            },
+        ],
+    },
+    {
+        "id": "citi",
+        "name": "Citi",
+        "type": "intl",
+        "tiers": [
+            {
+                "tier_id": "citi_citigold",
+                "tier_name": "Citigold",
+                "segment": "mass affluent (межд.)",
+                "sources": [_src("official", "https://www.citi.com/banking/citigold")],
+            },
+            {
+                "tier_id": "citi_cpc",
+                "tier_name": "Citigold Private Client",
+                "segment": "HNWI (межд.)",
+                "sources": [_src("official",
+                                 "https://www.citi.com/banking/citigold-private-client")],
+            },
+            {
+                "tier_id": "citi_private_bank",
+                "tier_name": "Citi Private Bank",
+                "segment": "UHNWI (межд.)",
+                "sources": [_src("official", "https://www.privatebank.citibank.com/")],
+            },
+        ],
+    },
+    {
+        "id": "jpmorgan",
+        "name": "JPMorgan Chase",
+        "type": "intl",
+        "tiers": [
+            {
+                "tier_id": "chase_private_client",
+                "tier_name": "Chase Private Client",
+                "segment": "mass affluent (межд.)",
+                "sources": [_src("official",
+                                 "https://www.chase.com/personal/checking/private-client")],
+            },
+            {
+                "tier_id": "jpm_private_bank",
+                "tier_name": "J.P. Morgan Private Bank",
+                "segment": "UHNWI (межд.)",
+                "sources": [_src("official", "https://privatebank.jpmorgan.com/")],
+            },
+        ],
+    },
+    {
+        "id": "bofa",
+        "name": "Bank of America",
+        "type": "intl",
+        "tiers": [
+            {
+                "tier_id": "bofa_preferred_rewards",
+                "tier_name": "Preferred Rewards",
+                "segment": "mass affluent (межд.)",
+                "sources": [_src("official",
+                                 "https://www.bankofamerica.com/preferred-rewards/")],
+            },
+            {
+                "tier_id": "bofa_private_bank",
+                "tier_name": "BofA Private Bank",
+                "segment": "UHNWI (межд.)",
+                "sources": [_src("official",
+                                 "https://www.privatebank.bankofamerica.com/")],
+            },
+        ],
+    },
+    {
+        "id": "ubs",
+        "name": "UBS",
+        "type": "intl",
+        "tiers": [
+            {
+                "tier_id": "ubs_gwm",
+                "tier_name": "Global Wealth Management",
+                "segment": "UHNWI (межд.)",
+                "sources": [_src("official",
+                                 "https://www.ubs.com/global/en/wealth-management.html")],
+            },
+        ],
+    },
+    {
+        "id": "standard_chartered",
+        "name": "Standard Chartered",
+        "type": "intl",
+        "tiers": [
+            {
+                "tier_id": "sc_priority",
+                "tier_name": "Priority Banking",
+                "segment": "mass affluent (межд.)",
+                "sources": [_src("official", "https://www.sc.com/sg/priority-banking/")],
+            },
+            {
+                "tier_id": "sc_priority_private",
+                "tier_name": "Priority Private",
+                "segment": "HNWI (межд.)",
+                "sources": [_src("official", "https://www.sc.com/sg/priority-private/")],
+            },
+        ],
+    },
+    {
+        "id": "dbs",
+        "name": "DBS (Сингапур)",
+        "type": "intl",
+        "tiers": [
+            {
+                "tier_id": "dbs_treasures",
+                "tier_name": "Treasures",
+                "segment": "mass affluent (межд.)",
+                "sources": [_src("official", "https://www.dbs.com.sg/treasures/")],
+            },
+            {
+                "tier_id": "dbs_treasures_private",
+                "tier_name": "Treasures Private Client",
+                "segment": "HNWI (межд.)",
+                "sources": [_src("official",
+                                 "https://www.dbs.com.sg/treasures-private-client/")],
+            },
+        ],
+    },
+    {
+        "id": "deutsche",
+        "name": "Deutsche Bank",
+        "type": "intl",
+        "tiers": [
+            {
+                "tier_id": "db_wealth",
+                "tier_name": "Wealth Management",
+                "segment": "UHNWI (межд.)",
+                "sources": [_src("official", "https://www.deutschewealth.com/")],
+            },
+        ],
+    },
+    {
+        "id": "bnp",
+        "name": "BNP Paribas",
+        "type": "intl",
+        "tiers": [
+            {
+                "tier_id": "bnp_wealth",
+                "tier_name": "Wealth Management",
+                "segment": "UHNWI (межд.)",
+                "sources": [_src("official",
+                                 "https://wealthmanagement.bnpparibas/en.html")],
+            },
+        ],
+    },
+    {
+        "id": "barclays",
+        "name": "Barclays",
+        "type": "intl",
+        "tiers": [
+            {
+                "tier_id": "barclays_premier",
+                "tier_name": "Premier Banking",
+                "segment": "mass affluent (межд.)",
+                "sources": [_src("official",
+                                 "https://www.barclays.co.uk/premier-banking/")],
+            },
+        ],
+    },
+    {
+        "id": "emirates_nbd",
+        "name": "Emirates NBD",
+        "type": "intl",
+        "tiers": [
+            {
+                "tier_id": "enbd_priority",
+                "tier_name": "Priority Banking",
+                "segment": "mass affluent (межд.)",
+                "sources": [_src("official",
+                                 "https://www.emiratesnbd.com/en/priority-banking")],
             },
         ],
     },

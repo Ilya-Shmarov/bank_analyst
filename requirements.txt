@@ -5,3 +5,7 @@ openpyxl>=3.1
 # Опционально — fallback для сайтов с JS-рендерингом:
 # pip install playwright && playwright install chromium
 # playwright>=1.44
+
+# Опционально — AI-формулировки новостей в дайджесте (--use-ai-summary,
+# нужен ANTHROPIC_API_KEY):
+# anthropic>=0.92
