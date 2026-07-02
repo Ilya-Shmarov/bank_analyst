@@ -1,0 +1,192 @@
+# -*- coding: utf-8 -*-
+"""
+Извлечение структурированных данных из HTML.
+
+Базовый механизм — GenericParser: превращает страницу в текст и по
+ключевым словам каждого поля вытаскивает релевантные фрагменты-цитаты.
+Мы сознательно храним цитаты из источника, а не "додуманные" значения:
+если по полю ничего не нашлось — ставим "не найдено" (см. ограничения ТЗ).
+
+Для конкретного банка можно зарегистрировать специализированный парсер:
+    PARSER_REGISTRY["tbank"] = TBankParser()
+— тогда ядро трогать не нужно.
+"""
+
+import re
+
+from bs4 import BeautifulSoup
+
+from scanner.sources import (
+    BANK_FIELDS,
+    LIFESTYLE_BANK_OVERLAP_JOBS,
+    LIFESTYLE_FIELDS,
+    NOT_FOUND,
+)
+
+# Максимум фрагментов на поле и максимальная длина одного фрагмента
+MAX_SNIPPETS = 3
+MAX_SNIPPET_LEN = 300
+MAX_VALUE_LEN = 450
+
+
+def normalize_text(text: str) -> str:
+    """Чистим неразрывные пробелы и битые entity вида '&nbsp' без ';'."""
+    return re.sub(r"\s+", " ", text.replace("\xa0", " ")
+                  .replace("&nbsp;", " ").replace("&nbsp", " ")).strip()
+
+
+def html_to_text(html: str) -> str:
+    soup = BeautifulSoup(html, "html.parser")
+    for tag in soup(["script", "style", "noscript", "svg", "iframe"]):
+        tag.decompose()
+    text = soup.get_text(separator="\n", strip=True)
+    lines = [normalize_text(ln) for ln in text.splitlines() if ln.strip()]
+    return "\n".join(lines)
+
+
+def _split_sentences(text: str) -> list:
+    # Грубое разбиение: по предложениям и по строкам вёрстки
+    chunks = re.split(r"(?<=[.!?])\s+|\n", text)
+    return [c.strip() for c in chunks if len(c.strip()) >= 15]
+
+
+def extract_snippets(text: str, keywords: list) -> str:
+    """Возвращает до MAX_SNIPPETS фрагментов текста, содержащих ключевые слова."""
+    sentences = _split_sentences(text)
+    found = []
+    seen = set()
+    lowered_keywords = [k.lower() for k in keywords]
+    for sentence in sentences:
+        low = sentence.lower()
+        if any(k in low for k in lowered_keywords):
+            snippet = sentence[:MAX_SNIPPET_LEN]
+            key = snippet.lower()
+            if key not in seen:
+                seen.add(key)
+                found.append(snippet)
+        if len(found) >= MAX_SNIPPETS:
+            break
+    return " | ".join(found) if found else NOT_FOUND
+
+
+class GenericParser:
+    """Извлечение по ключевым словам. Подходит как fallback для любого источника."""
+
+    def parse(self, html: str, tier: dict, bank: dict) -> dict:
+        text = html_to_text(html)
+        fields = LIFESTYLE_FIELDS if bank["type"] == "lifestyle" else BANK_FIELDS
+        result = {}
+        for field_id, spec in fields.items():
+            result[field_id] = extract_snippets(text, spec["keywords"])
+
+        if bank["type"] == "lifestyle":
+            result["bank_overlap"] = self._detect_overlaps(result)
+        return result
+
+    @staticmethod
+    def _detect_overlaps(result: dict) -> str:
+        """Пересечения с банковскими привилегиями: перечисляем джобы,
+        по которым подписка реально что-то предлагает (поле не пустое)."""
+        overlaps = [
+            job_desc
+            for field_id, job_desc in LIFESTYLE_BANK_OVERLAP_JOBS.items()
+            if result.get(field_id) and result[field_id] != NOT_FOUND
+        ]
+        return "; ".join(overlaps) if overlaps else NOT_FOUND
+
+
+class PremiumBankingInfoParser:
+    """Структурированный парсер страниц уровня на premiumbanking.info.
+
+    Страницы устроены как definition list (dt = название атрибута,
+    dd = значение). Маппим подписи dt на наши поля по ключевым словам подписи;
+    не распознанные подписи складываем в 'Прочее', чтобы не терять данные.
+    """
+
+    # (маркеры в подписи dt) -> field_id; проверяются по порядку
+    LABEL_MAP = [
+        # "ценность" — раньше "страхов": подпись "Ценность без БЗ и страховки"
+        # должна попадать в оценку ценности, а не в страхование
+        (("ценность",), "aggregator_value"),
+        (("бизнес-зал",), "lounge_access"),
+        (("ресторан", "такси", "трансфер", "кафе"), "taxi_restaurants"),
+        (("страхов",), "insurance"),
+        (("кэшбэк", "кешбэк", "бонус"), "cashback"),
+        (("вклад", "накопительн", "ставк"), "deposits"),
+        (("консьерж",), "concierge"),
+        (("авто",), "auto"),
+        (("привилегии на выбор", "опци"), "addons"),
+        (("другие привилегии", "прочие привилегии"), "ecosystem"),
+        (("услови", "остатк", "учет", "оборот"), "entry_conditions"),
+        (("пакет", "позиционир"), "positioning"),
+    ]
+    SKIP_LABELS = ("брокер", "описание на сайте")
+
+    def parse(self, html: str, tier: dict, bank: dict) -> dict:
+        soup = BeautifulSoup(html, "html.parser")
+        result = {field_id: NOT_FOUND for field_id in BANK_FIELDS}
+
+        # Заголовок уровня (h1/h3) — самое точное позиционирование
+        h1 = soup.find("h1")
+        h3 = h1.find_next("h3") if h1 else None
+        title_parts = [normalize_text(h.get_text(" ", strip=True))
+                       for h in (h1, h3) if h]
+        if title_parts:
+            result["positioning"] = " — ".join(title_parts)[:MAX_VALUE_LEN]
+
+        for dl in soup.find_all("dl"):
+            for dt in dl.find_all("dt"):
+                dd = dt.find_next_sibling("dd")
+                if dd is None:
+                    continue
+                label = normalize_text(dt.get_text(" ", strip=True))
+                value = normalize_text(dd.get_text(" | ", strip=True))
+                if not label or not value:
+                    continue
+                self._assign(result, label, value)
+
+        # Стоимость обслуживания часто указана внутри условий ("... ₽ в мес")
+        if result["service_cost"] == NOT_FOUND and result["entry_conditions"] != NOT_FOUND:
+            fee = re.search(r"\d[\d\s]*₽ в мес", result["entry_conditions"])
+            if fee:
+                result["service_cost"] = fee.group(0)
+        return result
+
+    def _assign(self, result: dict, label: str, value: str):
+        low = label.lower()
+        if any(m in low for m in self.SKIP_LABELS):
+            return
+        for markers, field_id in self.LABEL_MAP:
+            if any(m in low for m in markers):
+                break
+        else:
+            field_id = "other_notes"
+            value = f"{label}: {value}"
+        entry = value[:MAX_VALUE_LEN]
+        if result[field_id] == NOT_FOUND:
+            result[field_id] = entry
+        else:
+            result[field_id] = (result[field_id] + " ; " + entry)[:MAX_VALUE_LEN * 2]
+
+
+# Реестр специализированных парсеров: bank_id -> parser.
+PARSER_REGISTRY = {}
+
+_default_parser = GenericParser()
+_pbi_parser = PremiumBankingInfoParser()
+
+
+def parse_tier(html: str, tier: dict, bank: dict, source_url: str = "") -> dict:
+    if "premiumbanking.info" in source_url and bank["type"] != "lifestyle":
+        return _pbi_parser.parse(html, tier, bank)
+    parser = PARSER_REGISTRY.get(bank["id"], _default_parser)
+    return parser.parse(html, tier, bank)
+
+
+def empty_result(bank: dict) -> dict:
+    """Результат для недоступного источника: все поля 'не найдено'."""
+    fields = LIFESTYLE_FIELDS if bank["type"] == "lifestyle" else BANK_FIELDS
+    result = {field_id: NOT_FOUND for field_id in fields}
+    if bank["type"] == "lifestyle":
+        result["bank_overlap"] = NOT_FOUND
+    return result
