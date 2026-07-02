@@ -191,11 +191,10 @@ class PremiumBankingInfoParser:
                 elif joined.lower() not in result[field_id].lower():
                     result[field_id] = (result[field_id] + " ; " + joined)[:MAX_VALUE_LEN * 2]
 
-        # Страница уровня на ПБИ описывает состав пакета исчерпывающе:
-        # если консьерж нигде не упомянут — фиксируем отсутствие явно
-        if result["concierge"] == NOT_FOUND and "консьерж" not in text.lower():
-            result["concierge"] = ("нет — консьерж не указан в составе пакета "
-                                   "(по странице уровня ПБИ)")
+        # Отсутствие услуги НЕ выводим из молчания источника: страница уровня
+        # ПБИ не всегда перечисляет консьерж и т.п. (ложные «нет» были у
+        # Т-Банка и Альфы). Отсутствие фиксируется только верифицированной
+        # записью в scanner/curated.py (значение «—» с обоснованием).
 
     def _assign(self, result: dict, label: str, value: str):
         low = label.lower()

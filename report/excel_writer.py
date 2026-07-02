@@ -27,6 +27,7 @@ from scanner.sources import (
     BANKS,
     LIFESTYLE_FIELDS,
     NOT_FOUND,
+    REFERENCE_FIELDS,
     SEGMENTS,
 )
 
@@ -55,6 +56,7 @@ def write_report(history: dict, output_path: Path):
     _write_bank_sheets(wb, results)
     _write_lifestyle(wb, results)
     _write_changelog(wb, history.get("changelog", []))
+    _write_manual_check(wb, results)
     _write_methodology(wb, results)
     _write_meta(wb, history)
 
@@ -262,6 +264,47 @@ def _write_changelog(wb, changelog):
             cell = _write_value_cell(ws, row, col, value)
             if "ручное уточнение" in str(change.get("source", "")) and col == 8:
                 cell.fill = DIVERGENT_FILL
+
+
+def _write_manual_check(wb, results):
+    """Все поля со статусом «не найдено» — чтобы пробелы не терялись молча.
+    Значения «—» (подтверждённое отсутствие услуги) сюда не попадают."""
+    ws = wb.create_sheet("Требует ручной проверки")
+    headers = ["Банк/подписка", "Тир", "Поле", "Причина / что делать"]
+    for col, header in enumerate(headers, start=1):
+        ws.cell(row=1, column=col, value=header)
+    _style_header_row(ws, len(headers))
+    _set_widths(ws, [24, 26, 38, 70])
+    ws.freeze_panes = "A2"
+
+    all_labels = {**{k: v["label"] for k, v in BANK_FIELDS.items()},
+                  **{k: v["label"] for k, v in LIFESTYLE_FIELDS.items()},
+                  "bank_overlap": "Пересечения с банковскими привилегиями"}
+    row = 2
+    for bank in BANKS:
+        for tier in bank["tiers"]:
+            entry = results.get(tier["tier_id"])
+            if not entry:
+                continue
+            for fid, field in entry["fields"].items():
+                if field_value(field) != NOT_FOUND:
+                    continue
+                if entry.get("sources_ok", 0) == 0:
+                    reason = ("все источники недоступны (антибот/блокировка) — "
+                              "проверить вручную или найти зеркальный источник")
+                elif fid in REFERENCE_FIELDS:
+                    reason = "справочное поле — заполняется при появлении данных"
+                else:
+                    reason = ("целевой поиск публичных данных результата не дал — "
+                              "проверить тарифные PDF банка / запросить у банка")
+                values = [entry["bank"], entry["tier"], all_labels.get(fid, fid),
+                          reason]
+                for col, value in enumerate(values, start=1):
+                    _write_value_cell(ws, row, col, value)
+                row += 1
+    if row == 2:
+        ws.cell(row=2, column=1, value="Пробелов нет — все поля заполнены "
+                                       "или помечены как отсутствующие")
 
 
 def _write_methodology(wb, results):

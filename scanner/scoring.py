@@ -186,6 +186,8 @@ def score_tier(fields: dict) -> dict:
         text = field_value(fields.get(category, NOT_FOUND))
         if text == NOT_FOUND:
             metric, score = "не найдено", 0
+        elif text.strip().startswith("—"):
+            metric, score = "отсутствует по условиям тира", 0
         else:
             metric, score = SCORERS[category](text)
         contribution = round(score * weight, 3)

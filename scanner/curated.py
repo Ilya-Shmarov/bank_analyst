@@ -208,5 +208,324 @@ CURATED_FACTS = {
 }
 
 
+# ============================================================================
+# КОНКУРЕНТЫ — целевое дозаполнение пустых полей (2026-07-02).
+# Значение «— (…)» = услуга отсутствует по официальным условиям тира
+# (НЕ путать с «не найдено» — то уходит в лист «Требует ручной проверки»).
+# ============================================================================
+
+def _fact(value, url, note=""):
+    return {"value": value, "source_url": url,
+            "date_checked": _CHECKED, "note": note}
+
+
+def _free_on_conditions(pbi_url):
+    return _fact("0 ₽ — бесплатно при выполнении условий уровня (остаток/траты/"
+                 "акции определяют сам уровень, отдельная плата не предусмотрена)",
+                 pbi_url, "Выведено из условий входа уровня (ПБИ)")
+
+
+# ---------- Т-Банк ----------
+_TBANK_PREMIUM = "https://www.tbank.ru/tinkoff-premium/"
+_TBANK_SERVICES = "https://www.tbank.ru/bank/help/general/premium/services/"
+_TBANK_CARD = ("https://www.tbank.ru/tinkoff-premium/cards/debit-cards/"
+               "tinkoff-black-premium/")
+
+_TBANK_SHARED = {
+    "concierge": _fact(
+        "Есть — круглосуточная консьерж-служба с личным ассистентом "
+        "(бронирования, билеты, подбор специалистов) + премиальная "
+        "поддержка выделенной командой",
+        _TBANK_PREMIUM,
+        "Ложное «нет» из автопарсинга ПБИ исправлено по официальному сайту"),
+    "cashback": _fact(
+        "Базовая программа кэшбэка Т-Банка (1–30% по категориям и партнёрам); "
+        "с Premium лимит кэшбэка повышен до 60 000 ₽/мес по картам Black Premium",
+        _TBANK_PREMIUM,
+        "Лимит без Premium — 30 000 ₽/мес"),
+    "deposits": _fact(
+        "Повышенная доходность по вкладам для клиентов Premium "
+        "(маркетинговое «до 15%» на странице Premium; базовая линейка вкладов "
+        "до 12% на дату проверки). Точная надбавка — в тарифах",
+        _TBANK_PREMIUM,
+        "Ставки меняются вслед за КС ЦБ"),
+    "card_terms": _fact(
+        "Металлическая дебетовая карта Black Premium для клиентов Premium. "
+        "Снятие наличных: в банкоматах Т-Банка без ограничений, в чужих — "
+        "до 500 000 ₽ за расчётный период без комиссии",
+        _TBANK_CARD, ""),
+    "auto": _fact(
+        "— (автоуслуги не входят в состав сервиса Premium по официальному "
+        "перечню услуг)",
+        _TBANK_SERVICES, "Отсутствие по официальным условиям"),
+    "addons": _fact(
+        "— (докупаемых опций нет: Premium — единая подписка, уровни статуса "
+        "определяются остатком/активами)",
+        _TBANK_PREMIUM, "Отсутствие по официальным условиям"),
+}
+
+# ---------- ВТБ (Привилегия, уровни 1–4) ----------
+_VTB_SERVICES = "https://www.vtb.ru/privilegia/premialnye-servisy/"
+_VTB_CARD = ("https://www.vtb.ru/privilegia/karty/debetovye/"
+             "privilegiya-mir-supreme/")
+_VTB_MAIN = "https://www.vtb.ru/privilegia/"
+
+_VTB_PRIVILEGE_SHARED = {
+    "concierge": _fact(
+        "Есть — круглосуточный консьерж-сервис, бесплатно для всех клиентов "
+        "«Привилегии»: юридическая, деловая и медицинская поддержка, "
+        "путешествия/досуг, детский консьерж",
+        _VTB_SERVICES, ""),
+    "cashback": _fact(
+        "Кэшбэк 1–15% рублями в 3 категориях (4 для зарплатных клиентов) "
+        "на выбор из 9; по отдельным категориям лимиты "
+        "(например, «Такси» — до 1 000 ₽/мес)",
+        _VTB_CARD, "Начисляется рублями, не мультибонусами"),
+    "deposits": _fact(
+        "Накопительный ВТБ-Счёт до 13,75% годовых (повышенная ставка за "
+        "покупки по карте); опция «Сбережения»: надбавка +1–3 п.п. к ставке "
+        "в зависимости от оборота по карте. Ставки на дату проверки",
+        _VTB_MAIN, ""),
+    "card_terms": _fact(
+        "Карта «Привилегия Mir Supreme» (есть цифровая версия). Снятие без "
+        "комиссии в банкоматах ВТБ и партнёров группы: до 350 000 ₽/день, "
+        "до 2 млн ₽/мес",
+        _VTB_CARD, ""),
+    "auto": _fact(
+        "Есть — «Помощь на дорогах»: эвакуатор, техническая и юридическая "
+        "поддержка (для поездок на личном автомобиле)",
+        _VTB_SERVICES, ""),
+}
+
+# ---------- Озон Банк (Ultra) ----------
+_OZON_PRODUCTS = "https://finance.ozon.ru/products"
+_OZON_HELP = "https://help-bank.ozon.ru/individuals/bonuses-and-promotions"
+
+_OZONBANK_SHARED = {
+    "cashback": _fact(
+        "Кэшбэк рублями: общий лимит для Ultra до 50 000 ₽/мес, до 10 "
+        "категорий на выбор ежемесячно (лимит по одной категории 10 000 "
+        "₽/мес), «1% на всё» в рамках общего лимита. Выплата реальными "
+        "рублями (можно снять/перевести)",
+        _OZON_HELP, ""),
+    "card_terms": _fact(
+        "Карта Ozon: для Ultra повышенный лимит на снятие наличных без "
+        "комиссии в любых банкоматах и увеличенный лимит по счёту "
+        "(конкретные суммы по уровням — в тарифах)",
+        _OZON_PRODUCTS, ""),
+    "auto": _fact(
+        "— (автоуслуги не входят в состав Ultra по официальному описанию "
+        "программы: менеджер, поддержка, страховка, бизнес-залы, "
+        "Ozon Premium, кэшбэк, лимиты)",
+        _OZON_PRODUCTS, "Отсутствие по официальным условиям"),
+    "concierge": _fact(
+        "— (консьерж-сервис не заявлен в составе Ultra; вместо него — "
+        "персональный менеджер и круглосуточная поддержка)",
+        _OZON_PRODUCTS, "Отсутствие по официальному составу программы"),
+    "addons": _fact(
+        "— (докупаемых опций нет: уровни Ultra определяются остатком, "
+        "подписка Ozon Premium уже включена)",
+        _OZON_PRODUCTS, "Отсутствие по официальным условиям"),
+}
+
+# ---------- Газпромбанк ----------
+_GPB_BONUS = "https://www.gazprombank.ru/premium/gazprom-bonus/"
+
+# ---------- Альфа-Банк ----------
+_ALFA_ONLY = "https://alfabank.ru/everyday/alfa-only/"
+_ALFA_CONCIERGE = "https://alfabank.ru/everyday/package/premium/konserzh-servis/"
+_PBI_ACLUB = "https://premiumbanking.info/alfabank/5"
+
+_ALFA_CONCIERGE_FACT = _fact(
+    "Есть — консьерж-сервис для клиентов Alfa Only (официальная страница "
+    "«Консьерж-сервис — премиум-услуги для клиентов Alfa Only»)",
+    _ALFA_CONCIERGE,
+    "Ложное «нет» из автопарсинга ПБИ исправлено по официальному сайту")
+
+_ALFA_ADDONS_ABSENT = _fact(
+    "— (докупаемых опций нет: набор привилегий Alfa Only фиксированный — "
+    "Lounge, металлическая карта, партнёрские программы, премиальный вклад, "
+    "привилегии в ресторанах)",
+    _ALFA_ONLY, "Отсутствие по официальному составу пакета")
+
+# ---------- Райффайзен ----------
+_RAIF_PREMIUM = "https://www.raiffeisen.ru/premium/"
+
+_RAIF_ADDONS_ABSENT = _fact(
+    "— (докупаемых опций нет: Premium — фиксированный пакет, различаются "
+    "только способы бесплатного входа: плата/траты/остаток)",
+    _RAIF_PREMIUM, "Отсутствие по официальным условиям")
+
+# ---------- Lifestyle ----------
+_OZON_PREMIUM_DOCS = ("https://docs.ozon.ru/common/pravila-prodayoi-i-rekvizity/"
+                      "usloviya-podpiski-na-ozon-premium/")
+_WB_CLUB_NEWS = "https://oborot.ru/news/chto-takoe-wb-klub-razbiraemsya-chto-daet-podpiska-za-199-rublej-v-mesyac-pokupatelyam-wildberries-i222045.html"
+_YANDEX_PLUS_SUPPORT = "https://yandex.ru/support/plus-ru/ru/cashback"
+
+_COMPETITOR_FACTS = {
+    # ----- Т-Банк -----
+    "tbank_bronze": dict(_TBANK_SHARED),
+    "tbank_silver": {**_TBANK_SHARED,
+                     "service_cost": _free_on_conditions(
+                         "https://premiumbanking.info/tbank/2")},
+    "tbank_gold": {**_TBANK_SHARED,
+                   "service_cost": _free_on_conditions(
+                       "https://premiumbanking.info/tbank/3")},
+    "tbank_diamond": {**_TBANK_SHARED,
+                      "service_cost": _free_on_conditions(
+                          "https://premiumbanking.info/tbank/4")},
+    # ----- ВТБ: Привилегия 1–4 (Прайм+ 5–8 не публикует детали — ручная проверка)
+    "vtb_privilege_1": {**_VTB_PRIVILEGE_SHARED,
+                        "addons": _fact(
+                            "— (механика выбора привилегий на уровне 1 не "
+                            "заявлена на странице уровня; появляется с "
+                            "уровней выше)",
+                            "https://premiumbanking.info/vtb/1",
+                            "Отсутствие по структуре условий уровня")},
+    "vtb_privilege_2": {**_VTB_PRIVILEGE_SHARED,
+                        "service_cost": _free_on_conditions(
+                            "https://premiumbanking.info/vtb/2")},
+    "vtb_privilege_3": {**_VTB_PRIVILEGE_SHARED,
+                        "service_cost": _free_on_conditions(
+                            "https://premiumbanking.info/vtb/3")},
+    "vtb_privilege_4": {**_VTB_PRIVILEGE_SHARED,
+                        "service_cost": _free_on_conditions(
+                            "https://premiumbanking.info/vtb/4")},
+    "vtb_prime_6": {"service_cost": _free_on_conditions(
+        "https://premiumbanking.info/vtb/6")},
+    "vtb_prime_7": {"service_cost": _free_on_conditions(
+        "https://premiumbanking.info/vtb/7")},
+    "vtb_prime_8": {"service_cost": _free_on_conditions(
+        "https://premiumbanking.info/vtb/8")},
+    # ----- Озон Банк -----
+    "ozonbank_ultra_bronze": dict(_OZONBANK_SHARED),
+    "ozonbank_ultra_silver": {**_OZONBANK_SHARED,
+                              "service_cost": _free_on_conditions(
+                                  "https://premiumbanking.info/ozon/2")},
+    "ozonbank_ultra_gold": {**_OZONBANK_SHARED,
+                            "service_cost": _free_on_conditions(
+                                "https://premiumbanking.info/ozon/3")},
+    "ozonbank_ultra_platinum": {**_OZONBANK_SHARED,
+                                "service_cost": _free_on_conditions(
+                                    "https://premiumbanking.info/ozon/4")},
+    # ----- Газпромбанк Private -----
+    "gpb_private": {
+        "service_cost": _free_on_conditions(
+            "https://premiumbanking.info/gazprombank/4"),
+        "cashback": _fact(
+            "Программа лояльности «Умный кэшбэк» (Газпром Бонус «Премиум»): "
+            "до 15% + до 7% от ПС «Мир» в ресторанах, суммарно до 22%, "
+            "лимит 40 000 ₽/мес",
+            _GPB_BONUS,
+            "Детализация именно для уровня Private не публикуется — "
+            "указана премиальная версия программы банка"),
+    },
+    # ----- Альфа-Банк -----
+    "alfa_only_1": {"addons": _ALFA_ADDONS_ABSENT,
+                    "concierge": _ALFA_CONCIERGE_FACT},
+    "alfa_only_2": {"addons": _ALFA_ADDONS_ABSENT,
+                    "concierge": _ALFA_CONCIERGE_FACT,
+                    "service_cost": _free_on_conditions(
+                        "https://premiumbanking.info/alfabank/2")},
+    "alfa_only_3": {"addons": _ALFA_ADDONS_ABSENT,
+                    "concierge": _ALFA_CONCIERGE_FACT,
+                    "service_cost": _free_on_conditions(
+                        "https://premiumbanking.info/alfabank/3")},
+    "alfa_only_4": {"addons": _ALFA_ADDONS_ABSENT,
+                    "concierge": _ALFA_CONCIERGE_FACT,
+                    "service_cost": _free_on_conditions(
+                        "https://premiumbanking.info/alfabank/4")},
+    "alfa_aclub": {
+        "entry_conditions": _fact(
+            "60 млн ₽ на счетах для Москвы | 30 млн ₽ для регионов "
+            "(порог после 2024 года; ранее ~6 млн ₽ среднемесячного остатка "
+            "давали доступ к части сервисов)",
+            _PBI_ACLUB, "Сверено: ПБИ /alfabank/5 и публичные материалы А-Клуба"),
+        "concierge": _fact(
+            "Есть — консьерж-сервис PRIME (входит в основные привилегии "
+            "А-Клуба, бессрочно)",
+            _ALFA_CONCIERGE, ""),
+        "card_terms": _fact(
+            "Металлическая карта: в линейке Alfa Only заказывается через "
+            "персонального менеджера при среднемесячном остатке от 3 млн ₽; "
+            "для клиентов A-Club доступна в составе обслуживания",
+            _ALFA_ONLY, "Лимиты переводов/снятия A-Club не публикуются"),
+        "addons": _ALFA_ADDONS_ABSENT,
+        "service_cost": _free_on_conditions(_PBI_ACLUB),
+    },
+    # ----- Райффайзен -----
+    "raif_premium_1": {"addons": _RAIF_ADDONS_ABSENT},
+    "raif_premium_2": {"addons": _RAIF_ADDONS_ABSENT,
+                       "service_cost": _free_on_conditions(
+                           "https://premiumbanking.info/raiffeisen/2")},
+    "raif_premium_3": {"addons": _RAIF_ADDONS_ABSENT,
+                       "service_cost": _free_on_conditions(
+                           "https://premiumbanking.info/raiffeisen/3")},
+    # ----- Lifestyle -----
+    "yandex_plus_main": {
+        "delivery": _fact(
+            "Бесплатная доставка из Яндекс Лавки; кэшбэк баллами 5% на "
+            "Маркете (1 балл = 1 ₽ в сервисах Яндекса)",
+            _YANDEX_PLUS_SUPPORT, ""),
+        "taxi": _fact(
+            "Кэшбэк баллами 5% в Яндекс Такси (Go), 10% в Еде, 5% в Лавке; "
+            "баллы тратятся в такси и других сервисах",
+            _YANDEX_PLUS_SUPPORT, ""),
+    },
+    "ozon_premium_main": {
+        "price": _fact(
+            "199 ₽/мес при помесячной оплате; 1 490 ₽/год (≈124 ₽/мес) при "
+            "годовой. Периоды подписки: 30/91/182/365 дней",
+            _OZON_PREMIUM_DOCS, "Сайт ozon.ru закрыт антиботом — данные из "
+                                "официальных условий подписки (docs.ozon.ru)"),
+        "delivery": _fact(
+            "Бесплатная курьерская доставка без минимальной суммы заказа; "
+            "увеличенный срок возврата до 60 дней; приоритетная поддержка; "
+            "ранний доступ к распродажам и закрытые скидки",
+            _OZON_PREMIUM_DOCS, ""),
+        "cashback": _fact(
+            "— (кэшбэк-механика не заявлена в официальных условиях подписки; "
+            "денежная выгода — через закрытые скидки и ранний доступ к "
+            "распродажам)",
+            _OZON_PREMIUM_DOCS, "Отсутствие по официальным условиям"),
+        "entertainment": _fact(
+            "— (развлекательные сервисы не входят в состав Ozon Premium по "
+            "официальным условиям подписки)",
+            _OZON_PREMIUM_DOCS, "Отсутствие по официальным условиям"),
+        "taxi": _fact(
+            "— (такси/транспорт не входят в состав Ozon Premium)",
+            _OZON_PREMIUM_DOCS, "Отсутствие по официальным условиям"),
+        "bank_overlap": _fact(
+            "доставка товаров без мин. суммы (vs возмещение Самоката и опций "
+            "доставки); закрытые скидки/ранние распродажи (vs кэшбэк "
+            "банковских пакетов)",
+            _OZON_PREMIUM_DOCS, "Оценка пересечений по составу подписки"),
+    },
+    "wb_club": {
+        "price": _fact(
+            "199 ₽/мес (первый месяц 1 ₽); годовая — 159 ₽/мес "
+            "(1 908 ₽/год)",
+            _WB_CLUB_NEWS, "Сайт wildberries.ru закрыт антиботом — данные "
+                           "из публичных материалов о запуске WB Клуба"),
+        "cashback": _fact(
+            "Механика скидок вместо кэшбэка: дополнительные скидки до 31% "
+            "на товары, суммируются с персональными предложениями и акциями",
+            _WB_CLUB_NEWS, ""),
+        "entertainment": _fact(
+            "— (развлекательные сервисы не входят в состав WB Клуба)",
+            _WB_CLUB_NEWS, "Отсутствие по официальным условиям"),
+        "taxi": _fact(
+            "— (такси/транспорт не входят в состав WB Клуба)",
+            _WB_CLUB_NEWS, "Отсутствие по официальным условиям"),
+        "bank_overlap": _fact(
+            "скидки на повседневные покупки (vs кэшбэк банковских пакетов); "
+            "приоритетная поддержка (vs премиальная линия банка)",
+            _WB_CLUB_NEWS, "Оценка пересечений по составу подписки"),
+    },
+}
+
+CURATED_FACTS.update(_COMPETITOR_FACTS)
+
+
 def curated_for(tier_id: str) -> dict:
     return CURATED_FACTS.get(tier_id, {})

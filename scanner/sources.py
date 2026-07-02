@@ -27,6 +27,10 @@ REQUEST_TIMEOUT = 20
 
 NOT_FOUND = "не найдено"
 
+# Справочные поля: не участвуют в контуре «дозаполнить или отправить в
+# ручную проверку» (не являются привилегиями)
+REFERENCE_FIELDS = {"aggregator_value", "other_notes", "last_change_date"}
+
 # Сегменты капитала в порядке отображения в сводной таблице
 SEGMENTS = ["0–3 млн ₽", "3–10 млн ₽", "10–25 млн ₽", "25–100 млн ₽"]
 
@@ -355,6 +359,7 @@ BANKS = [
                 "sources": [
                     _src("official", "https://alfabank.ru/aclub/",
                          "https://www.aclub.ru/"),
+                    _src("pbi", "https://premiumbanking.info/alfabank/5"),
                 ],
             },
         ],

@@ -151,6 +151,7 @@ def run_scan(mode: str, bank_id: str = None):
         prev = history["scans"][-1]
         changes = schema_changes(prev, new_scan, field_labels)
         changes += diff_results(prev, new_scan, field_labels)
+        changes += _fill_stats_entries(changes, new_scan)
         history["changelog"].extend(changes)
 
     fields_updated = sum(
@@ -172,6 +173,39 @@ def run_scan(mode: str, bank_id: str = None):
     log.info("Изменений с прошлого скана: %d", len(changes))
     log.info("Отчёт: %s", OUTPUT_PATH)
     log.info("История: %s", HISTORY_PATH)
+
+
+def _fill_stats_entries(changes: list, new_scan: dict) -> list:
+    """Системные записи changelog: итог целевого дозаполнения по банкам —
+    сколько пустых полей закрыто, сколько осталось на ручную проверку."""
+    closed = {}
+    for c in changes:
+        if (c.get("bank") != "— система —" and c.get("old") == sources.NOT_FOUND
+                and c.get("new") != sources.NOT_FOUND):
+            closed[c["bank"]] = closed.get(c["bank"], 0) + 1
+
+    remaining = {}
+    for entry in new_scan["results"].values():
+        n = sum(1 for fid, f in entry["fields"].items()
+                if fid not in sources.REFERENCE_FIELDS
+                and (f.get("value") if isinstance(f, dict) else f) == sources.NOT_FOUND)
+        if n:
+            remaining[entry["bank"]] = remaining.get(entry["bank"], 0) + n
+
+    stats = []
+    for bank_name, n_closed in sorted(closed.items()):
+        n_rest = remaining.get(bank_name, 0)
+        stats.append({
+            "scan_date": new_scan["date"],
+            "prev_date": "",
+            "bank": "— система —",
+            "tier": bank_name,
+            "field": "целевое дозаполнение пустых полей",
+            "old": f"было пустых: {n_closed + n_rest}",
+            "new": f"закрыто: {n_closed}; осталось на ручную проверку: {n_rest}",
+            "source": "итог дозаполнения",
+        })
+    return stats
 
 
 def list_sources():
