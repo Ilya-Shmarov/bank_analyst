@@ -527,95 +527,373 @@ _COMPETITOR_FACTS = {
 CURATED_FACTS.update(_COMPETITOR_FACTS)
 
 # ============================================================================
-# МЕЖДУНАРОДНЫЕ БАНКИ (2026-07-02). Пороги — в оригинальной валюте
-# (пересчёт — по курсам ЦБ на дату скана, лист «Методика»). «Не публикуется»
-# для private-banking — особенность модели (индивидуальные условия), это
-# НЕ «не найдено».
+# DIGITAL-FIRST НЕОБАНКИ — Revolut, N26, Wise, Monzo (проверено 2026-07-02).
+# Требование блока: НИ ОДНОГО «не найдено» — каждое поле либо заполнено с
+# source_url, либо «—» с пометкой «не предусмотрено моделью продукта».
+# Линейки сверены с официальными сайтами: у Monzo текущие планы —
+# Extra/Perks/Max (Plus/Premium из вводной упразднены в 2024), у N26 тир
+# You переименован в Go. Цены — в валюте страны (UK £ / ЕС €).
 # ============================================================================
 
-_NOT_PUBLISHED_PB = (
-    "Не публикуется — обслуживание по индивидуальному предложению/приглашению "
-    "(стандартная модель международного private banking: тарифной сетки в "
-    "открытом доступе нет, условия обсуждаются с банком)")
+_NA = "— (не предусмотрено моделью продукта)"
 
-_INTL_FACTS = {
-    "hsbc_premier_elite": {
+
+def _na(url, note="Категория не применима к модели продукта"):
+    return _fact(_NA, url, note)
+
+
+def _ref_dashes(url):
+    """Справочные поля для digital-блока: ПБИ их не покрывает."""
+    return {
+        "aggregator_value": _fact("— (ПБИ не покрывает международные необанки)",
+                                  url, "Справочное поле"),
+        "other_notes": _fact("—", url, "Справочное поле"),
+        "last_change_date": _fact("— (история изменений не отслеживается "
+                                  "для международного блока)", url,
+                                  "Справочное поле"),
+    }
+
+
+# ---------- Revolut ----------
+_REV_PRICING = "https://www.revolut.com/our-pricing-plans/"
+_REV_PREMIUM = "https://www.revolut.com/revolut-premium/"
+_REV_ULTRA = "https://www.revolut.com/ultra-plan/"
+_REV_LOUNGES = "https://www.revolut.com/lounges/"
+
+_REV_SHARED = {
+    "concierge": _na(_REV_PRICING, "Консьерж-сервис не входит ни в один "
+                                   "план Revolut"),
+    "auto": _na(_REV_PRICING),
+    "taxi_restaurants": _na(_REV_PRICING, "Компенсации такси/ресторанов "
+                                          "не предусмотрены моделью"),
+    "addons": _fact(
+        "Разовые платные сервисы в приложении (например, lounge-пассы "
+        "DragonPass); пакетных докупаемых опций нет — вместо этого апгрейд "
+        "на следующий план",
+        _REV_LOUNGES, ""),
+    **_ref_dashes(_REV_PRICING),
+}
+
+_DIGITAL_REVOLUT = {
+    "revolut_premium": {
+        **_REV_SHARED,
         "positioning": _fact(
-            "Верхний retail-wealth уровень HSBC; заменил HSBC Jade с декабря "
-            "2023 (существующие клиенты Jade переведены без потери привилегий)",
-            "https://www.hsbc.com.hk/jade/",
-            "Смена бренда Jade → Premier Elite подтверждена FAQ банка"),
+            "Первый платный уровень Revolut — travel/daily-banking подписка "
+            "для активно путешествующего массового клиента",
+            _REV_PREMIUM, ""),
         "entry_conditions": _fact(
-            "От US$1 млн инвестируемых активов (в Гонконге — Total Relationship "
-            "Balance от HKD 7,8 млн). Порог в оригинальной валюте",
-            "https://www.hsbc.com.hk/jade/",
-            "Пересчёт в ₽ — по курсу ЦБ на дату скана (метаданные скана)"),
+            "Подписка без требований к остатку: £7,99/мес или £80/год (UK; "
+            "тарифы зависят от страны)", _REV_PREMIUM, ""),
+        "service_cost": _fact("£7,99/мес или £80/год (UK)", _REV_PREMIUM, ""),
+        "lounge_access": _fact(
+            "Проходы DragonPass покупаются со скидкой в приложении + "
+            "SmartDelay: бесплатный доступ в зал при задержке рейса от 1 часа",
+            _REV_LOUNGES, "Бесплатных визитов в пакете нет"),
+        "cashback": _fact(
+            "Баллы RevPoints за покупки по повышенному курсу относительно "
+            "Standard (точный курс — в приложении; максимум по линейке — "
+            "1 балл/£1 на Ultra); обмен на мили и перки",
+            _REV_PRICING, ""),
+        "card_terms": _fact(
+            "Дебетовая карта премиального дизайна; лимит бесплатных снятий "
+            "в банкоматах до £400/мес (далее комиссия); виртуальные и "
+            "одноразовые карты",
+            _REV_PREMIUM, ""),
+        "deposits": _fact(
+            "Savings-счета: ставка зависит от плана и валюты — линейка от "
+            "~2,9% (Standard) до 4% годовых (Ultra); Premium — промежуточная "
+            "ставка, точное значение в приложении на дату",
+            _REV_PRICING, "Ставки плавающие"),
+        "insurance": _fact(
+            "Страхование путешествий входит начиная с Premium (медицинские "
+            "расходы, задержки рейса/багажа); детали в Insurance Policy плана",
+            _REV_PREMIUM, ""),
+        "ecosystem": _fact(
+            "Мультивалютный обмен по выгодным лимитам, международные "
+            "переводы, партнёрские перки и скидки в приложении",
+            _REV_PREMIUM, ""),
     },
-    "citi_citigold": {
+    "revolut_metal": {
+        **_REV_SHARED,
+        "positioning": _fact(
+            "Средний платный уровень Revolut — расширенный travel-пакет с "
+            "металлической картой", _REV_PRICING, ""),
         "entry_conditions": _fact(
-            "Минимальный среднемесячный совокупный баланс от US$200 000 на "
-            "связанных депозитных, пенсионных и инвестиционных счетах",
-            "https://www.citi.com/banking/citigold", ""),
+            "Подписка без требований к остатку: £14,99/мес (UK)",
+            _REV_PRICING, ""),
+        "service_cost": _fact("£14,99/мес (UK)", _REV_PRICING, ""),
+        "lounge_access": _fact(
+            "Проходы DragonPass со скидкой + SmartDelay (бесплатный зал при "
+            "задержке рейса)", _REV_LOUNGES, ""),
+        "cashback": _fact(
+            "Баллы RevPoints по курсу выше, чем на Premium (точный курс в "
+            "приложении); обмен на мили и перки", _REV_PRICING, ""),
+        "card_terms": _fact(
+            "Металлическая карта (эксклюзив уровня, одна на клиента); лимит "
+            "бесплатных снятий ×4 от Standard-плана",
+            "https://help.revolut.com/en-US/help/profile-and-plan/my-plan-benefits/revolut-plans1/metal-plan/",
+            ""),
+        "deposits": _fact(
+            "Savings-счета со ставкой выше Premium (линейка до 4% на Ultra; "
+            "точная ставка в приложении)", _REV_PRICING, "Ставки плавающие"),
+        "insurance": _fact(
+            "Расширенное страхование путешествий (медицина, задержки, багаж) "
+            "— шире пакета Premium", _REV_PRICING, ""),
+        "ecosystem": _fact(
+            "Всё из Premium + расширенные партнёрские перки",
+            _REV_PRICING, ""),
     },
-    "citi_cpc": {
+    "revolut_ultra": {
+        **_REV_SHARED,
+        "positioning": _fact(
+            "Топ-план Revolut для affluent-клиента: платиновое покрытие "
+            "карты, максимальные лимиты, перки «стоимостью до £4 290/год»",
+            _REV_ULTRA, ""),
         "entry_conditions": _fact(
-            "Минимальный среднемесячный совокупный баланс от US$1 млн",
-            "https://www.citi.com/banking/citigold-private-client", ""),
-    },
-    "citi_private_bank": {
-        "entry_conditions": _fact(_NOT_PUBLISHED_PB,
-                                  "https://www.privatebank.citibank.com/",
-                                  "Особенность модели, не пробел данных"),
-    },
-    "chase_private_client": {
-        "entry_conditions": _fact(
-            "Среднедневной баланс от US$150 000 в счетах и инвестициях Chase",
-            "https://www.chase.com/personal/checking/private-client", ""),
-    },
-    "jpm_private_bank": {
-        "entry_conditions": _fact(_NOT_PUBLISHED_PB,
-                                  "https://privatebank.jpmorgan.com/",
-                                  "Особенность модели, не пробел данных"),
-    },
-    "bofa_preferred_rewards": {
-        "entry_conditions": _fact(
-            "Многоуровневая программа по совокупному балансу: младшие уровни "
-            "от ~US$20–30 тыс, высший уровень — от US$1 млн",
-            "https://www.bankofamerica.com/preferred-rewards/",
-            "Точные названия/пороги уровней сверять на официальной странице "
-            "при следующем скане"),
-    },
-    "bofa_private_bank": {
-        "entry_conditions": _fact(_NOT_PUBLISHED_PB,
-                                  "https://www.privatebank.bankofamerica.com/",
-                                  "Особенность модели, не пробел данных"),
-    },
-    "ubs_gwm": {
-        "entry_conditions": _fact(_NOT_PUBLISHED_PB,
-                                  "https://www.ubs.com/global/en/wealth-management.html",
-                                  "Крупнейший private banking мира после "
-                                  "объединения с Credit Suisse"),
-    },
-    "sc_priority": {
-        "entry_conditions": _fact(
-            "От S$200 000 в депозитах и/или инвестициях (или ипотека от "
-            "S$1,5 млн в банке) — условия для Сингапура",
-            "https://www.sc.com/sg/priority-banking/",
-            "Пороги отличаются по странам присутствия"),
-    },
-    "db_wealth": {
-        "entry_conditions": _fact(_NOT_PUBLISHED_PB,
-                                  "https://www.deutschewealth.com/",
-                                  "Особенность модели, не пробел данных"),
-    },
-    "bnp_wealth": {
-        "entry_conditions": _fact(_NOT_PUBLISHED_PB,
-                                  "https://wealthmanagement.bnpparibas/en.html",
-                                  "Особенность модели, не пробел данных"),
+            "Подписка без требований к остатку: £55/мес или £540/год (UK)",
+            _REV_ULTRA, ""),
+        "service_cost": _fact("£55/мес или £540/год (UK)", _REV_ULTRA, ""),
+        "lounge_access": _fact(
+            "SmartDelay (бесплатный зал при задержке рейса) + проходы "
+            "DragonPass в приложении; безлимитный доступ в залы в пакете "
+            "не заявлен", _REV_LOUNGES, ""),
+        "cashback": _fact(
+            "RevPoints: 1 балл за £1 трат — максимальный курс линейки; "
+            "обмен на мили авиакомпаний и перки", _REV_ULTRA, ""),
+        "card_terms": _fact(
+            "Карта с платиновым покрытием (эксклюзив Ultra); снятие в "
+            "банкоматах без комиссии до £2 000/мес", _REV_ULTRA, ""),
+        "deposits": _fact(
+            "Savings-счета до 4% годовых (максимум линейки; ставка зависит "
+            "от валюты)", _REV_PRICING, "Ставки плавающие"),
+        "insurance": _fact(
+            "Максимальный пакет: глобальная медицина, отмена поездок и "
+            "мероприятий, franchise аренды авто, зимний спорт, задержка "
+            "рейса, багаж, личная ответственность", _REV_ULTRA, ""),
+        "ecosystem": _fact(
+            "Партнёрские подписки и travel/lifestyle-перки суммарной "
+            "стоимостью до £4 290/год", _REV_ULTRA, ""),
     },
 }
 
-CURATED_FACTS.update(_INTL_FACTS)
+# ---------- N26 ----------
+_N26_GO = "https://n26.com/en-eu/you-bank-account-with-travel-insurance"
+_N26_METAL = "https://n26.com/en-eu/metal"
+_N26_PLANS = "https://n26.com/en-eu/plans"
+
+_N26_SHARED = {
+    "concierge": _na(_N26_PLANS, "Консьерж не входит ни в один план N26"),
+    "auto": _na(_N26_PLANS),
+    "taxi_restaurants": _na(_N26_PLANS),
+    "addons": _na(_N26_PLANS, "Докупаемых опций нет — апгрейд плана"),
+    "ecosystem": _fact(
+        "Партнёрские предложения и скидки в приложении; Spaces "
+        "(суб-счета-конверты) для управления деньгами", _N26_PLANS, ""),
+    **_ref_dashes(_N26_PLANS),
+}
+
+_DIGITAL_N26 = {
+    "n26_go": {
+        **_N26_SHARED,
+        "positioning": _fact(
+            "Средний платный план N26 (экс-You, переименован в Go) — счёт "
+            "с travel-страховками для путешествующих", _N26_GO, ""),
+        "entry_conditions": _fact(
+            "Подписка без требований к остатку: €9,90/мес", _N26_GO, ""),
+        "service_cost": _fact("€9,90/мес", _N26_GO, ""),
+        "lounge_access": _fact(
+            "Скидочные lounge-пассы покупаются в приложении; бесплатных "
+            "визитов в пакете нет", "https://n26.com/en-eu/travel-benefits", ""),
+        "cashback": _fact(
+            "— (кэшбэк не предусмотрен на уровне Go; 1% за платежи за "
+            "границей — только на Metal)", _N26_PLANS,
+            "Отсутствие по официальной линейке планов"),
+        "card_terms": _fact(
+            "Цветная дебетовая Mastercard; 5 бесплатных снятий в еврозоне/мес; "
+            "бесплатные снятия в иностранной валюте", _N26_GO, ""),
+        "deposits": _fact(
+            "Накопительный счёт N26 Instant Savings (ставка зависит от плана, "
+            "максимум на Metal — 1,5% p.a.; гибкий cash fund до 2,31%)",
+            _N26_PLANS, "Ставки плавающие (ЕЦБ)"),
+        "insurance": _fact(
+            "Travel-страховки Allianz: медицина в поездках, отмена поездки, "
+            "багаж (лимиты ниже пакета Metal)", _N26_GO, ""),
+    },
+    "n26_metal": {
+        **_N26_SHARED,
+        "positioning": _fact(
+            "Топ-план N26 — премиальный счёт со стальной картой и "
+            "максимальными ставками/страховками; немецкая лицензия BaFin, "
+            "защита депозитов €100 000", _N26_METAL, ""),
+        "entry_conditions": _fact(
+            "Подписка без требований к остатку: €16,90/мес", _N26_METAL, ""),
+        "service_cost": _fact("€16,90/мес", _N26_METAL, ""),
+        "lounge_access": _fact(
+            "Скидочные lounge-пассы в приложении; бесплатных визитов нет",
+            "https://n26.com/en-eu/travel-benefits", ""),
+        "cashback": _fact(
+            "1% кэшбэка за платежи картой вне EEA/UK/Швейцарии, без лимита "
+            "суммы", _N26_METAL, ""),
+        "card_terms": _fact(
+            "Стальная Mastercard 18 г; 8 бесплатных снятий в еврозоне/мес "
+            "(далее €2/снятие); безлимитные бесплатные снятия вне еврозоны",
+            _N26_METAL, ""),
+        "deposits": _fact(
+            "N26 Instant Savings 1,5% p.a. + гибкий cash fund до 2,31% p.a. "
+            "— максимальные ставки линейки", _N26_METAL, "Ставки плавающие"),
+        "insurance": _fact(
+            "Пакет Allianz: медицина до €1 млн/поездка, отмена поездки до "
+            "€10 000, багаж до €2 000, смартфон до €2 000 (кража/повреждение), "
+            "purchase protection", _N26_METAL, ""),
+    },
+}
+
+# ---------- Wise ----------
+_WISE_PRICING = "https://wise.com/us/pricing/"
+_WISE_CARD = "https://wise.com/us/card/"
+
+_DIGITAL_WISE = {
+    "wise_main": {
+        "positioning": _fact(
+            "Мультивалютный счёт без подписки — конкурент за multi-currency "
+            "lifestyle-сценарий состоятельного клиента: 40+ валют, карта, "
+            "международные переводы по mid-market курсу", _WISE_CARD, ""),
+        "entry_conditions": _fact(
+            "Подписки и требований к остатку нет — модель pay-per-use "
+            "(оплата за операции)", _WISE_PRICING, ""),
+        "service_cost": _fact(
+            "0/мес — без абонентской платы; выпуск карты €5 разово "
+            "(замена €7)", _WISE_PRICING, ""),
+        "lounge_access": _na(_WISE_PRICING, "Бизнес-залы не предусмотрены "
+                                            "моделью продукта"),
+        "concierge": _na(_WISE_PRICING),
+        "cashback": _fact(
+            "— (кэшбэк не предусмотрен моделью — ценность продукта в "
+            "mid-market курсе конвертации без наценки)", _WISE_PRICING,
+            "Отсутствие по модели продукта"),
+        "card_terms": _fact(
+            "Дебетовая карта: оплата в 40+ валютах, 160+ стран; снятия: "
+            "первые 2 снятия или £200/мес бесплатно, далее ~1,75% + £1 "
+            "(правила с мая 2026); конвертация 0,35–1,5% от mid-market",
+            _WISE_CARD, ""),
+        "deposits": _fact(
+            "Wise Interest (opt-in, остатки EUR/USD/GBP): ~3,55% на EUR "
+            "(май 2026, зависит от ставки ЕЦБ); Jars для хранения валют",
+            _WISE_PRICING, "Ставки плавающие"),
+        "insurance": _na(_WISE_PRICING, "Страхование не предусмотрено "
+                                        "моделью продукта"),
+        "auto": _na(_WISE_PRICING),
+        "taxi_restaurants": _na(_WISE_PRICING),
+        "ecosystem": _fact(
+            "Международные переводы по mid-market курсу (комиссия 0,35–1,5% "
+            "по паре валют, без наценки выходного дня); мультивалютные "
+            "реквизиты локальных счетов (IBAN/sort code/routing)",
+            _WISE_PRICING, ""),
+        "addons": _na(_WISE_PRICING, "Опций нет — pay-per-use за операции"),
+        **_ref_dashes(_WISE_PRICING),
+    },
+}
+
+# ---------- Monzo ----------
+_MONZO_PLANS = "https://monzo.com/current-account/plans"
+_MONZO_PERKS = "https://monzo.com/current-account/perks"
+_MONZO_MAX = "https://monzo.com/help/monzo-max/monzo-max-what"
+_MONZO_LOUNGE = "https://monzo.com/help/monzo-premium/how-to-airport-lounge"
+
+_MONZO_SHARED = {
+    "concierge": _na(_MONZO_PLANS, "Консьерж не входит ни в один план Monzo"),
+    "taxi_restaurants": _na(_MONZO_PLANS),
+    "addons": _fact(
+        "Max можно расширить пакетом Family (+£5/мес: страховки на членов "
+        "семьи); других докупаемых опций нет", _MONZO_MAX, ""),
+    "card_terms": _fact(
+        "Стандартная дебетовая карта Monzo (премиальных носителей в линейке "
+        "Extra/Perks/Max нет); лимиты бесплатных снятий за границей выше на "
+        "платных планах (детали в Help Centre)", _MONZO_PLANS, ""),
+    **_ref_dashes(_MONZO_PLANS),
+}
+
+_DIGITAL_MONZO = {
+    "monzo_extra": {
+        **_MONZO_SHARED,
+        "positioning": _fact(
+            "Начальный платный план Monzo (линейка Extra/Perks/Max заменила "
+            "Plus/Premium в 2024)", _MONZO_PLANS, ""),
+        "entry_conditions": _fact(
+            "Подписка без требований к остатку: £3/мес", _MONZO_PLANS, ""),
+        "service_cost": _fact("£3/мес (£36/год)", _MONZO_PLANS, ""),
+        "lounge_access": _na(_MONZO_PLANS, "Lounge-доступ — только на Max"),
+        "cashback": _fact(
+            "Billsback: возврат по оплате счетов — шанс получить счёт "
+            "оплаченным до £150/счёт в месяц (механика розыгрыша, не "
+            "фиксированный процент)", _MONZO_PLANS, ""),
+        "deposits": _fact(
+            "Сберегательные счета: стандартные ставки 2,75% AER (Instant "
+            "Access) / 3,15% AER (Select Access) — буст ставок начинается "
+            "с Perks", _MONZO_PLANS, "Ставки плавающие"),
+        "insurance": _na(_MONZO_PLANS, "Страховки — только на Max"),
+        "auto": _na(_MONZO_PLANS, "Breakdown cover — только на Max"),
+        "ecosystem": _fact(
+            "Connected banks (агрегация чужих счетов), credit insights, "
+            "Billsback", _MONZO_PLANS, ""),
+    },
+    "monzo_perks": {
+        **_MONZO_SHARED,
+        "positioning": _fact(
+            "Средний план Monzo — lifestyle-перки повседневного использования",
+            _MONZO_PERKS, ""),
+        "entry_conditions": _fact(
+            "Подписка без требований к остатку: £7/мес", _MONZO_PERKS, ""),
+        "service_cost": _fact("£7/мес (£84/год)", _MONZO_PERKS, ""),
+        "lounge_access": _na(_MONZO_PLANS, "Lounge-доступ — только на Max"),
+        "cashback": _fact(
+            "Billsback до £150/счёт в месяц + натуральные перки: еженедельный "
+            "Greggs, годовой Railcard, ежемесячный билет Vue, подписка "
+            "Uber One", _MONZO_PERKS, ""),
+        "deposits": _fact(
+            "Буст ставок +0,50% AER: 3,25% AER Instant Access / до 3,65% "
+            "AER Select Access", _MONZO_PERKS, "Ставки плавающие"),
+        "insurance": _na(_MONZO_PLANS, "Страховки — только на Max"),
+        "auto": _na(_MONZO_PLANS, "Breakdown cover — только на Max"),
+        "ecosystem": _fact(
+            "Всё из Extra + Greggs/Railcard/Vue/Uber One — прямая аналогия "
+            "механики «опций» рублёвых банков", _MONZO_PERKS, ""),
+    },
+    "monzo_max": {
+        **_MONZO_SHARED,
+        "positioning": _fact(
+            "Топ-план Monzo — страховой пакет + travel-перки (аналог "
+            "packaged account)", _MONZO_MAX, ""),
+        "entry_conditions": _fact(
+            "Подписка без требований к остатку: £17/мес (Max) или £22/мес "
+            "(Max with Family)", _MONZO_MAX, ""),
+        "service_cost": _fact("£17/мес (£204/год); Family — £22/мес",
+                              _MONZO_MAX, ""),
+        "lounge_access": _fact(
+            "Скидочный доступ LoungeKey: 1 100+ залов по фиксированной цене "
+            "£24/чел/визит (бесплатных визитов нет)", _MONZO_LOUNGE, ""),
+        "cashback": _fact(
+            "Billsback до £150/счёт в месяц + перки Perks (Greggs, Railcard, "
+            "Vue, Uber One)", _MONZO_MAX, ""),
+        "deposits": _fact(
+            "Бустнутые ставки: 3,25% AER Instant Access / до 3,65% AER "
+            "Select Access", _MONZO_MAX, "Ставки плавающие"),
+        "insurance": _fact(
+            "Worldwide travel insurance + страховка телефона; членов семьи "
+            "можно добавить за +£5/мес", _MONZO_MAX, ""),
+        "auto": _fact(
+            "Breakdown cover UK & Europe (помощь на дорогах — эвакуация/"
+            "техпомощь) — входит в Max", _MONZO_MAX, ""),
+        "ecosystem": _fact(
+            "Всё из Extra и Perks + страховой пакет; connected banks, "
+            "credit insights", _MONZO_MAX, ""),
+    },
+}
+
+CURATED_FACTS.update(_DIGITAL_REVOLUT)
+CURATED_FACTS.update(_DIGITAL_N26)
+CURATED_FACTS.update(_DIGITAL_WISE)
+CURATED_FACTS.update(_DIGITAL_MONZO)
 
 
 def curated_for(tier_id: str) -> dict:

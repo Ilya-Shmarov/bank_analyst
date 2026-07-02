@@ -20,6 +20,8 @@ from pathlib import Path
 from scanner import sources
 from scanner.curated import curated_for
 from scanner.diff import (
+    MAX_SERVICE_LOG,
+    append_log,
     diff_results,
     load_history,
     merge_partial_scan,
@@ -36,6 +38,8 @@ BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
 RAW_DIR = DATA_DIR / "raw"
 HISTORY_PATH = DATA_DIR / "history.json"
+MARKET_LOG_PATH = DATA_DIR / "market_changes.json"    # рыночные изменения → дайджест
+SERVICE_LOG_PATH = DATA_DIR / "service_log.json"      # технический лог сервиса
 OUTPUT_PATH = BASE_DIR / "output" / "competitor_analysis.xlsx"
 DIGEST_PATH = BASE_DIR / "output" / "digest.html"
 
@@ -180,6 +184,20 @@ def run_scan(mode: str, bank_id: str = None):
         changes += _fill_stats_entries(changes, new_scan)
         history["changelog"].extend(changes)
 
+    # Разделение на уровне данных: рыночные изменения (→ дайджест) отдельно
+    # от технического лога сервиса
+    market_changes = [c for c in changes if c.get("kind") == "market"]
+    service_changes = [c for c in changes if c.get("kind") != "market"]
+    # статусы источников этого скана — тоже в техлог
+    service_changes += [
+        {"scan_date": scan_dt, "bank": "— сервис —", "tier": name,
+         "field": "источник", "old": "", "new": f"недоступен: {err}",
+         "kind": "service", "source": "", "source_url": ""}
+        for name, err in failed.items()
+    ]
+    append_log(MARKET_LOG_PATH, market_changes)
+    append_log(SERVICE_LOG_PATH, service_changes, cap=MAX_SERVICE_LOG)
+
     fields_updated = sum(
         1 for entry in results.values()
         for v in entry["fields"].values()
@@ -192,13 +210,25 @@ def run_scan(mode: str, bank_id: str = None):
     save_history(history, HISTORY_PATH)
     write_report(history, OUTPUT_PATH)
 
+    # Финальный шаг пайплайна: автоматическая пересборка дайджеста из
+    # рыночного лога (--build-digest остаётся для ручной пересборки)
+    try:
+        from digest.build_digest import build_digest
+        digest_stats = build_digest(MARKET_LOG_PATH, DIGEST_PATH)
+        log.info("Дайджест пересобран: %s (рыночных изменений за период: %d)",
+                 DIGEST_PATH, digest_stats["total"])
+    except Exception as exc:  # noqa: BLE001 — дайджест не должен ронять скан
+        log.warning("Дайджест пересобрать не удалось: %s", exc)
+
     log.info("")
     log.info("═══ Сводка скана ═══")
     log.info("Источников успешно: %d, с ошибками: %d", len(ok), len(failed))
     log.info("Полей заполнено данными: %d", fields_updated)
-    log.info("Изменений с прошлого скана: %d", len(changes))
+    log.info("Изменений всего: %d (рыночных: %d, технических: %d)",
+             len(changes), len(market_changes),
+             len(changes) - len(market_changes))
     log.info("Отчёт: %s", OUTPUT_PATH)
-    log.info("История: %s", HISTORY_PATH)
+    log.info("Рыночный лог: %s | Техлог: %s", MARKET_LOG_PATH, SERVICE_LOG_PATH)
 
 
 def _fill_stats_entries(changes: list, new_scan: dict) -> list:
@@ -271,7 +301,7 @@ def main():
         list_sources()
     elif args.build_digest:
         from digest.build_digest import build_digest
-        stats = build_digest(HISTORY_PATH, DIGEST_PATH,
+        stats = build_digest(MARKET_LOG_PATH, DIGEST_PATH,
                              use_ai_summary=args.use_ai_summary)
         log.info("Дайджест собран: %s", DIGEST_PATH)
         log.info("Изменений за период: %d (банков: %d), AI-саммари: %s",

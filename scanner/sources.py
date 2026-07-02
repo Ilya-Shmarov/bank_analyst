@@ -34,11 +34,11 @@ REFERENCE_FIELDS = {"aggregator_value", "other_notes", "last_change_date"}
 # Сегменты капитала в порядке отображения в сводной таблице
 SEGMENTS = ["0–3 млн ₽", "3–10 млн ₽", "10–25 млн ₽", "25–100 млн ₽"]
 
-# Сегменты международного блока — сравнение по относительному позиционированию
-# (mass affluent / HNWI / UHNWI), а не по абсолютным порогам: прямое
-# сопоставление валютных порогов с рублёвыми вводит в заблуждение (см. лист
-# «Методика оценки» отчёта)
-INTL_SEGMENTS = ["mass affluent (межд.)", "HNWI (межд.)", "UHNWI (межд.)"]
+# Международный блок — digital-first необанки (Revolut, N26, Wise, Monzo):
+# конкуренты за lifestyle/multi-currency сценарий состоятельного клиента.
+# Пороги/цены в валюте страны; в балльную оценку не входят (сопоставление
+# 1:1 с рублёвым рынком вводит в заблуждение — см. лист «Методика оценки»)
+INTL_SEGMENTS = ["digital-first (межд.)"]
 
 # Источники данных. priority: меньше = приоритетнее при слиянии
 # (curated — верифицированные вручную факты с ссылкой на первоисточник,
@@ -589,214 +589,117 @@ BANKS = [
             },
         ],
     },
-    # ---------- МЕЖДУНАРОДНЫЕ БАНКИ (type="intl") ----------
-    # Схема атрибутов та же (BANK_FIELDS); сегменты — относительное
-    # позиционирование (mass affluent / HNWI / UHNWI), баллы не считаются.
-    # Пороги в оригинальной валюте; курсы ЦБ на дату скана — в метаданных.
+    # ---------- МЕЖДУНАРОДНЫЕ DIGITAL-FIRST БАНКИ (type="intl") ----------
+    # Схема атрибутов та же (BANK_FIELDS). Линейки сверены с официальными
+    # сайтами (июль 2026): у Monzo вместо Plus/Premium действуют
+    # Extra/Perks/Max, у N26 тир You переименован в Go. Wise — без тиров.
     {
-        "id": "hsbc",
-        "name": "HSBC",
+        "id": "revolut",
+        "name": "Revolut",
         "type": "intl",
         "tiers": [
             {
-                "tier_id": "hsbc_premier",
-                "tier_name": "Premier",
-                "segment": "mass affluent (межд.)",
+                "tier_id": "revolut_premium",
+                "tier_name": "Premium",
+                "segment": "digital-first (межд.)",
                 "sources": [
-                    _src("official", "https://www.hsbc.co.uk/current-accounts/products/premier/",
-                         "https://www.us.hsbc.com/premier/"),
+                    _src("official", "https://www.revolut.com/revolut-premium/",
+                         "https://help.revolut.com/help/profile-and-plan/my-plan-benefits/revolut-plans1/premium-plan/"),
                 ],
             },
             {
-                "tier_id": "hsbc_premier_elite",
-                "tier_name": "Premier Elite (экс-Jade)",
-                "segment": "HNWI (межд.)",
+                "tier_id": "revolut_metal",
+                "tier_name": "Metal",
+                "segment": "digital-first (межд.)",
                 "sources": [
-                    _src("official", "https://www.hsbc.com.hk/jade/"),
+                    _src("official", "https://www.revolut.com/our-pricing-plans/",
+                         "https://help.revolut.com/en-US/help/profile-and-plan/my-plan-benefits/revolut-plans1/metal-plan/"),
                 ],
             },
             {
-                "tier_id": "hsbc_gpb",
-                "tier_name": "Global Private Banking",
-                "segment": "UHNWI (межд.)",
+                "tier_id": "revolut_ultra",
+                "tier_name": "Ultra",
+                "segment": "digital-first (межд.)",
                 "sources": [
-                    _src("official", "https://www.privatebanking.hsbc.com/"),
+                    _src("official", "https://www.revolut.com/ultra-plan/",
+                         "https://help.revolut.com/help/profile-and-plan/my-plan-benefits/revolut-plans1/ultra-plan1/"),
                 ],
             },
         ],
     },
     {
-        "id": "citi",
-        "name": "Citi",
+        "id": "n26",
+        "name": "N26",
         "type": "intl",
         "tiers": [
             {
-                "tier_id": "citi_citigold",
-                "tier_name": "Citigold",
-                "segment": "mass affluent (межд.)",
-                "sources": [_src("official", "https://www.citi.com/banking/citigold")],
+                "tier_id": "n26_go",
+                "tier_name": "Go (экс-You)",
+                "segment": "digital-first (межд.)",
+                "sources": [
+                    _src("official", "https://n26.com/en-eu/you-bank-account-with-travel-insurance",
+                         "https://n26.com/en-eu/plans"),
+                ],
             },
             {
-                "tier_id": "citi_cpc",
-                "tier_name": "Citigold Private Client",
-                "segment": "HNWI (межд.)",
-                "sources": [_src("official",
-                                 "https://www.citi.com/banking/citigold-private-client")],
-            },
-            {
-                "tier_id": "citi_private_bank",
-                "tier_name": "Citi Private Bank",
-                "segment": "UHNWI (межд.)",
-                "sources": [_src("official", "https://www.privatebank.citibank.com/")],
+                "tier_id": "n26_metal",
+                "tier_name": "Metal",
+                "segment": "digital-first (межд.)",
+                "sources": [
+                    _src("official", "https://n26.com/en-eu/metal",
+                         "https://n26.com/en-eu/plans"),
+                ],
             },
         ],
     },
     {
-        "id": "jpmorgan",
-        "name": "JPMorgan Chase",
+        "id": "wise",
+        "name": "Wise",
         "type": "intl",
         "tiers": [
             {
-                "tier_id": "chase_private_client",
-                "tier_name": "Chase Private Client",
-                "segment": "mass affluent (межд.)",
-                "sources": [_src("official",
-                                 "https://www.chase.com/personal/checking/private-client")],
-            },
-            {
-                "tier_id": "jpm_private_bank",
-                "tier_name": "J.P. Morgan Private Bank",
-                "segment": "UHNWI (межд.)",
-                "sources": [_src("official", "https://privatebank.jpmorgan.com/")],
+                # Wise без тиров — фиксируем как единый multi-currency продукт
+                "tier_id": "wise_main",
+                "tier_name": "Wise (multi-currency, без тиров)",
+                "segment": "digital-first (межд.)",
+                "sources": [
+                    _src("official", "https://wise.com/us/pricing/",
+                         "https://wise.com/us/card/"),
+                ],
             },
         ],
     },
     {
-        "id": "bofa",
-        "name": "Bank of America",
+        "id": "monzo",
+        "name": "Monzo",
         "type": "intl",
         "tiers": [
             {
-                "tier_id": "bofa_preferred_rewards",
-                "tier_name": "Preferred Rewards",
-                "segment": "mass affluent (межд.)",
-                "sources": [_src("official",
-                                 "https://www.bankofamerica.com/preferred-rewards/")],
+                "tier_id": "monzo_extra",
+                "tier_name": "Extra",
+                "segment": "digital-first (межд.)",
+                "sources": [
+                    _src("official", "https://monzo.com/current-account/plans",
+                         "https://monzo.com/help/monzo-extra/monzo-extra-what"),
+                ],
             },
             {
-                "tier_id": "bofa_private_bank",
-                "tier_name": "BofA Private Bank",
-                "segment": "UHNWI (межд.)",
-                "sources": [_src("official",
-                                 "https://www.privatebank.bankofamerica.com/")],
-            },
-        ],
-    },
-    {
-        "id": "ubs",
-        "name": "UBS",
-        "type": "intl",
-        "tiers": [
-            {
-                "tier_id": "ubs_gwm",
-                "tier_name": "Global Wealth Management",
-                "segment": "UHNWI (межд.)",
-                "sources": [_src("official",
-                                 "https://www.ubs.com/global/en/wealth-management.html")],
-            },
-        ],
-    },
-    {
-        "id": "standard_chartered",
-        "name": "Standard Chartered",
-        "type": "intl",
-        "tiers": [
-            {
-                "tier_id": "sc_priority",
-                "tier_name": "Priority Banking",
-                "segment": "mass affluent (межд.)",
-                "sources": [_src("official", "https://www.sc.com/sg/priority-banking/")],
+                "tier_id": "monzo_perks",
+                "tier_name": "Perks",
+                "segment": "digital-first (межд.)",
+                "sources": [
+                    _src("official", "https://monzo.com/current-account/perks",
+                         "https://monzo.com/help/monzo-perks/monzo-perks-what"),
+                ],
             },
             {
-                "tier_id": "sc_priority_private",
-                "tier_name": "Priority Private",
-                "segment": "HNWI (межд.)",
-                "sources": [_src("official", "https://www.sc.com/sg/priority-private/")],
-            },
-        ],
-    },
-    {
-        "id": "dbs",
-        "name": "DBS (Сингапур)",
-        "type": "intl",
-        "tiers": [
-            {
-                "tier_id": "dbs_treasures",
-                "tier_name": "Treasures",
-                "segment": "mass affluent (межд.)",
-                "sources": [_src("official", "https://www.dbs.com.sg/treasures/")],
-            },
-            {
-                "tier_id": "dbs_treasures_private",
-                "tier_name": "Treasures Private Client",
-                "segment": "HNWI (межд.)",
-                "sources": [_src("official",
-                                 "https://www.dbs.com.sg/treasures-private-client/")],
-            },
-        ],
-    },
-    {
-        "id": "deutsche",
-        "name": "Deutsche Bank",
-        "type": "intl",
-        "tiers": [
-            {
-                "tier_id": "db_wealth",
-                "tier_name": "Wealth Management",
-                "segment": "UHNWI (межд.)",
-                "sources": [_src("official", "https://www.deutschewealth.com/")],
-            },
-        ],
-    },
-    {
-        "id": "bnp",
-        "name": "BNP Paribas",
-        "type": "intl",
-        "tiers": [
-            {
-                "tier_id": "bnp_wealth",
-                "tier_name": "Wealth Management",
-                "segment": "UHNWI (межд.)",
-                "sources": [_src("official",
-                                 "https://wealthmanagement.bnpparibas/en.html")],
-            },
-        ],
-    },
-    {
-        "id": "barclays",
-        "name": "Barclays",
-        "type": "intl",
-        "tiers": [
-            {
-                "tier_id": "barclays_premier",
-                "tier_name": "Premier Banking",
-                "segment": "mass affluent (межд.)",
-                "sources": [_src("official",
-                                 "https://www.barclays.co.uk/premier-banking/")],
-            },
-        ],
-    },
-    {
-        "id": "emirates_nbd",
-        "name": "Emirates NBD",
-        "type": "intl",
-        "tiers": [
-            {
-                "tier_id": "enbd_priority",
-                "tier_name": "Priority Banking",
-                "segment": "mass affluent (межд.)",
-                "sources": [_src("official",
-                                 "https://www.emiratesnbd.com/en/priority-banking")],
+                "tier_id": "monzo_max",
+                "tier_name": "Max",
+                "segment": "digital-first (межд.)",
+                "sources": [
+                    _src("official", "https://monzo.com/help/monzo-max/monzo-max-what",
+                         "https://monzo.com/current-account/plans"),
+                ],
             },
         ],
     },

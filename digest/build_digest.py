@@ -2,10 +2,15 @@
 """
 Дайджест изменений конкурентов — одностраничный HTML-лендинг.
 
-Переиспользует changelog из data/history.json (отдельный скан не нужен):
-берёт изменения за последние DIGEST_WINDOW_DAYS дней, классифицирует по
-категориям из digest/rules.json (правила расширяются без правки кода)
-и рендерит статический output/digest.html — открывается двойным кликом.
+Источник — data/market_changes.json: лог ТОЛЬКО рыночных изменений
+(значение А → значение Б у продукта банка). Технические события сервиса
+(дозаполнение полей, статусы источников, правки схемы) живут в
+data/service_log.json и в дайджест не попадают by design — разделение
+происходит на уровне данных в scanner/diff.py, а не фильтром постфактум.
+
+Дайджест пересобирается автоматически в конце каждого скана; отдельная
+команда --build-digest — для ручной пересборки (например, после правки
+digest/rules.json).
 
 Опционально (--use-ai-summary): человекочитаемая формулировка каждой
 новости через Anthropic API (нужен ANTHROPIC_API_KEY и пакет `anthropic`).
@@ -107,16 +112,18 @@ def ai_humanize(changes: list) -> dict:
         return {}
 
 
-def build_digest(history_path: Path, output_path: Path,
+def build_digest(market_log_path: Path, output_path: Path,
                  use_ai_summary: bool = False) -> dict:
-    """Собирает дайджест. Возвращает статистику для консоли."""
-    with open(history_path, encoding="utf-8") as fh:
-        history = json.load(fh)
+    """Собирает дайджест из лога рыночных изменений. Возвращает статистику."""
+    market_changes = []
+    if Path(market_log_path).exists():
+        with open(market_log_path, encoding="utf-8") as fh:
+            market_changes = json.load(fh)
     rules = load_rules()
 
     cutoff = datetime.now() - timedelta(days=DIGEST_WINDOW_DAYS)
     recent = []
-    for change in history.get("changelog", []):
+    for change in market_changes:
         try:
             dt = datetime.fromisoformat(change["scan_date"])
         except (ValueError, KeyError):

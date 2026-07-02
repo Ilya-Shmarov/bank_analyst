@@ -19,11 +19,60 @@ history.json:
 """
 
 import json
+import re
 from pathlib import Path
 
 from scanner.merge import field_value
+from scanner.sources import NOT_FOUND, REFERENCE_FIELDS
 
 MAX_SCANS_KEPT = 20
+MAX_SERVICE_LOG = 5000
+
+
+def _normalize(text: str) -> str:
+    return re.sub(r"[\s.,;:|«»\"'()\-–—]+", " ", (text or "").lower()).strip()
+
+
+def _nums(text: str) -> frozenset:
+    return frozenset(re.findall(r"\d+(?:[.,]\d+)?", text or ""))
+
+
+def change_kind(field_id: str, old_value: str, new_value: str) -> str:
+    """Разводит изменения на рыночные (market) и технические (service).
+
+    market — изменение условий продукта у банка: оба значения были
+    фактически найдены и содержательно отличаются.
+    service — работа самого сервиса: дозаполнение пустых полей, пропажа
+    данных из источника, справочные поля, переформулировки того же значения.
+    """
+    if field_id in REFERENCE_FIELDS:
+        return "service"
+    if old_value == NOT_FOUND and new_value != NOT_FOUND:
+        return "service"  # дозаполнение нашей базы, а не изменение у банка
+    if new_value == NOT_FOUND:
+        return "service"  # данные пропали из источника — техпроблема
+    if _normalize(old_value) == _normalize(new_value):
+        return "service"  # то же значение, другая пунктуация/регистр
+    old_nums, new_nums = _nums(old_value), _nums(new_value)
+    if old_nums and new_nums and old_nums == new_nums:
+        return "service"  # переформулировка: все цифры совпадают
+    return "market"
+
+
+def append_log(path: Path, entries: list, cap: int = None):
+    """Дописывает записи в JSON-лог (массив)."""
+    if not entries:
+        return
+    existing = []
+    if path.exists():
+        with open(path, encoding="utf-8") as fh:
+            existing = json.load(fh)
+    existing.extend(entries)
+    if cap:
+        existing = existing[-cap:]
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "w", encoding="utf-8") as fh:
+        json.dump(existing, fh, ensure_ascii=False, indent=1)
 
 
 def _change_source(field) -> str:
@@ -59,14 +108,21 @@ def diff_results(prev_scan: dict, new_scan: dict, field_labels: dict) -> list:
     for tier_id, new_entry in new_results.items():
         prev_entry = prev_results.get(tier_id)
         if prev_entry is None:
+            # Тиры появляются/исчезают только через правку нашего реестра
+            # (sources.py) — это событие сервиса, не рынка. Реальный запуск
+            # нового тира банком фиксируйте рыночной записью вручную или
+            # через последующие изменения полей
             changes.append({
                 "scan_date": new_scan["date"],
                 "prev_date": prev_scan.get("date", ""),
                 "bank": new_entry["bank"],
                 "tier": new_entry["tier"],
                 "field": "—",
-                "old": "(тир отсутствовал)",
-                "new": "тир добавлен в скан",
+                "old": "(тир отсутствовал в реестре)",
+                "new": "тир добавлен в реестр сканера",
+                "kind": "service",
+                "source": "",
+                "source_url": "",
             })
             continue
         for field_id, new_field in new_entry.get("fields", {}).items():
@@ -83,6 +139,7 @@ def diff_results(prev_scan: dict, new_scan: dict, field_labels: dict) -> list:
                     "field": field_labels.get(field_id, field_id),
                     "old": old_value,
                     "new": new_value,
+                    "kind": change_kind(field_id, old_value, new_value),
                     "source": _change_source(new_field),
                     "source_url": (new_field.get("source_url", "")
                                    if isinstance(new_field, dict) else ""),
@@ -96,8 +153,11 @@ def diff_results(prev_scan: dict, new_scan: dict, field_labels: dict) -> list:
                 "bank": prev_entry["bank"],
                 "tier": prev_entry["tier"],
                 "field": "—",
-                "old": "тир был в скане",
-                "new": "(тир пропал из скана)",
+                "old": "тир был в реестре",
+                "new": "тир исключён из реестра сканера",
+                "kind": "service",
+                "source": "",
+                "source_url": "",
             })
     return changes
 
@@ -123,6 +183,7 @@ def schema_changes(prev_scan: dict, new_scan: dict, field_labels: dict) -> list:
             "field": field_labels.get(fid, fid),
             "old": "(поля не было в схеме отчёта)",
             "new": "поле добавлено в схему",
+            "kind": "service",
             "source": "изменение методологии отчёта",
         })
     for fid in sorted(prev_ids - new_ids):
@@ -134,6 +195,7 @@ def schema_changes(prev_scan: dict, new_scan: dict, field_labels: dict) -> list:
             "field": field_labels.get(fid, fid),
             "old": "поле было в схеме",
             "new": "(поле удалено из схемы отчёта)",
+            "kind": "service",
             "source": "изменение методологии отчёта",
         })
     return changes
