@@ -96,6 +96,7 @@ python3 -m venv .venv
 .venv/bin/python main.py --scan-lifestyle         # только экосистемные подписки
 .venv/bin/python main.py --build-sber-vs          # лендинг сравнения Сбера с банками
 .venv/bin/python main.py --build-premium-changes  # лендинг изменений премиальных программ
+.venv/bin/python main.py --build-premium-reviews  # отзывы о премиуме Сбера + HTML-отчёт
 .venv/bin/python main.py --list-sources           # список источников и id
 ```
 
@@ -121,6 +122,7 @@ changelog по сканам остаётся внутри истории и Exce
 |---|---|
 | `output/competitor_analysis.xlsx` | Сводная (сегменты капитала + итоговый балл + расхождения), детализация по банкам, Lifestyle, Изменения (с источником нового значения; ручные уточнения помечены), Методика оценки, Метаданные |
 | `data/history.json` | История сканов (последние 20) + накопленный changelog |
+| `output/premium_reviews_report_<дата>.html` | Отзывы о премиальном обслуживании Сбера (Sravni/Otzovik/ПБИ): темы, тональность по теме, диагностика; база — `data/premium_reviews.json` |
 | `data/raw/<дата>/<тир>__<источник>.html` | Сырые снимки страниц для аудита (в git не коммитятся) |
 
 Excel регенерируется при каждом запуске из `data/history.json` — история

@@ -17,6 +17,7 @@
 - `.venv/bin/python main.py --scan-lifestyle` - scan lifestyle subscriptions
 - `.venv/bin/python main.py --build-sber-vs` - rebuild Sber VS banks landing
 - `.venv/bin/python main.py --build-premium-changes` - rebuild premium changes landing
+- `.venv/bin/python main.py --build-premium-reviews` - collect Sber premium reviews and rebuild report
 
 ## Code Rules
 
