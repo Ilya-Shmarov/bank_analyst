@@ -4,4 +4,5 @@ __pycache__/
 .DS_Store
 # Сырые HTML-снимки страниц — только локальный аудит, в репо не тянем
 data/raw/
+data/raw_feedback/
 ~$*
