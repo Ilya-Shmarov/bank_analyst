@@ -96,58 +96,9 @@ python3 -m venv .venv
 .venv/bin/python main.py --scan-lifestyle         # только экосистемные подписки
 .venv/bin/python main.py --build-sber-vs          # лендинг сравнения Сбера с банками
 .venv/bin/python main.py --build-premium-changes  # лендинг изменений премиальных программ
-.venv/bin/python main.py --list-feedback-sources  # источники отзывов и политики доступа
-.venv/bin/python main.py --scan-feedback          # скан Customer Feedback Intelligence
-.venv/bin/python main.py --scan-feedback-source manual_seed
-.venv/bin/python main.py --build-feedback-report
-.venv/bin/python main.py --build-feedback-dashboard
 .venv/bin/python main.py --build-premium-reviews  # отзывы о премиуме Сбера + HTML-отчёт
 .venv/bin/python main.py --list-sources           # список источников и id
 ```
-
-## Customer Feedback Intelligence
-
-Контур отзывов живёт отдельно от тарифного скана: единица данных — публичный
-отзыв, а не поле условий продукта. История хранится в
-`data/feedback_history.json`, нормализованные отзывы — в
-`data/feedback_reviews.jsonl`, сырые HTML-снимки разрешённых страниц — в
-`data/raw_feedback/` (не коммитятся).
-
-Команда `--list-feedback-sources` показывает продукты Сбера, aliases и
-политику каждого источника. Источники `manual_only` не сканируются
-автоматически: Banki.ru, карты, app stores, YouTube и другие площадки с
-robots/ToS/API-ограничениями используются только через вручную отобранные
-публичные отзывы. Для этого добавьте JSONL-файл `data/feedback_manual_seed.jsonl`
-с полями `url`, `date`, `author`, `text`, `rating`, `likes_count`,
-`comments_count`, `product_id`, `office`, `source_id`, `source_name`.
-
-При `--scan-feedback` сервис сам строит поисковые запросы по aliases продуктов
-и проходит источники, у которых в `scanner/feedback_sources.py` задан
-`search_url`: search page → найденные публичные страницы → парсинг отзывов.
-`premiumbanking.info` подтягивается отдельным автоматическим адаптером:
-страница Сбера даёт внешние сигналы из блока последних изменений, а страницы
-уровней `/sber/1`–`/sber/6` дают структурированные записи по СберПремьер,
-СберПервый и Sber Private. Каждый шаг проходит через общий `Fetcher`:
-robots.txt, rate limit, JS-render fallback без обхода captcha/antibot.
-
-`generic_public_html` дополнительно читает опциональный `data/feedback_urls.json`:
-
-```json
-[
-  {"source_id": "vc_ru", "url": "https://example.com/public-review", "product_id": "sber_premier"}
-]
-```
-
-Если источник запрещён robots.txt, требует логин/API или отдаёт JS-only без
-установленного Playwright, он попадает в `data/service_log.json` и лист
-`Source Statistics`; сервис не подменяет это ручным обходом.
-
-Аналитика v1 локальная и детерминированная: sentiment, topics, complaints,
-wishes, внешние сигналы ПБИ и приоритет рекомендаций считаются
-словарями/эвристиками без внешних LLM/API. Команды `--build-feedback-report` и `--build-feedback-dashboard`
-пересобирают листы `Customer Feedback`, `Sentiment`, `Complaint Ranking`,
-`Suggestions`, `Trends`, `Source Statistics` в Excel и отдельный
-`output/customer_feedback_dashboard.html`.
 
 ## Лендинг изменений (output/premium_changes.html)
 
@@ -172,10 +123,7 @@ changelog по сканам остаётся внутри истории и Exce
 | `output/competitor_analysis.xlsx` | Сводная (сегменты капитала + итоговый балл + расхождения), детализация по банкам, Lifestyle, Изменения (с источником нового значения; ручные уточнения помечены), Методика оценки, Метаданные |
 | `output/sber_vs_banks.html` | HTML-сравнение линейки Сбера с банками |
 | `output/premium_changes.html` | HTML последних изменений премиальных программ банков |
-| `output/customer_feedback_dashboard.html` | HTML-dashboard Customer Feedback Intelligence |
 | `data/history.json` | История сканов (последние 20) + накопленный changelog |
-| `data/feedback_history.json` | История feedback-сканов, trends и suggestions |
-| `data/feedback_reviews.jsonl` | Append-only база нормализованных публичных отзывов |
 | `output/premium_reviews_report_<дата>.html` | Отзывы о премиальном обслуживании Сбера (Sravni/Otzovik/ПБИ): темы, тональность по теме, диагностика; база — `data/premium_reviews.json` |
 | `data/raw/<дата>/<тир>__<источник>.html` | Сырые снимки страниц для аудита (в git не коммитятся) |
 
@@ -184,11 +132,9 @@ Excel регенерируется при каждом запуске из `data
 последнего скана.
 
 `--scan-all` после основного банковского скана автоматически пересобирает
-`competitor_analysis.xlsx`, `sber_vs_banks.html`, `premium_changes.html` и
-`customer_feedback_dashboard.html`. Для отзывов одновременно запускается
-feedback-контур: разрешённые публичные URL из `data/feedback_urls.json`,
-ручной seed из `data/feedback_manual_seed.jsonl`, локальная аналитика и
-Product Improvement Suggestions.
+`competitor_analysis.xlsx`, `sber_vs_banks.html` и `premium_changes.html`.
+HTML-отчёт по премиальным отзывам собирается отдельно через
+`--build-premium-reviews`.
 
 ## Как добавить банк, подписку или источник
 

@@ -1695,6 +1695,20 @@
    "collected": 68,
    "new": 0,
    "failed_sources": []
+  },
+  {
+   "date": "2026-07-08T11:11:30",
+   "collected": 15,
+   "new": 0,
+   "failed_sources": [
+    "Sravni.ru"
+   ]
+  },
+  {
+   "date": "2026-07-08T11:14:33",
+   "collected": 68,
+   "new": 0,
+   "failed_sources": []
   }
  ]
 }
