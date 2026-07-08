@@ -3,11 +3,14 @@
 competitor-scanner — конкурентный анализ премиального банкинга.
 
 Запуск:
-    python main.py --scan-all               # полный скан всех источников
+    python main.py --scan-all               # полный скан + Excel + HTML-витрины
     python main.py --scan-bank tbank        # точечный скан одного банка
     python main.py --scan-lifestyle         # только экосистемные подписки
     python main.py --build-sber-vs          # HTML-лендинг Сбер VS банки
     python main.py --build-premium-changes  # HTML-лендинг изменений с premiumbanking.info
+    python main.py --scan-feedback          # скан отзывов Customer Feedback Intelligence
+    python main.py --build-feedback-report  # feedback-листы в Excel
+    python main.py --build-feedback-dashboard # HTML-dashboard отзывов
     python main.py --list-sources           # показать все источники
 """
 
@@ -37,11 +40,15 @@ from report.excel_writer import write_report
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
 RAW_DIR = DATA_DIR / "raw"
+RAW_FEEDBACK_DIR = DATA_DIR / "raw_feedback"
 HISTORY_PATH = DATA_DIR / "history.json"
+FEEDBACK_HISTORY_PATH = DATA_DIR / "feedback_history.json"
+FEEDBACK_REVIEWS_PATH = DATA_DIR / "feedback_reviews.jsonl"
 SERVICE_LOG_PATH = DATA_DIR / "service_log.json"      # технический лог сервиса
 OUTPUT_PATH = BASE_DIR / "output" / "competitor_analysis.xlsx"
 SBER_VS_PATH = BASE_DIR / "output" / "sber_vs_banks.html"
 PREMIUM_CHANGES_PATH = BASE_DIR / "output" / "premium_changes.html"
+FEEDBACK_DASHBOARD_PATH = BASE_DIR / "output" / "customer_feedback_dashboard.html"
 REVIEWS_STORE_PATH = DATA_DIR / "premium_reviews.json"
 
 log = logging.getLogger("scanner")
@@ -207,6 +214,8 @@ def run_scan(mode: str, bank_id: str = None):
     history["scans"].append(new_scan)
     save_history(history, HISTORY_PATH)
     write_report(history, OUTPUT_PATH)
+    if mode == "all":
+        build_full_scan_outputs()
 
     log.info("")
     log.info("═══ Сводка скана ═══")
@@ -261,6 +270,125 @@ def list_sources():
         print(f"    {agg['id']:22s} {agg['name']}")
 
 
+def feedback_paths() -> dict:
+    return {
+        "data_dir": DATA_DIR,
+        "raw_feedback_dir": RAW_FEEDBACK_DIR,
+        "history_path": FEEDBACK_HISTORY_PATH,
+        "reviews_path": FEEDBACK_REVIEWS_PATH,
+        "service_log_path": SERVICE_LOG_PATH,
+    }
+
+
+def list_feedback_sources():
+    from scanner.feedback_sources import FEEDBACK_SOURCES, PRODUCTS
+
+    print("Продукты:")
+    for product_id, product in PRODUCTS.items():
+        aliases = "; ".join(product["aliases"])
+        print(f"    {product_id:16s} {product['name']} — {aliases}")
+    print("\nИсточники отзывов:")
+    for src in FEEDBACK_SOURCES:
+        parser = src.get("review_parser", "generic_html")
+        year = src.get("date_filter_year", 2026)
+        print(f"    {src['id']:22s} {src['name']} "
+              f"[{src['status']}; {src['policy']}; parser={parser}; year={year}]")
+
+
+def build_sber_vs_only():
+    from landing.sber_vs import build_sber_vs_landing
+
+    stats = build_sber_vs_landing(OUTPUT_PATH, SBER_VS_PATH)
+    log.info("Лендинг Сбер VS банки собран: %s", stats["output"])
+    log.info("Уровней Сбера: %d; строк конкурентов: %d",
+             stats["sber_tiers"], stats["competitor_rows"])
+    return stats
+
+
+def build_premium_changes_only():
+    from landing.premium_changes import build_premium_changes_landing
+
+    stats = build_premium_changes_landing(RAW_DIR, PREMIUM_CHANGES_PATH)
+    log.info("Лендинг изменений премиальных программ собран: %s",
+             stats["output"])
+    log.info("Банков: %d; изменений: %d; ошибок: %d",
+             stats["banks"], stats["changes"], stats["failed"])
+    return stats
+
+
+def run_feedback(product_id: str = None, source_id: str = None):
+    from landing.feedback_dashboard import build_feedback_dashboard
+    from report.feedback_excel import write_feedback_report
+    from scanner.feedback_sources import get_product, get_source, product_ids, source_ids
+    from scanner.feedback_pipeline import run_feedback_scan
+
+    if product_id and get_product(product_id) is None:
+        log.error("Feedback-продукт '%s' не найден. Доступные: %s",
+                  product_id, ", ".join(product_ids()))
+        sys.exit(1)
+    if source_id and get_source(source_id) is None:
+        log.error("Feedback-источник '%s' не найден. Доступные: %s",
+                  source_id, ", ".join(source_ids()))
+        sys.exit(1)
+
+    result = run_feedback_scan(product_id, source_id, feedback_paths())
+    report_stats = write_feedback_report(result["history"], OUTPUT_PATH)
+    dashboard_stats = build_feedback_dashboard(result["history"], FEEDBACK_DASHBOARD_PATH)
+    scan = result["scan"]
+    meta = scan["meta"]
+    log.info("")
+    log.info("═══ Сводка feedback-скана ═══")
+    log.info("Источников успешно: %d, с ошибками/ручными: %d",
+             len(meta["sources_ok"]), len(meta["sources_failed"]))
+    log.info("Новых отзывов: %d; всего в базе: %d",
+             meta["new_reviews"], meta["total_reviews"])
+    log.info("Изменений/trends: %d", len(result["changes"]))
+    log.info("Excel: %s (%d отзывов)", report_stats["output"], report_stats["reviews"])
+    log.info("Dashboard: %s (%d отзывов)",
+             dashboard_stats["output"], dashboard_stats["reviews"])
+    return {
+        "scan": scan,
+        "report": report_stats,
+        "dashboard": dashboard_stats,
+        "changes": result["changes"],
+    }
+
+
+def build_full_scan_outputs():
+    """Artifacts that must accompany a full market scan."""
+    log.info("")
+    log.info("═══ Сборка HTML-витрин полного скана ═══")
+    sber_vs_stats = build_sber_vs_only()
+    premium_stats = build_premium_changes_only()
+    feedback_stats = run_feedback()
+    log.info("")
+    log.info("═══ Артефакты полного скана ═══")
+    log.info("Excel: %s", OUTPUT_PATH)
+    log.info("Сравнение банков: %s", sber_vs_stats["output"])
+    log.info("Новые изменения банков: %s", premium_stats["output"])
+    log.info("Отзывы и предложения: %s", feedback_stats["dashboard"]["output"])
+
+
+def build_feedback_report_only():
+    from report.feedback_excel import write_feedback_report
+    from scanner.feedback_pipeline import load_feedback_artifacts
+
+    history = load_feedback_artifacts(FEEDBACK_HISTORY_PATH)
+    stats = write_feedback_report(history, OUTPUT_PATH)
+    log.info("Feedback-листы Excel собраны: %s (%d отзывов)",
+             stats["output"], stats["reviews"])
+
+
+def build_feedback_dashboard_only():
+    from landing.feedback_dashboard import build_feedback_dashboard
+    from scanner.feedback_pipeline import load_feedback_artifacts
+
+    history = load_feedback_artifacts(FEEDBACK_HISTORY_PATH)
+    stats = build_feedback_dashboard(history, FEEDBACK_DASHBOARD_PATH)
+    log.info("Feedback dashboard собран: %s (%d отзывов)",
+             stats["output"], stats["reviews"])
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Сканер конкурентного анализа премиум-банкинга")
@@ -276,6 +404,18 @@ def main():
     group.add_argument("--build-premium-changes", action="store_true",
                        help="собрать HTML-лендинг изменений премиальных программ "
                             "с premiumbanking.info")
+    group.add_argument("--scan-feedback", action="store_true",
+                       help="скан отзывов по всем feedback-источникам")
+    group.add_argument("--scan-feedback-product", metavar="PRODUCT_ID",
+                       help="скан отзывов по продукту: sber_premier/sber_first/sber_private")
+    group.add_argument("--scan-feedback-source", metavar="SOURCE_ID",
+                       help="скан одного feedback-источника")
+    group.add_argument("--build-feedback-report", action="store_true",
+                       help="пересобрать feedback-листы в Excel")
+    group.add_argument("--build-feedback-dashboard", action="store_true",
+                       help="пересобрать HTML-dashboard отзывов")
+    group.add_argument("--list-feedback-sources", action="store_true",
+                       help="список feedback-продуктов, источников и политик доступа")
     group.add_argument("--build-premium-reviews", action="store_true",
                        help="собрать отзывы о премиальном обслуживании Сбера "
                             "(Sravni/Otzovik/ПБИ) и HTML-отчёт")
@@ -288,19 +428,22 @@ def main():
 
     if args.list_sources:
         list_sources()
+    elif args.list_feedback_sources:
+        list_feedback_sources()
     elif args.build_sber_vs:
-        from landing.sber_vs import build_sber_vs_landing
-        stats = build_sber_vs_landing(OUTPUT_PATH, SBER_VS_PATH)
-        log.info("Лендинг сравнения банков собран: %s", stats["output"])
-        log.info("Банков: %d; уровней пакетов: %d",
-                 stats["banks"], stats["levels"])
+        build_sber_vs_only()
     elif args.build_premium_changes:
-        from landing.premium_changes import build_premium_changes_landing
-        stats = build_premium_changes_landing(RAW_DIR, PREMIUM_CHANGES_PATH)
-        log.info("Лендинг изменений премиальных программ собран: %s",
-                 stats["output"])
-        log.info("Банков: %d; изменений: %d; ошибок: %d",
-                 stats["banks"], stats["changes"], stats["failed"])
+        build_premium_changes_only()
+    elif args.scan_feedback:
+        run_feedback()
+    elif args.scan_feedback_product:
+        run_feedback(product_id=args.scan_feedback_product)
+    elif args.scan_feedback_source:
+        run_feedback(source_id=args.scan_feedback_source)
+    elif args.build_feedback_report:
+        build_feedback_report_only()
+    elif args.build_feedback_dashboard:
+        build_feedback_dashboard_only()
     elif args.build_premium_reviews:
         from landing.premium_reviews import build_premium_reviews_landing
         stats = build_premium_reviews_landing(
