@@ -22,6 +22,7 @@
 - `.venv/bin/python main.py --scan-feedback-source manual_seed` - scan one feedback source
 - `.venv/bin/python main.py --build-feedback-report` - rebuild feedback Excel sheets
 - `.venv/bin/python main.py --build-feedback-dashboard` - rebuild feedback dashboard
+- `.venv/bin/python main.py --build-premium-reviews` - collect Sber premium reviews and rebuild report
 
 ## Code Rules
 

@@ -49,6 +49,7 @@ OUTPUT_PATH = BASE_DIR / "output" / "competitor_analysis.xlsx"
 SBER_VS_PATH = BASE_DIR / "output" / "sber_vs_banks.html"
 PREMIUM_CHANGES_PATH = BASE_DIR / "output" / "premium_changes.html"
 FEEDBACK_DASHBOARD_PATH = BASE_DIR / "output" / "customer_feedback_dashboard.html"
+REVIEWS_STORE_PATH = DATA_DIR / "premium_reviews.json"
 
 log = logging.getLogger("scanner")
 
@@ -415,6 +416,9 @@ def main():
                        help="пересобрать HTML-dashboard отзывов")
     group.add_argument("--list-feedback-sources", action="store_true",
                        help="список feedback-продуктов, источников и политик доступа")
+    group.add_argument("--build-premium-reviews", action="store_true",
+                       help="собрать отзывы о премиальном обслуживании Сбера "
+                            "(Sravni/Otzovik/ПБИ) и HTML-отчёт")
     group.add_argument("--list-sources", action="store_true",
                        help="список источников и id банков")
     args = parser.parse_args()
@@ -440,6 +444,13 @@ def main():
         build_feedback_report_only()
     elif args.build_feedback_dashboard:
         build_feedback_dashboard_only()
+    elif args.build_premium_reviews:
+        from landing.premium_reviews import build_premium_reviews_landing
+        stats = build_premium_reviews_landing(
+            RAW_DIR, REVIEWS_STORE_PATH, BASE_DIR / "output", log)
+        log.info("Отчёт по отзывам о премиуме собран: %s", stats["output"])
+        log.info("Отзывов в базе: %d (новых: %d); источников со сбоями: %d",
+                 stats["total"], stats["new"], stats["failed"])
     elif args.scan_bank:
         run_scan("bank", args.scan_bank)
     elif args.scan_lifestyle:

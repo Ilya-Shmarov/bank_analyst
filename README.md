@@ -101,6 +101,7 @@ python3 -m venv .venv
 .venv/bin/python main.py --scan-feedback-source manual_seed
 .venv/bin/python main.py --build-feedback-report
 .venv/bin/python main.py --build-feedback-dashboard
+.venv/bin/python main.py --build-premium-reviews  # отзывы о премиуме Сбера + HTML-отчёт
 .venv/bin/python main.py --list-sources           # список источников и id
 ```
 
@@ -175,6 +176,7 @@ changelog по сканам остаётся внутри истории и Exce
 | `data/history.json` | История сканов (последние 20) + накопленный changelog |
 | `data/feedback_history.json` | История feedback-сканов, trends и suggestions |
 | `data/feedback_reviews.jsonl` | Append-only база нормализованных публичных отзывов |
+| `output/premium_reviews_report_<дата>.html` | Отзывы о премиальном обслуживании Сбера (Sravni/Otzovik/ПБИ): темы, тональность по теме, диагностика; база — `data/premium_reviews.json` |
 | `data/raw/<дата>/<тир>__<источник>.html` | Сырые снимки страниц для аудита (в git не коммитятся) |
 
 Excel регенерируется при каждом запуске из `data/history.json` — история
