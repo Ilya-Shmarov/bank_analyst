@@ -223,6 +223,7 @@ def render_html(banks: list[dict], rows: list[dict]) -> str:
     latest_scan = scan_dates[-1] if scan_dates else "нет данных"
     total_levels = sum(len(b["levels"]) for b in banks)
     payload = json.dumps(banks, ensure_ascii=False).replace("</", "<\\/")
+    bank_chips = _render_bank_chips(banks)
 
     return f"""<!DOCTYPE html>
 <html lang="ru">
@@ -250,17 +251,20 @@ def render_html(banks: list[dict], rows: list[dict]) -> str:
     <section class="pickers">
       <div class="picker" data-side="a">
         <h2>Банк 1</h2>
-        <div class="chip-row banks"></div>
+        <div class="chip-row banks">{bank_chips}</div>
         <h3 class="lvl-title" hidden>Уровень пакета</h3>
         <div class="chip-row levels"></div>
       </div>
       <div class="picker" data-side="b">
         <h2>Банк 2</h2>
-        <div class="chip-row banks"></div>
+        <div class="chip-row banks">{bank_chips}</div>
         <h3 class="lvl-title" hidden>Уровень пакета</h3>
         <div class="chip-row levels"></div>
       </div>
     </section>
+    <p id="js-warning" class="js-warning">Если банки не выбираются, файл открыт
+    во встроенном просмотрщике без JavaScript. Нажмите «Поделиться» → «Открыть
+    в Safari» или откройте этот HTML в Chrome.</p>
 
     <section id="compare" hidden>
       <div class="cmp-head">
@@ -299,6 +303,13 @@ def render_html(banks: list[dict], rows: list[dict]) -> str:
 
 
 # ---------- значения и форматирование ----------
+
+def _render_bank_chips(banks: list[dict]) -> str:
+    return "".join(
+        f'<button type="button" class="chip" data-bank-index="{idx}">'
+        f'{_esc(bank["bank"])}</button>'
+        for idx, bank in enumerate(banks)
+    )
 
 def _require_headers(headers: dict, required: list[str]):
     missing = [header for header in required if header not in headers]
@@ -523,10 +534,14 @@ _CSS = """
   --neg: #B3492F;
 }
 * { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0; background: var(--bg); color: var(--ink);
   font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-tap-highlight-color: rgba(24, 143, 79, 0.18);
 }
+button, summary { touch-action: manipulation; }
+button { -webkit-appearance: none; appearance: none; }
 .page { max-width: 1160px; margin: 0 auto; padding: 36px 18px 56px; }
 .hero { padding: 18px 0 24px; border-bottom: 1px solid var(--line); }
 .eyebrow { margin: 0 0 8px; color: var(--green); font-size: 13px;
@@ -542,21 +557,25 @@ h1 { margin: 0; font-size: 42px; line-height: 1.08; }
 .pickers { display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
   margin-top: 22px; }
 .picker { background: var(--card); border: 1px solid var(--line);
-  border-radius: 8px; padding: 14px 16px; }
+  border-radius: 8px; min-width: 0; padding: 14px 16px; }
 .picker h2 { margin: 0 0 10px; font-size: 16px; }
 .picker h3 { margin: 12px 0 8px; font-size: 12px; color: var(--muted);
   text-transform: uppercase; }
 .chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
 .chip { border: 1px solid var(--line); background: var(--bg); color: var(--ink);
-  border-radius: 999px; padding: 5px 12px; font-size: 13px; cursor: pointer;
-  font-family: inherit; }
+  border-radius: 999px; min-height: 44px; padding: 10px 14px; font-size: 14px;
+  line-height: 1.2; cursor: pointer; font-family: inherit; }
 .chip:hover { border-color: var(--green); color: var(--green); }
 .chip.active { background: var(--green); border-color: var(--green); color: #fff; }
 .hint { margin: 18px 0 0; color: var(--muted); }
+.js-warning { margin: 14px 0 0; padding: 12px 14px; border: 1px solid var(--line);
+  border-radius: 8px; background: #fff8e8; color: #6f5a25; font-size: 14px; }
+.js-ready .js-warning { display: none; }
 #compare { margin-top: 22px; }
 .cmp-head { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .cmp-col { background: var(--card); border: 1px solid var(--line);
-  border-top: 3px solid var(--green); border-radius: 8px; padding: 14px 16px; }
+  border-top: 3px solid var(--green); border-radius: 8px; min-width: 0;
+  padding: 14px 16px; }
 .cmp-col .seg { margin: 0; color: var(--muted); font-size: 12px; }
 .cmp-col h2 { margin: 2px 0 6px; font-size: 20px; }
 .cmp-col .sc { font-family: ui-monospace, "SF Mono", Menlo, monospace;
@@ -587,15 +606,34 @@ h1 { margin: 0; font-size: 42px; line-height: 1.08; }
 .footer { margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--line);
   color: var(--muted); font-size: 13px; }
 @media (max-width: 820px) {
+  .page { padding: 24px 14px 42px; }
   h1 { font-size: 32px; }
+  .stats div { flex: 1 1 138px; min-width: 0; }
   .pickers, .cmp-head { grid-template-columns: 1fr; }
-  .cmp-scroll { max-height: none; overflow: visible; }
+  .picker { padding: 14px; }
+  .chip-row { gap: 8px; }
+  .chip { flex: 1 1 auto; justify-content: center; min-width: min(46%, 220px); }
+  .cmp-scroll { max-height: none; overflow: visible; border: 0; border-radius: 0; }
+  .cmp-table, .cmp-table colgroup, .cmp-table tbody, .cmp-table tr,
+  .cmp-table td { display: block; width: 100%; }
+  .cmp-table thead { display: none; }
+  .cmp-table tr { margin-bottom: 12px; border: 1px solid var(--line);
+    border-radius: 8px; background: var(--card); overflow: hidden; }
+  .cmp-table td { border-bottom: 1px solid var(--line); padding: 11px 12px;
+    white-space: normal; }
+  .cmp-table td:first-child { background: var(--bg); font-weight: 700;
+    color: var(--ink); font-size: 14px; }
+  .cmp-table td:last-child { border-bottom: 0; }
+  .cmp-table td[data-label]::before { content: attr(data-label); display: block;
+    margin-bottom: 4px; color: var(--muted); font-size: 12px; font-weight: 700; }
+  .cmp-table td.win { box-shadow: inset 3px 0 0 var(--green); }
 }
 """
 
 _JS = """
 const DATA = JSON.parse(document.getElementById('data').textContent);
 const state = { a: { bank: null, level: null }, b: { bank: null, level: null } };
+document.documentElement.classList.add('js-ready');
 
 function el(tag, cls, text) {
   const node = document.createElement(tag);
@@ -607,10 +645,18 @@ function el(tag, cls, text) {
 function renderBanks(side) {
   const picker = document.querySelector(`.picker[data-side="${side}"]`);
   const row = picker.querySelector('.banks');
-  row.innerHTML = '';
-  DATA.forEach((bank, i) => {
-    const chip = el('button', 'chip', bank.bank);
+  if (!row.children.length) {
+    DATA.forEach((bank, i) => {
+      const chip = el('button', 'chip', bank.bank);
+      chip.type = 'button';
+      chip.dataset.bankIndex = i;
+      row.appendChild(chip);
+    });
+  }
+  row.querySelectorAll('.chip').forEach((chip) => {
+    const i = Number(chip.dataset.bankIndex);
     if (state[side].bank === i) chip.classList.add('active');
+    else chip.classList.remove('active');
     chip.onclick = () => {
       state[side].bank = i;
       state[side].level = null;
@@ -618,7 +664,6 @@ function renderBanks(side) {
       renderLevels(side);
       renderCompare();
     };
-    row.appendChild(chip);
   });
 }
 
@@ -632,6 +677,7 @@ function renderLevels(side) {
   if (bankIdx === null) return;
   DATA[bankIdx].levels.forEach((lvl, i) => {
     const chip = el('button', 'chip', lvl.tier);
+    chip.type = 'button';
     if (state[side].level === i) chip.classList.add('active');
     chip.onclick = () => {
       state[side].level = i;
@@ -682,6 +728,8 @@ function renderCompare() {
     tr.appendChild(el('td', '', attrA.label));
     const tdA = el('td', '', attrA.value);
     const tdB = el('td', '', attrB.value);
+    tdA.dataset.label = a.bank + ' — ' + a.tier;
+    tdB.dataset.label = b.bank + ' — ' + b.tier;
     if (attrA.note) tdA.title = attrA.note;
     if (attrB.note) tdB.title = attrB.note;
     if (attrA.score !== null && attrB.score !== null
@@ -694,7 +742,7 @@ function renderCompare() {
     tr.appendChild(tdB);
     tbody.appendChild(tr);
   });
-  cmp.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  cmp.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 renderBanks('a');
