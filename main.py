@@ -269,8 +269,8 @@ def build_sber_vs_only():
 
     stats = build_sber_vs_landing(OUTPUT_PATH, SBER_VS_PATH)
     log.info("Лендинг Сбер VS банки собран: %s", stats["output"])
-    log.info("Уровней Сбера: %d; строк конкурентов: %d",
-             stats["sber_tiers"], stats["competitor_rows"])
+    log.info("Банков: %d; уровней пакетов: %d",
+             stats["banks"], stats["levels"])
     return stats
 
 

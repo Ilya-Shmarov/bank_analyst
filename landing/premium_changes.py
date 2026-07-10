@@ -274,12 +274,15 @@ _CSS = """
   --green-soft: #e5f4eb;
 }
 * { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
   font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-tap-highlight-color: rgba(24, 143, 79, 0.18);
 }
+a { touch-action: manipulation; }
 .page { max-width: 1160px; margin: 0 auto; padding: 36px 18px 56px; }
 .hero { padding: 18px 0 28px; border-bottom: 1px solid var(--line); }
 .eyebrow {
@@ -311,6 +314,7 @@ h1 { margin: 0; font-size: 42px; line-height: 1.08; letter-spacing: 0; }
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: 8px;
+  min-width: 0;
   padding: 18px;
 }
 .bank-head {
@@ -321,7 +325,8 @@ h1 { margin: 0; font-size: 42px; line-height: 1.08; letter-spacing: 0; }
   margin-bottom: 14px;
 }
 h2 { margin: 0; font-size: 22px; letter-spacing: 0; }
-h2 a { color: var(--ink); text-decoration: none; }
+h2 a { color: var(--ink); display: inline-flex; align-items: center;
+  min-height: 44px; text-decoration: none; }
 h2 a:hover { color: var(--green); }
 .bank-head span { color: var(--muted); font-size: 13px; white-space: nowrap; }
 .timeline { display: grid; gap: 12px; }
@@ -348,7 +353,9 @@ h2 a:hover { color: var(--green); }
 .change p { margin: 0; }
 .empty { color: var(--muted); margin: 0; }
 @media (max-width: 820px) {
+  .page { padding: 24px 14px 42px; }
   h1 { font-size: 32px; }
+  .stats div { flex: 1 1 138px; min-width: 0; }
   .grid { grid-template-columns: 1fr; }
   .bank-card { padding: 16px; }
   .bank-head { display: block; }

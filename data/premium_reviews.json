@@ -1709,6 +1709,12 @@
    "collected": 68,
    "new": 0,
    "failed_sources": []
+  },
+  {
+   "date": "2026-07-10T12:20:12",
+   "collected": 68,
+   "new": 0,
+   "failed_sources": []
   }
  ]
 }
