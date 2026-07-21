@@ -34,7 +34,130 @@ def _normalize(text: str) -> str:
 
 
 def _nums(text: str) -> frozenset:
-    return frozenset(re.findall(r"\d+(?:[.,]\d+)?", text or ""))
+    return frozenset(_semantic_numbers(text))
+
+
+_NUMBER_RE = re.compile(r"\d+(?:[\s\u00a0]\d{3})*(?:[.,]\d+)?")
+_EXPLANATORY_PAREN_RE = re.compile(r"\(([^()]*)\)")
+_CATEGORY_PREFIX_RE = re.compile(
+    r"^\s*(?:"
+    r"бизнес[-\s]?залы?|такси|транспорт|консьерж(?:[-\s]?сервис)?|"
+    r"кэшбэк|cashback|вклады?|накопительные счета?|рестораны?|"
+    r"страхование|условия входа|стоимость обслуживания"
+    r")\s*[-—:]\s*",
+    re.IGNORECASE,
+)
+_EXPLANATORY_MARKERS = (
+    "ранее", "порог после", "порог до", "после 2024", "до 2024",
+    "истор", "справоч", "входит в", "основные привилегии",
+    "бессрочно", "части сервисов",
+)
+_ABSENT_MARKERS = (
+    "не найдено", "нет", "не предостав", "отсутств", "недоступ",
+    "не предусмотр",
+)
+_BRAND_ALIASES = {
+    "prime": ("prime", "прайм"),
+    "aspire": ("aspire", "аспайр"),
+    "priority pass": ("priority pass", "prioritypass"),
+    "onpass": ("onpass", "онпасс"),
+    "mir pass": ("mir pass", "mirpass", "мир pass"),
+    "mondial": ("mondial", "мондиаль"),
+    "class assistance": ("class assistance",),
+    "best doctor": ("best doctor", "bestdoctor"),
+    "fitmost": ("fitmost",),
+    "okko": ("okko", "окко"),
+    "sberprime": ("sberprime", "сберпрайм"),
+}
+
+
+def _strip_explanatory_parentheses(text: str) -> str:
+    def replace(match):
+        body = match.group(1).lower()
+        if any(marker in body for marker in _EXPLANATORY_MARKERS):
+            return " "
+        return match.group(0)
+
+    return _EXPLANATORY_PAREN_RE.sub(replace, text or "")
+
+
+def _semantic_numbers(text: str) -> tuple[str, ...]:
+    cleaned = _strip_explanatory_parentheses(text)
+    numbers = []
+    for match in _NUMBER_RE.findall(cleaned):
+        value = re.sub(r"[\s\u00a0]", "", match).replace(",", ".")
+        if "." in value:
+            value = value.rstrip("0").rstrip(".")
+        value = value.lstrip("0") or "0"
+        numbers.append(value)
+    return tuple(numbers)
+
+
+def _canonical_condition_text(text: str) -> str:
+    cleaned = _strip_explanatory_parentheses(text).lower()
+    cleaned = cleaned.replace("ё", "е")
+    cleaned = re.sub(r"\bбизнес\s+залы\b", "бизнес-залы", cleaned)
+    cleaned = _CATEGORY_PREFIX_RE.sub("", cleaned)
+    cleaned = re.sub(r"[\s.,;:|«»\"'()\-–—/]+", " ", cleaned)
+    cleaned = re.sub(r"\b(?:есть|доступен|доступно|сервис)\b", " ", cleaned)
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+    return cleaned
+
+
+def _availability_state(text: str) -> str:
+    normalized = _normalize(text)
+    if any(marker in normalized for marker in _ABSENT_MARKERS):
+        if "без огранич" not in normalized:
+            return "absent"
+    return "present"
+
+
+def _is_unlimited(text: str) -> bool:
+    normalized = _normalize(text)
+    return "безлимит" in normalized or "неогранич" in normalized
+
+
+def _brand_tokens(text: str) -> tuple[str, ...]:
+    normalized = _canonical_condition_text(text)
+    found = []
+    for brand, aliases in _BRAND_ALIASES.items():
+        if any(alias in normalized for alias in aliases):
+            found.append(brand)
+    return tuple(found)
+
+
+def _condition_signature(text: str) -> dict:
+    return {
+        "numbers": _semantic_numbers(text),
+        "availability": _availability_state(text),
+        "unlimited": _is_unlimited(text),
+        "brands": _brand_tokens(text),
+        "core": _canonical_condition_text(text),
+    }
+
+
+def _same_condition(old_value: str, new_value: str) -> bool:
+    old_sig = _condition_signature(old_value)
+    new_sig = _condition_signature(new_value)
+    if old_sig == new_sig:
+        return True
+    if old_sig["availability"] != new_sig["availability"]:
+        return False
+    if old_sig["unlimited"] != new_sig["unlimited"]:
+        return False
+    if old_sig["brands"] != new_sig["brands"]:
+        return False
+
+    old_numbers, new_numbers = old_sig["numbers"], new_sig["numbers"]
+    if old_numbers or new_numbers:
+        return old_numbers == new_numbers
+
+    old_core, new_core = old_sig["core"], new_sig["core"]
+    if old_core == new_core:
+        return True
+    if old_core and new_core and (old_core in new_core or new_core in old_core):
+        return True
+    return False
 
 
 def change_kind(field_id: str, old_value: str, new_value: str) -> str:
@@ -53,9 +176,8 @@ def change_kind(field_id: str, old_value: str, new_value: str) -> str:
         return "service"  # данные пропали из источника — техпроблема
     if _normalize(old_value) == _normalize(new_value):
         return "service"  # то же значение, другая пунктуация/регистр
-    old_nums, new_nums = _nums(old_value), _nums(new_value)
-    if old_nums and new_nums and old_nums == new_nums:
-        return "service"  # переформулировка: все цифры совпадают
+    if _same_condition(old_value, new_value):
+        return "service"  # переформулировка тех же условий
     return "market"
 
 
@@ -130,6 +252,8 @@ def diff_results(prev_scan: dict, new_scan: dict, field_labels: dict) -> list:
             })
             continue
         for field_id, new_field in new_entry.get("fields", {}).items():
+            if field_id in REFERENCE_FIELDS:
+                continue
             old_field = prev_entry.get("fields", {}).get(field_id)
             if old_field is None:
                 continue
