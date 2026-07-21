@@ -2,13 +2,16 @@
 """Отзывы о премиальном обслуживании Сбера: сбор, классификация, лендинг.
 
 Источники (только Сбер: СберПремьер / СберПервый / Sber Private):
+  - Banki.ru — открытая общая страница /services/responses/list/,
+    локальный фильтр itemReviewed.name == "Сбербанк";
   - Sravni.ru — JSON-API списка отзывов (robots.txt разрешает /proxy-reviews);
   - Otzovik.com — страницы продуктов «Пакет услуг СберПремьер/СберПервый»;
   - premiumbanking.info — раздел «Оценки и отзывы» по Сберу.
 
-Banki.ru не сканируется: robots.txt запрещает раздел отзывов — по принципам
-проекта запрет уважается (см. README). vbr.ru отдаёт HTTP 401 (антибот),
-irecommend.ru релевантных отзывов не имеет — оба помечаются в отчёте.
+Banki.ru сканируется только по чистому URL списка без query-фильтров:
+/services/responses/list/. Запрещённые robots.txt варианты с фильтрами,
+комментариями и city/product URL не используются. vbr.ru отдаёт HTTP 401
+(антибот), irecommend.ru релевантных отзывов не имеет — оба помечаются в отчёте.
 
 Классификация тем/тональности/диагностики — эвристическая (ключевые слова
 + рейтинг как прайор), тональность считается по теме внутри отзыва.
@@ -23,6 +26,7 @@ import html
 import json
 import re
 import time
+from fnmatch import fnmatch
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -30,6 +34,7 @@ import requests
 from bs4 import BeautifulSoup
 
 from scanner.fetch import USER_AGENT, Fetcher
+from scanner.formatting import make_complete_summary, normalize_user_text
 from scanner.sources import REQUEST_PAUSE, REQUEST_TIMEOUT
 
 SBER_SRAVNI_ID = "5bb4f767245bc22a520a609b"  # ПАО «Сбербанк» (alias sberbank-rossii)
@@ -37,6 +42,13 @@ SBER_SRAVNI_ID = "5bb4f767245bc22a520a609b"  # ПАО «Сбербанк» (alia
 # Kill-switch по источникам: enabled=False выключает сборщик без падения
 # остального сервиса. tos_note — статус для юридической сверки.
 REVIEW_SOURCES = {
+    "banki_ru": {
+        "name": "Banki.ru",
+        "enabled": True,
+        "tos_note": "robots.txt для User-agent * не запрещает чистый "
+                    "/services/responses/list/; запрещённые query-фильтры "
+                    "и комментарии не используются",
+    },
     "sravni_ru": {
         "name": "Sravni.ru",
         "enabled": True,
@@ -58,12 +70,11 @@ REVIEW_SOURCES = {
 
 # Источники, проверенные и недоступные, — показываются в отчёте честно.
 UNAVAILABLE_SOURCES = [
-    ("Banki.ru («Народный рейтинг»)", "robots.txt запрещает раздел отзывов — "
-     "запрет уважается, обход не применяется"),
     ("Vbr.ru (Выбери.ру)", "HTTP 401 — антибот; не обходим"),
     ("iRecommend.ru", "релевантных отзывов о премиум-пакетах Сбера не найдено"),
 ]
 
+BANKI_LIST_URL = "https://www.banki.ru/services/responses/list/"
 OTZOVIK_PAGES = [
     "https://otzovik.com/reviews/paket_uslug_sberpremer/",
     "https://otzovik.com/reviews/paket_uslug_sberperviy_ot_sberbanka/",
@@ -206,6 +217,135 @@ def collect_sravni(client: _ApiClient, scan_date: str, log) -> list:
         if page > 80:  # предохранитель
             break
     return out
+
+
+def collect_banki(client: _ApiClient, scan_date: str, log) -> list:
+    """Отзывы о Сбере с чистой общей страницы Banki.ru без query-фильтров."""
+    if not _banki_robots_allows_clean_list(client):
+        raise PermissionError(f"robots.txt запрещает {BANKI_LIST_URL}")
+    resp = _banki_get_clean_list(client)
+    raw_html = resp.text
+    soup = BeautifulSoup(raw_html, "html.parser")
+    script = soup.find("script", attrs={"type": "application/ld+json"})
+    if script is None:
+        log.warning("  [banki] JSON-LD с отзывами не найден")
+        return []
+
+    links = _banki_review_links(soup)
+    reviews = []
+    for idx, match in enumerate(_banki_review_matches(script.get_text()), start=0):
+        bank_name = _clean_jsonld_text(match.group("bank"))
+        if bank_name.lower() not in {"сбербанк", "сбер"}:
+            continue
+        title = _clean_jsonld_text(match.group("title"))
+        body = _strip_html(_clean_jsonld_text(match.group("body")))
+        text = " ".join(part for part in (title, body) if part).strip()
+        if not text:
+            continue
+        rating_m = re.search(r'"ratingValue"\s*:\s*"([^"]+)"', match.group("middle"))
+        href = links[idx] if idx < len(links) else BANKI_LIST_URL
+        review_id = _banki_review_id(href, idx)
+        reviews.append({
+            "review_id": f"banki_{review_id}",
+            "source": "banki_ru",
+            "url": href,
+            "date": match.group("date")[:10],
+            "rating": _to_int(rating_m.group(1)) if rating_m else None,
+            "text_raw": text,
+            "scan_date": scan_date,
+        })
+    log.info("  [banki] найдено отзывов о Сбере: %d", len(reviews))
+    return reviews
+
+
+def _banki_get_clean_list(client: _ApiClient):
+    elapsed = time.monotonic() - client._last_ts
+    if elapsed < REQUEST_PAUSE:
+        time.sleep(REQUEST_PAUSE - elapsed)
+    client._last_ts = time.monotonic()
+    resp = client._session.get(BANKI_LIST_URL, timeout=REQUEST_TIMEOUT)
+    resp.raise_for_status()
+    return resp
+
+
+def _banki_robots_allows_clean_list(client: _ApiClient) -> bool:
+    """Banki.ru has `Disallow: /?`; urllib.robotparser treats it as `/`.
+
+    For the one allowed use case here, evaluate User-agent:* wildcard rules
+    against the exact clean path with no query string.
+    """
+    from urllib.parse import urlparse
+
+    parsed = urlparse(BANKI_LIST_URL)
+    if parsed.path != "/services/responses/list/" or parsed.query:
+        return False
+    resp = client._session.get(f"{parsed.scheme}://{parsed.netloc}/robots.txt",
+                               timeout=REQUEST_TIMEOUT)
+    if resp.status_code != 200:
+        return False
+    rules = _robots_star_disallows(resp.text)
+    target = parsed.path
+    return not any(_robots_pattern_matches(rule, target) for rule in rules)
+
+
+def _robots_star_disallows(robots_text: str) -> list[str]:
+    rules, in_star = [], False
+    for raw_line in robots_text.splitlines():
+        line = raw_line.split("#", 1)[0].strip()
+        if not line or ":" not in line:
+            continue
+        key, value = (part.strip() for part in line.split(":", 1))
+        key = key.lower()
+        if key == "user-agent":
+            in_star = value == "*"
+            continue
+        if in_star and key == "disallow" and value:
+            rules.append(value)
+    return rules
+
+
+def _robots_pattern_matches(pattern: str, target_path: str) -> bool:
+    if "?" in pattern and "?" not in target_path:
+        return False
+    return fnmatch(target_path, pattern)
+
+
+def _banki_review_matches(script_text: str):
+    pattern = re.compile(
+        r'\{\s*"@type"\s*:\s*"Review".*?'
+        r'"datePublished"\s*:\s*"(?P<date>[^"]*)".*?'
+        r'"reviewBody"\s*:\s*"(?P<body>.*?)",\s*'
+        r'"name"\s*:\s*"(?P<title>.*?)",'
+        r'(?P<middle>.*?)'
+        r'"itemReviewed"\s*:\s*\{.*?'
+        r'"name"\s*:\s*"(?P<bank>[^"]+)"',
+        re.S,
+    )
+    return list(pattern.finditer(script_text))
+
+
+def _banki_review_links(soup: BeautifulSoup) -> list[str]:
+    links, seen = [], set()
+    for a in soup.find_all("a", href=re.compile(r"/services/responses/bank/response/\d+/?$")):
+        href = a.get("href", "")
+        if not href:
+            continue
+        if not href.startswith("http"):
+            href = "https://www.banki.ru" + href
+        if href in seen:
+            continue
+        seen.add(href)
+        links.append(href)
+    return links
+
+
+def _banki_review_id(href: str, fallback_index: int) -> str:
+    match = re.search(r"/response/(\d+)/?", href)
+    return match.group(1) if match else f"list_{fallback_index}"
+
+
+def _clean_jsonld_text(text: str) -> str:
+    return html.unescape(text or "").replace("\\/", "/")
 
 
 def collect_otzovik(fetcher: Fetcher, scan_date: str, log) -> list:
@@ -373,6 +513,7 @@ def build_premium_reviews_landing(raw_dir: Path, store_path: Path,
     collected, failures = [], []
 
     collectors = {
+        "banki_ru": lambda: collect_banki(client, scan_date, log),
         "sravni_ru": lambda: collect_sravni(client, scan_date, log),
         "otzovik": lambda: collect_otzovik(fetcher, scan_date, log),
         "pbi_reviews": lambda: collect_pbi(fetcher, scan_date, log),
@@ -412,7 +553,7 @@ def build_premium_reviews_landing(raw_dir: Path, store_path: Path,
 # ---------- рендер ----------
 
 def _esc(value) -> str:
-    return html.escape(str(value if value is not None else ""))
+    return html.escape(normalize_user_text(value))
 
 
 def render_html(reviews: list, generated_at: datetime, failures: list) -> str:
@@ -474,7 +615,8 @@ def render_html(reviews: list, generated_at: datetime, failures: list) -> str:
       <p class="eyebrow">СберПремьер · СберПервый · Sber Private</p>
       <h1>Отзывы о премиальном обслуживании</h1>
       <p class="lead">Открытые отзывы клиентов о премиальных пакетах Сбера,
-      собранные с Sravni.ru, Otzovik.com и premiumbanking.info.
+      а также свежие отзывы о Сбере с общей страницы Banki.ru,
+      собранные с Banki.ru, Sravni.ru, Otzovik.com и premiumbanking.info.
       Темы и тональность размечены по каждой теме внутри отзыва.</p>
       <div class="stats">
         <div><b>{total}</b><span>отзывов всего</span></div>
@@ -519,8 +661,8 @@ def render_html(reviews: list, generated_at: datetime, failures: list) -> str:
       <p><b>Дисклеймер смещения:</b> сайты-отзовики — не репрезентативная
       выборка премиального сегмента: туда приходят преимущественно с жалобами,
       довольные клиенты почти не пишут. Доли негатива нельзя переносить на
-      клиентскую базу. Banki.ru (крупнейший массив отзывов) недоступен:
-      robots.txt запрещает сбор, запрет уважается.</p>
+      клиентскую базу. Banki.ru берётся только с чистой страницы
+      /services/responses/list/ без запрещённых query-фильтров.</p>
       <p><b>Метод:</b> классификация тем, тональности и типа проблемы —
       эвристическая (словари + оценка автора), LLM-разметка не применялась.
       Ручная валидация разметки не проводилась — трактовать как
@@ -809,7 +951,7 @@ def _top_useful_label(reviews: list) -> str:
 def _render_review_card(review: dict, index: int, initially_visible: bool) -> str:
     hidden_attr = "" if initially_visible else " hidden"
     text = review["text"]
-    excerpt = text[:900] + ("…" if len(text) > 900 else "")
+    excerpt = make_complete_summary(text, 900)
     date_sort = review["date"] or "0000-00-00"
     rating = "—" if review["rating"] is None else review["rating"]
     return f"""          <article class="review-card {review['sentiment']}" data-sentiment="{review['sentiment']}"

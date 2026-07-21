@@ -1,0 +1,79 @@
+# Telegram Automation For Competitor Reports
+
+## Summary
+
+Build a no-local-run workflow where GitHub Actions runs `.venv/bin/python main.py --scan-all` every day at **09:00 Moscow time** and uploads fresh `output/sber_vs_banks.html` plus `output/competitor_analysis.xlsx` to **Supabase Storage**. A Telegram bot hosted on **Vercel as a Next.js API webhook** shows two buttons: `Выгрузить HTML по конкурентам` and `Выгрузить Excel по конкурентам`.
+
+If today’s post-09:00 report exists, the bot sends it immediately. If not, the bot starts a GitHub Actions `workflow_dispatch`, sends status messages, waits for the workflow to finish asynchronously, and then the workflow sends the requested new file to the user.
+
+## Key Changes
+
+- Add automation paths, which currently conflict with `AGENTS.md`’s “keep work inside...” rule. Implementation should first update that rule to allow `.github/`, `api/`, `package.json`, `vercel.json`, and a small automation helper path if needed.
+- Add a GitHub Actions workflow:
+  - Scheduled daily at `06:00 UTC`, which is `09:00 МСК`.
+  - Manual `workflow_dispatch` inputs: `chat_id`, `report_type` (`html` or `xlsx`), and optional `request_id`.
+  - Installs Python deps, runs `.venv/bin/python main.py --scan-all`, uploads both reports to Supabase public bucket, and writes a `latest.json` manifest with generation time, file names, sizes, and success/error status.
+  - If triggered by Telegram, sends final success/failure messages and the requested file via Telegram Bot API.
+- Add Vercel/Next.js Telegram webhook:
+  - Handles `/start` and callback buttons.
+  - Reads Supabase public `latest.json`.
+  - If report freshness is `generated_at >= today 09:00 МСК`, sends the requested file immediately.
+  - If stale/missing, triggers GitHub Actions via GitHub API and replies: `Скан запущен, пришлю файл после завершения`.
+  - If another scan is already running, replies: `Скан уже идет, пришлю файл после завершения` and records the requester for notification.
+- Use Supabase Storage as a public bucket:
+  - `reports/sber_vs_banks.html`
+  - `reports/competitor_analysis.xlsx`
+  - `reports/latest.json`
+  - Public URLs are acceptable by current decision; anyone with the URL can download files.
+- Telegram access model:
+  - Bot is open.
+  - Colleagues use personal chats with the bot.
+  - No allowlist in v1, but keep code structured so allowlist can be added later.
+
+## Interfaces And Secrets
+
+- GitHub repository secrets:
+  - `TELEGRAM_BOT_TOKEN`
+  - `SUPABASE_URL`
+  - `SUPABASE_SERVICE_ROLE_KEY` or storage upload token
+  - `SUPABASE_BUCKET`
+- Vercel environment variables:
+  - `TELEGRAM_BOT_TOKEN`
+  - `GITHUB_TOKEN` or fine-scoped PAT able to dispatch workflows and read workflow status
+  - `GITHUB_OWNER=Ilya-Shmarov`
+  - `GITHUB_REPO=bank_analyst`
+  - `SUPABASE_PUBLIC_BASE_URL`
+  - `SUPABASE_BUCKET`
+- Telegram webhook:
+  - Set bot webhook to Vercel endpoint, e.g. `https://<vercel-domain>/api/telegram`.
+- Freshness rule:
+  - Fresh means report was generated **today after 09:00 МСК**.
+  - Otherwise button triggers a new scan.
+
+## Test Plan
+
+- Local non-network checks:
+  - `.venv/bin/python main.py --list-sources`
+  - `.venv/bin/python main.py --build-sber-vs`
+- GitHub Actions validation:
+  - Run workflow manually with no `chat_id`; expect Supabase files and `latest.json` to update.
+  - Run workflow manually with `chat_id` and `report_type=html`; expect Telegram to receive the generated HTML.
+  - Repeat with `report_type=xlsx`; expect Excel document delivery.
+- Telegram/Vercel validation:
+  - `/start` shows exactly two buttons.
+  - Press HTML when `latest.json` is fresh; bot sends `sber_vs_banks.html` immediately.
+  - Press Excel when fresh; bot sends `competitor_analysis.xlsx` immediately.
+  - Temporarily mark manifest stale; pressing a button triggers GitHub Actions and returns a status message.
+  - Simulate workflow failure; bot sends a clear error and does not claim success.
+- Concurrency validation:
+  - Two users press buttons while no fresh report exists.
+  - Only one scan starts.
+  - Both users receive status and the final requested file.
+
+## Assumptions
+
+- `--scan-all` is the correct daily command because it regenerates both Excel and `sber_vs_banks.html`.
+- Runtime of 3-4 minutes is suitable for GitHub Actions.
+- Reports are small enough for Telegram document upload; current local sizes are about 129 KB HTML and 195 KB XLSX.
+- Public Supabase bucket is acceptable because the bot is intentionally open.
+- Daily schedule includes weekends.

@@ -1,364 +1,582 @@
 # -*- coding: utf-8 -*-
-"""Static landing with premium program changes from premiumbanking.info."""
+"""Static premium program news feed built from PremiumBanking.info updates."""
 
 import html
+import json
 import re
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
+from urllib import robotparser
 
-from bs4 import BeautifulSoup
+import requests
+from bs4 import BeautifulSoup, Tag
 
-from scanner.fetch import Fetcher
-from scanner.parse import normalize_text
+from scanner.sources import PRIORITY_SOURCE_URLS
 
 
-BANK_PAGES = [
-    {"id": "sber", "name": "Сбер", "url": "https://premiumbanking.info/sber"},
-    {
-        "id": "alfabank",
-        "name": "Альфа-Банк",
-        "url": "https://premiumbanking.info/alfabank",
-    },
-    {"id": "vtb", "name": "ВТБ", "url": "https://premiumbanking.info/vtb"},
-    {
-        "id": "gazprombank",
-        "name": "Газпромбанк",
-        "url": "https://premiumbanking.info/gazprombank",
-    },
-    {"id": "ozon", "name": "Озон Банк", "url": "https://premiumbanking.info/ozon"},
-    {
-        "id": "raiffeisen",
-        "name": "Райффайзен",
-        "url": "https://premiumbanking.info/raiffeisen",
-    },
-    {"id": "tbank", "name": "Т-Банк", "url": "https://premiumbanking.info/tbank"},
+USER_AGENT = "bank-analyst-premium-updates/1.0"
+PBI_UPDATE_SOURCES = [
+    {"bank": "Сбер", "url": "https://premiumbanking.info/sber"},
+    {"bank": "Альфа-Банк", "url": "https://premiumbanking.info/alfabank"},
+    {"bank": "ВТБ", "url": "https://premiumbanking.info/vtb"},
+    {"bank": "Газпромбанк", "url": "https://premiumbanking.info/gazprombank"},
+    {"bank": "Озон Банк", "url": "https://premiumbanking.info/ozon"},
+    {"bank": "Райффайзен Банк", "url": "https://premiumbanking.info/raiffeisen"},
+    {"bank": "Т-Банк", "url": "https://premiumbanking.info/tbank"},
 ]
+SOURCE_BUTTON_URLS = {
+    "Сбер": PRIORITY_SOURCE_URLS["official"]["sber_premium"],
+    "Альфа-Банк": PRIORITY_SOURCE_URLS["official"]["alfa_only"],
+    "ВТБ": PRIORITY_SOURCE_URLS["official"]["vtb_privilege"],
+    "Газпромбанк": PRIORITY_SOURCE_URLS["official"]["gazprombank"],
+    "Озон Банк": PRIORITY_SOURCE_URLS["official"]["ozon_ultra"],
+    "Райффайзен Банк": PRIORITY_SOURCE_URLS["official"]["raiffeisen"],
+    "Т-Банк": PRIORITY_SOURCE_URLS["official"]["tbank_premium"],
+}
+MONTHS = {
+    "янв": "01",
+    "январь": "01",
+    "января": "01",
+    "фев": "02",
+    "февраль": "02",
+    "февраля": "02",
+    "мар": "03",
+    "март": "03",
+    "марта": "03",
+    "апр": "04",
+    "апрель": "04",
+    "апреля": "04",
+    "май": "05",
+    "мая": "05",
+    "июн": "06",
+    "июнь": "06",
+    "июня": "06",
+    "июл": "07",
+    "июль": "07",
+    "июля": "07",
+    "авг": "08",
+    "август": "08",
+    "августа": "08",
+    "сен": "09",
+    "сент": "09",
+    "сентябрь": "09",
+    "сентября": "09",
+    "окт": "10",
+    "октябрь": "10",
+    "октября": "10",
+    "ноя": "11",
+    "ноябрь": "11",
+    "ноября": "11",
+    "дек": "12",
+    "декабрь": "12",
+    "декабря": "12",
+}
 
-MAX_CHANGES_PER_BANK = 6
-DATE_RE = re.compile(
-    r"^(?:янв|фев|март|мар|апр|май|июнь|июн|июль|июл|авг|сент|сен|окт|ноя|дек)"
-    r"\.?\s+\d{4}$",
-    flags=re.IGNORECASE,
-)
 
-
-def build_premium_changes_landing(raw_dir: Path, output_path: Path) -> dict:
-    """Fetch source pages, extract change blocks, and write a static HTML page."""
-    fetched_at = datetime.now()
-    fetcher = Fetcher(raw_dir)
-    banks = []
-
-    for bank in BANK_PAGES:
-        result = fetcher.fetch([bank["url"]], f"premium_changes_{bank['id']}",
-                               fetched_at.strftime("%Y-%m-%d"))
-        if result.status != "ok":
-            banks.append({
-                **bank,
-                "status": "error",
-                "error": result.error or result.status,
-                "changes": [],
-            })
-            continue
-        banks.append({
-            **bank,
-            "status": "ok",
-            "error": "",
-            "changes": extract_changes(result.html),
-        })
-
-    html_text = render_html(banks, fetched_at)
+def build_premium_changes_landing(_workbook_path: Path, output_path: Path) -> dict:
+    """Fetch PremiumBanking.info update blocks and write a static HTML page."""
+    changes, failed = fetch_pbi_updates()
+    banks = group_by_bank(changes)
+    html_text = render_html(banks, datetime.now())
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(html_text, encoding="utf-8")
-
-    changes_count = sum(len(bank["changes"]) for bank in banks)
-    failed_count = sum(1 for bank in banks if bank["status"] != "ok")
     return {
         "output": str(output_path),
         "banks": len(banks),
-        "changes": changes_count,
-        "failed": failed_count,
+        "changes": sum(len(bank["changes"]) for bank in banks),
+        "failed": failed,
     }
 
 
-def extract_changes(source_html: str) -> list[dict]:
-    """Extract dated change entries from the source page text."""
-    lines = _page_lines(source_html)
-    start = _find_changes_start(lines)
-    if start is None:
+def load_changes(_workbook_path: Path = None) -> list[dict]:
+    """Return news records from PremiumBanking.info update sections.
+
+    The argument is accepted for compatibility with the main comparison builder;
+    the comparison data itself is not used as a source for this feed.
+    """
+    changes, _failed = fetch_pbi_updates()
+    return changes
+
+
+def fetch_pbi_updates(fetcher=None) -> tuple[list[dict], int]:
+    changes = []
+    failed = 0
+    for source in PBI_UPDATE_SOURCES:
+        try:
+            page_html = fetcher(source["url"]) if fetcher else _fetch_pbi_page(source["url"])
+            changes.extend(parse_pbi_updates(page_html, source["bank"], source["url"]))
+        except Exception:  # noqa: BLE001 - one unavailable PBI page must not break the landing
+            failed += 1
+    changes.sort(key=lambda item: (item["dateSort"], -item["order"]), reverse=True)
+    return changes, failed
+
+
+def parse_pbi_updates(page_html: str, bank: str, source_page: str) -> list[dict]:
+    soup = BeautifulSoup(page_html, "html.parser")
+    updates_anchor = soup.find(id="updates")
+    if updates_anchor is None:
+        return []
+    container = _first_tag_sibling(updates_anchor)
+    if container is None:
         return []
 
-    entries = []
-    pending_text = []
-    pending_date = "актуальное изменение"
-    for line in lines[start:]:
-        if _is_section_end(line):
-            break
-        if _is_noise(line):
+    records = []
+    pending_text = ""
+    order = 1
+    for node in container.descendants:
+        if not isinstance(node, Tag):
             continue
-        if DATE_RE.match(line):
-            if pending_text:
-                entries.append(_change_entry(pending_date, pending_text))
-                pending_text = []
-            pending_date = line
-            continue
-        cleaned = _clean_change_text(line)
-        if cleaned:
-            pending_text.append(cleaned)
-    if pending_text:
-        entries.append(_change_entry(pending_date, pending_text))
-    return entries[:MAX_CHANGES_PER_BANK]
+        if node.name == "p":
+            text = _news_text(node)
+            if text and "Последние изменения" not in text:
+                pending_text = text
+        elif node.name == "footer" and pending_text:
+            date_label = _clean_text(node.get_text(" ", strip=True))
+            records.append({
+                "bank": bank,
+                "dateLabel": date_label,
+                "dateSort": _date_sort(date_label),
+                "text": pending_text,
+                "sourcePage": source_page,
+                "order": order,
+            })
+            order += 1
+            pending_text = ""
+    return records
 
 
-def render_html(banks: list[dict], fetched_at: datetime) -> str:
-    """Render the standalone HTML document."""
-    changes_count = sum(len(bank["changes"]) for bank in banks)
-    bank_cards = "\n".join(_render_bank(bank) for bank in banks)
-    generated = fetched_at.strftime("%d.%m.%Y %H:%M")
+def group_by_bank(changes: list[dict]) -> list[dict]:
+    by_bank = {}
+    for change in changes:
+        by_bank.setdefault(change["bank"], []).append(change)
+    source_order = {source["bank"]: idx for idx, source in enumerate(PBI_UPDATE_SOURCES)}
+    return [
+        {"name": bank, "changes": bank_changes}
+        for bank, bank_changes in sorted(
+            by_bank.items(),
+            key=lambda item: source_order.get(item[0], len(source_order)),
+        )
+    ]
+
+
+def render_html(banks: list[dict], generated_at: datetime) -> str:
+    app_html = render_changes_app(banks, generated_at)
+    payload = _esc(json.dumps({"changes": banks}, ensure_ascii=False))
     return f"""<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Изменения премиальных программ</title>
-  <style>{_CSS}</style>
+  <title>Последние изменения премиальных программ</title>
+  <style>{changes_css()}</style>
 </head>
 <body>
   <main class="page">
-    <section class="hero">
-      <p class="eyebrow">Премиальный банкинг РФ</p>
-      <h1>Изменения премиальных программ</h1>
-      <p class="lead">Последние обновления по Сберу, Альфа-Банку, ВТБ,
-      Газпромбанку, Озон Банку, Райффайзену и Т-Банку.</p>
-      <div class="stats">
-        <div><b>{len(banks)}</b><span>банков</span></div>
-        <div><b>{changes_count}</b><span>изменений</span></div>
-        <div><b>{_esc(generated)}</b><span>дата сборки</span></div>
-      </div>
-    </section>
-    <section class="grid">
-      {bank_cards}
-    </section>
+    {app_html}
   </main>
+  <script id="data" type="application/json">{payload}</script>
+  <script>{changes_js()}initChangesApp(document.querySelector('.changes-app'));</script>
 </body>
 </html>"""
 
 
-def _page_lines(source_html: str) -> list[str]:
-    soup = BeautifulSoup(source_html, "html.parser")
-    for tag in soup(["script", "style", "noscript", "svg", "iframe"]):
-        tag.decompose()
-    text = soup.get_text(separator="\n", strip=True)
-    lines = [normalize_text(line) for line in text.splitlines()]
-    return [line for line in lines if line]
+def render_changes_panel(banks: list[dict], generated_at: datetime) -> str:
+    changes_count = sum(len(bank["changes"]) for bank in banks)
+    return f"""
+      <section class="changes-panel js-changes-panel" data-storage-key="sber_vs_changes_collapsed">
+        <div class="changes-panel-summary">
+          <button type="button" class="changes-panel-toggle js-changes-show"
+              data-open-label="Последние изменения · {changes_count} событий · Скрыть"
+              data-closed-label="Последние изменения · {changes_count} событий · Показать"
+              aria-expanded="false">
+            Последние изменения · {changes_count} событий · Показать
+          </button>
+        </div>
+        <div class="changes-panel-body js-changes-panel-body" hidden>
+          {render_changes_app(banks, generated_at)}
+          <div class="changes-sticky-close">
+            <button type="button" class="changes-hide-btn compact js-changes-hide"
+                aria-label="Скрыть раздел последних изменений">
+              Скрыть изменения ↑
+            </button>
+          </div>
+        </div>
+      </section>"""
 
 
-def _find_changes_start(lines: list[str]):
-    for idx, line in enumerate(lines):
-        low = line.lower()
-        if ("последние изменения" in low
-                and "премиальн" in low
-                and "программ" in low):
-            return idx + 1
-    return None
-
-
-def _is_section_end(line: str) -> bool:
-    low = line.lower()
-    return (
-        low.startswith("список всех премиальных уровней")
-        or low.startswith("premiumbanking.info")
-        or low.startswith("рассылка")
-        or low.startswith("письма для премиалов")
-        or low.startswith("формат рассылки")
-        or low.startswith("© ")
-        or low == "сравнить уровни"
+def render_changes_app(banks: list[dict], generated_at: datetime) -> str:
+    bank_options = "\n".join(
+        f'<option value="{_esc(bank["name"])}">{_esc(bank["name"])}</option>'
+        for bank in banks
     )
-
-
-def _is_noise(line: str) -> bool:
-    low = line.lower()
-    return (
-        low in {"new", "новое", "подробнее", "."}
-        or low.startswith("выбрать уровень")
-        or low.startswith("сравнить премиум")
-        or low.startswith("задать вопрос")
-    )
-
-
-def _clean_change_text(line: str) -> str:
-    text = re.sub(r"\bПодробнее\b", "", line, flags=re.IGNORECASE)
-    text = re.sub(r"\s+([.,;:])", r"\1", text)
-    text = re.sub(r"\.{2,}", ".", text)
-    text = re.sub(r"\s+", " ", text).strip(" .")
-    if not text or _is_noise(text) or DATE_RE.match(text):
-        return ""
-    return text + "."
-
-
-def _change_entry(date: str, text_parts: list[str]) -> dict:
-    text = " ".join(text_parts)
-    text = re.sub(r"\s+", " ", text).strip()
-    return {
-        "date": date,
-        "text": text,
-        "category": _category(text),
-    }
-
-
-def _category(text: str) -> str:
-    low = text.lower()
-    if any(word in low for word in (
-        "остат", "трат", "зарплат", "стоимость", "обслужив",
-        "платн", "комисс", "услов",
-    )):
-        return "Условия"
-    if any(word in low for word in (
-        "бизнес-зал", "бз", "ресторан", "такси", "дмс", "страх",
-        "консьерж", "медицин", "фаст", "трансфер", "fitmost",
-        "фитмост", "persona", "on·pass", "·on·pass",
-    )):
-        return "Привилегии"
-    if any(word in low for word in (
-        "старт", "новые уровни", "перезапуск", "название", "переимен",
-        "программа", "присоединился",
-    )):
-        return "Программа"
-    return "Изменение"
+    bank_sections = "\n".join(_render_bank(bank) for bank in banks)
+    changes_count = sum(len(bank["changes"]) for bank in banks)
+    return f"""
+    <section class="changes-app">
+    <header class="changes-top">
+      <p class="eyebrow">PremiumBanking.info</p>
+      <h1>Последние изменения</h1>
+      <div class="changes-stats">
+        <span><b>{len(banks)}</b> банков</span>
+        <span><b>{changes_count}</b> публикаций</span>
+      </div>
+    </header>
+    <section class="changes-filters" aria-label="Фильтры">
+      <label>Банк
+        <select class="js-change-bank-filter">
+          <option value="">Все банки</option>
+          {bank_options}
+        </select>
+      </label>
+      <label>Период
+        <select class="js-change-period-filter">
+          <option value="">Все даты</option>
+          <option value="30">30 дней</option>
+          <option value="90">90 дней</option>
+          <option value="365">Год</option>
+        </select>
+      </label>
+    </section>
+    <section class="changes-banks">
+      {bank_sections or '<p class="empty">Публикации PremiumBanking.info не найдены.</p>'}
+    </section>
+    </section>"""
 
 
 def _render_bank(bank: dict) -> str:
-    if bank["status"] != "ok":
-        changes_html = (
-            f'<p class="empty">Данные не получены: {_esc(bank["error"])}</p>'
-        )
-    elif not bank["changes"]:
-        changes_html = '<p class="empty">Раздел изменений не найден</p>'
-    else:
-        changes_html = "\n".join(_render_change(change) for change in bank["changes"])
-
+    changes_html = "\n".join(_render_change(change) for change in bank["changes"])
     return f"""
-      <article class="bank-card">
-        <div class="bank-head">
-          <h2><a href="{_esc(bank['url'])}" target="_blank" rel="noreferrer">{_esc(bank['name'])}</a></h2>
-          <span>{len(bank['changes'])} изменений</span>
-        </div>
+      <section class="change-bank js-change-bank" data-bank="{_esc(bank['name'])}">
+        <h2>{_esc(bank['name'])}</h2>
         <div class="timeline">
           {changes_html}
         </div>
-      </article>"""
+      </section>"""
 
 
 def _render_change(change: dict) -> str:
+    change_id = f"{change.get('bank', '')}-{change.get('order', '')}"
+    source_url = _source_button_url(change)
     return f"""
-          <div class="change">
-            <div class="change-meta">
-              <span class="date">{_esc(change['date'])}</span>
-              <span class="tag">{_esc(change['category'])}</span>
+          <article class="change js-change-card"
+              data-change-id="{_esc(change_id)}"
+              data-date="{_esc(change.get('dateSort', ''))}">
+            <div class="change-head">
+              <span>{_esc(change.get('dateLabel', ''))}</span>
             </div>
-            <p>{_esc(change['text'])}</p>
-          </div>"""
+            <p>{_esc(change.get('text', ''))}</p>
+            <a href="{_esc(source_url)}" target="_blank" rel="noreferrer">Источник</a>
+          </article>"""
+
+
+def _fetch_pbi_page(url: str) -> str:
+    if not _robots_allows(url):
+        raise RuntimeError(f"robots.txt disallows {url}")
+    response = requests.get(url, timeout=25, headers={"User-Agent": USER_AGENT})
+    response.raise_for_status()
+    return response.text
+
+
+def _source_button_url(change: dict) -> str:
+    bank = change.get("bank", "")
+    return _clean_url(SOURCE_BUTTON_URLS.get(bank) or change.get("sourcePage", ""))
+
+
+def _robots_allows(url: str) -> bool:
+    parser = robotparser.RobotFileParser()
+    parser.set_url("https://premiumbanking.info/robots.txt")
+    parser.read()
+    return parser.can_fetch(USER_AGENT, url)
+
+
+def _first_tag_sibling(node) -> Optional[Tag]:
+    sibling = node.next_sibling
+    while sibling is not None:
+        if isinstance(sibling, Tag):
+            return sibling
+        sibling = sibling.next_sibling
+    return None
+
+
+def _news_text(node: Tag) -> str:
+    for link in node.find_all("a"):
+        if _clean_text(link.get_text(" ", strip=True)).lower() == "подробнее":
+            link.decompose()
+    text = _clean_text(node.get_text(" ", strip=True))
+    text = re.sub(r"\s+\.", ".", text)
+    return re.sub(r"\.{2,}", ".", text)
+
+
+def _date_sort(date_label: str) -> str:
+    text = _clean_text(date_label).replace("\u00a0", " ").lower()
+    year_match = re.search(r"(20\d{2})", text)
+    year = year_match.group(1) if year_match else "1900"
+    month = "01"
+    for token, number in MONTHS.items():
+        if re.search(rf"\b{re.escape(token)}\b", text):
+            month = number
+            break
+    return f"{year}-{month}-01"
+
+
+def _clean_text(value: str) -> str:
+    return re.sub(r"\s+", " ", (value or "").replace("&nbsp", " ")).strip()
+
+
+def _clean_url(value) -> str:
+    return re.sub(r"\s*:\s*//\s*", "://", _clean(value))
+
+
+def _clean(value) -> str:
+    return "" if value is None else str(value).strip()
 
 
 def _esc(value) -> str:
-    return html.escape(str(value or ""))
+    return html.escape(str(value), quote=True)
 
 
-_CSS = """
+def changes_js() -> str:
+    return _JS
+
+
+def changes_css(embedded: bool = False) -> str:
+    return _EMBED_CSS if embedded else _CSS
+
+
+_JS = """
+function changeFilters(root) {
+  return {
+    bank: root.querySelector('.js-change-bank-filter'),
+    period: root.querySelector('.js-change-period-filter')
+  };
+}
+
+function withinChangePeriod(dateText, days) {
+  if (!days || !dateText) return true;
+  const date = new Date(dateText + 'T00:00:00');
+  if (Number.isNaN(date.getTime())) return true;
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - Number(days));
+  return date >= cutoff;
+}
+
+function applyChangeFilters(root) {
+  const filters = changeFilters(root);
+  const bankValue = filters.bank.value;
+  const periodValue = filters.period.value;
+  root.querySelectorAll('.js-change-bank').forEach(bank => {
+    const bankMatch = !bankValue || bank.dataset.bank === bankValue;
+    let visibleCount = 0;
+    bank.querySelectorAll('.js-change-card').forEach(change => {
+      const visible = bankMatch && withinChangePeriod(change.dataset.date, periodValue);
+      change.hidden = !visible;
+      if (visible) visibleCount += 1;
+    });
+    bank.hidden = visibleCount === 0;
+  });
+}
+
+function initChangesApp(root) {
+  if (!root) return;
+  Object.values(changeFilters(root)).forEach(filter => {
+    if (filter) filter.addEventListener('change', () => applyChangeFilters(root));
+  });
+  applyChangeFilters(root);
+}
+
+function initChangesPanel(panel) {
+  if (!panel) return;
+  const key = panel.dataset.storageKey || 'changes_collapsed';
+  const showButton = panel.querySelector('.js-changes-show');
+  const body = panel.querySelector('.js-changes-panel-body');
+  const hideButtons = panel.querySelectorAll('.js-changes-hide');
+  const stored = getChangesPanelStorage(key);
+  const collapsed = stored === null ? true : stored !== 'false';
+
+  function setCollapsed(nextCollapsed, options = {}) {
+    body.hidden = nextCollapsed;
+    showButton.setAttribute('aria-expanded', String(!nextCollapsed));
+    showButton.textContent = nextCollapsed
+      ? showButton.dataset.closedLabel
+      : showButton.dataset.openLabel;
+    panel.classList.toggle('is-open', !nextCollapsed);
+    setChangesPanelStorage(key, String(nextCollapsed));
+    if (nextCollapsed && options.scroll) {
+      panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      window.setTimeout(() => showButton.focus({ preventScroll: true }), 260);
+    }
+    if (!nextCollapsed) {
+      initChangesApp(panel.querySelector('.changes-app'));
+    }
+  }
+
+  showButton.addEventListener('click', () => setCollapsed(!body.hidden));
+  hideButtons.forEach((button) => {
+    button.addEventListener('click', () => setCollapsed(true, { scroll: true }));
+  });
+  setCollapsed(collapsed);
+}
+
+function getChangesPanelStorage(key) {
+  try {
+    return window.localStorage ? window.localStorage.getItem(key) : null;
+  } catch (_error) {
+    return null;
+  }
+}
+
+function setChangesPanelStorage(key, value) {
+  try {
+    if (window.localStorage) window.localStorage.setItem(key, value);
+  } catch (_error) {
+    // Storage can be unavailable in some embedded file viewers.
+  }
+}
+"""
+
+
+_BASE_CSS = """
 :root {
-  --bg: #f7f8f6;
-  --card: #ffffff;
-  --ink: #17231d;
-  --muted: #64746b;
-  --line: #dfe7e1;
-  --green: #188f4f;
-  --green-soft: #e5f4eb;
+  color-scheme: light;
+  --text: #17202a;
+  --muted: #667085;
+  --line: #d8dee8;
+  --panel: #ffffff;
+  --bg: #f5f7fb;
+  --accent: #0f766e;
 }
 * { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
   background: var(--bg);
-  color: var(--ink);
-  font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  -webkit-tap-highlight-color: rgba(24, 143, 79, 0.18);
+  color: var(--text);
+  font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
-a { touch-action: manipulation; }
-.page { max-width: 1160px; margin: 0 auto; padding: 36px 18px 56px; }
-.hero { padding: 18px 0 28px; border-bottom: 1px solid var(--line); }
-.eyebrow {
-  margin: 0 0 8px;
-  color: var(--green);
-  font-size: 13px;
-  font-weight: 700;
-  text-transform: uppercase;
+.page { max-width: 1180px; margin: 0 auto; padding: 28px 18px 48px; }
+"""
+
+
+_EMBED_CSS = """
+.changes-app {
+  --text: #17202a;
+  --muted: #667085;
+  --line: #d8dee8;
+  --panel: #ffffff;
+  --bg: #f5f7fb;
+  --accent: var(--green, #0f766e);
+  color: var(--text);
 }
-h1 { margin: 0; font-size: 42px; line-height: 1.08; letter-spacing: 0; }
-.lead { max-width: 780px; margin: 14px 0 0; color: var(--muted); font-size: 17px; }
-.stats { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
-.stats div {
-  min-width: 150px;
-  background: var(--card);
+.changes-top { margin-bottom: 22px; }
+.eyebrow { margin: 0 0 6px; color: var(--accent); font-weight: 700; }
+.changes-app h1 { margin: 0; font-size: clamp(30px, 5vw, 54px); line-height: 1.05; letter-spacing: 0; }
+.updated { margin: 12px 0 0; color: var(--muted); }
+.changes-stats { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+.changes-stats span {
   border: 1px solid var(--line);
+  background: var(--panel);
   border-radius: 8px;
-  padding: 12px 14px;
+  padding: 9px 12px;
 }
-.stats b { display: block; font-size: 24px; color: var(--green); }
-.stats span { color: var(--muted); font-size: 13px; }
-.grid {
+.changes-filters {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-  margin-top: 26px;
+  grid-template-columns: repeat(2, minmax(180px, 1fr));
+  gap: 12px;
+  margin: 22px 0;
 }
-.bank-card {
-  background: var(--card);
+.changes-app label { display: grid; gap: 6px; color: var(--muted); font-size: 13px; }
+.changes-app select {
+  min-height: 40px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  min-width: 0;
-  padding: 18px;
+  background: #fff;
+  color: var(--text);
+  padding: 0 10px;
+  font: inherit;
 }
-.bank-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 14px;
-}
-h2 { margin: 0; font-size: 22px; letter-spacing: 0; }
-h2 a { color: var(--ink); display: inline-flex; align-items: center;
-  min-height: 44px; text-decoration: none; }
-h2 a:hover { color: var(--green); }
-.bank-head span { color: var(--muted); font-size: 13px; white-space: nowrap; }
+.changes-banks { display: grid; gap: 18px; }
+.change-bank { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 18px; }
+.changes-app h2 { margin: 0 0 14px; font-size: 24px; letter-spacing: 0; }
 .timeline { display: grid; gap: 12px; }
 .change {
-  border-left: 3px solid var(--green);
-  padding: 2px 0 2px 12px;
+  border-left: 3px solid var(--accent);
+  padding: 12px 0 12px 14px;
 }
-.change-meta {
+.change-head { display: flex; gap: 8px; flex-wrap: wrap; color: var(--muted); font-size: 13px; }
+.change p { margin: 6px 0 10px; }
+.changes-app a { color: var(--accent); font-weight: 700; }
+.empty { color: var(--muted); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px; }
+.changes-panel { margin-top: 18px; border: 1px solid #cfe5da; border-radius: 8px; background: var(--panel); }
+.changes-panel-summary { padding: 0; }
+.changes-panel-toggle {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: #eef8f2;
+  color: var(--text);
+  cursor: pointer;
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
   align-items: center;
-  margin-bottom: 4px;
+  justify-content: space-between;
+  padding: 12px 14px;
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
 }
-.date { color: var(--muted); font-size: 13px; font-weight: 700; }
-.tag {
-  background: var(--green-soft);
-  color: var(--green);
-  border-radius: 999px;
-  padding: 2px 8px;
-  font-size: 12px;
+.changes-panel-toggle:hover,
+.changes-panel-toggle:focus-visible {
+  background: #e2f3ea;
+  border-color: #9ecfb6;
+  outline: 2px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  outline-offset: -2px;
+  color: var(--accent);
+}
+.changes-panel-body { padding: 0 14px 16px; }
+.changes-hide-btn {
+  min-height: 44px;
+  border: 1px solid #9ecfb6;
+  border-radius: 8px;
+  background: #e7f6ed;
+  color: #0b6b3f;
+  cursor: pointer;
+  padding: 9px 12px;
+  font: inherit;
+  font-size: 13px;
   font-weight: 700;
 }
-.change p { margin: 0; }
-.empty { color: var(--muted); margin: 0; }
-@media (max-width: 820px) {
-  .page { padding: 24px 14px 42px; }
-  h1 { font-size: 32px; }
-  .stats div { flex: 1 1 138px; min-width: 0; }
-  .grid { grid-template-columns: 1fr; }
-  .bank-card { padding: 16px; }
-  .bank-head { display: block; }
-  .bank-head span { display: block; margin-top: 4px; }
+.changes-hide-btn:hover,
+.changes-hide-btn:focus-visible {
+  background: #d8efdf;
+  border-color: #4da375;
+  outline: 2px solid color-mix(in srgb, var(--accent) 28%, transparent);
+  outline-offset: 2px;
+}
+.changes-sticky-close {
+  position: sticky;
+  bottom: 12px;
+  z-index: 4;
+  display: flex;
+  justify-content: flex-end;
+  pointer-events: none;
+  margin-top: 14px;
+  padding-right: 10px;
+}
+.changes-sticky-close .changes-hide-btn {
+  pointer-events: auto;
+  box-shadow: 0 8px 22px rgba(23, 32, 42, 0.16);
+}
+.changes-panel:not(.is-open) .changes-sticky-close { display: none; }
+.changes-panel .changes-app { padding-top: 16px; }
+.changes-panel .changes-app h1 { font-size: clamp(24px, 4vw, 36px); }
+@media (max-width: 760px) {
+  .changes-filters { grid-template-columns: 1fr; }
+  .changes-panel-body { padding-inline: 10px; }
+  .changes-hide-btn { width: 100%; }
+  .changes-sticky-close { bottom: 8px; }
+  .changes-sticky-close .changes-hide-btn { width: auto; max-width: calc(100vw - 48px); }
 }
 """
+
+
+_CSS = _BASE_CSS + _EMBED_CSS

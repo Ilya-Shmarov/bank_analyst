@@ -3,7 +3,7 @@
 competitor-scanner — конкурентный анализ премиального банкинга.
 
 Запуск:
-    python main.py --scan-all               # полный скан + Excel + HTML-витрины
+    python main.py --scan-all               # полный скан + Excel + JSON + HTML-витрины
     python main.py --scan-bank tbank        # точечный скан одного банка
     python main.py --scan-lifestyle         # только экосистемные подписки
     python main.py --build-sber-vs          # HTML-лендинг Сбер VS банки
@@ -13,12 +13,15 @@ competitor-scanner — конкурентный анализ премиальн�
 """
 
 import argparse
+import json
 import logging
 import sys
 from datetime import datetime
 from pathlib import Path
 
 from scanner import sources
+from scanner.benefits import other_benefits_text
+from scanner.contracts import validate_scan_contracts
 from scanner.curated import curated_for
 from scanner.diff import (
     MAX_SERVICE_LOG,
@@ -32,8 +35,12 @@ from scanner.diff import (
 from scanner.fetch import Fetcher
 from scanner.merge import merge_tier_fields
 from scanner.parse import parse_source
+from scanner.publication import apply_publication_gate, derivation_components, gate_field
 from scanner.scoring import score_tier
 from report.excel_writer import write_report
+from report.json_writer import write_comparison_json
+from config import COMPARISON_JSON, GENERATED_HTML
+from publisher import publish_site
 
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
@@ -41,9 +48,12 @@ RAW_DIR = DATA_DIR / "raw"
 HISTORY_PATH = DATA_DIR / "history.json"
 SERVICE_LOG_PATH = DATA_DIR / "service_log.json"      # технический лог сервиса
 OUTPUT_PATH = BASE_DIR / "output" / "competitor_analysis.xlsx"
-SBER_VS_PATH = BASE_DIR / "output" / "sber_vs_banks.html"
+COMPARISON_JSON_PATH = BASE_DIR / "output" / COMPARISON_JSON
+SBER_VS_PATH = BASE_DIR / "output" / GENERATED_HTML
 PREMIUM_CHANGES_PATH = BASE_DIR / "output" / "premium_changes.html"
 REVIEWS_STORE_PATH = DATA_DIR / "premium_reviews.json"
+RUN_REPORT_JSON_PATH = BASE_DIR / "output" / "last_run_report.json"
+RUN_REPORT_TEXT_PATH = BASE_DIR / "output" / "last_run_report.txt"
 
 log = logging.getLogger("scanner")
 
@@ -92,6 +102,7 @@ def scan_banks(banks: list, fetcher: Fetcher, scan_dt: str) -> tuple:
                     parsed_sources.append({
                         "source_id": src_id,
                         "url": fetch_result.url,
+                        "source_section": tier.get("tier_name", ""),
                         "quality": quality,
                         "fields": fields,
                     })
@@ -106,8 +117,38 @@ def scan_banks(banks: list, fetcher: Fetcher, scan_dt: str) -> tuple:
             field_ids = (list(sources.LIFESTYLE_FIELDS) + ["bank_overlap"]
                          if bank["type"] == "lifestyle"
                          else list(sources.BANK_FIELDS))
-            merged = merge_tier_fields(parsed_sources, curated_for(tier["tier_id"]),
-                                       field_ids, scan_dt)
+            merged = merge_tier_fields(
+                parsed_sources, curated_for(tier["tier_id"]), field_ids, scan_dt,
+                bank_id=bank["id"], tier_id=tier["tier_id"],
+            )
+            merged = apply_publication_gate(merged)
+            if bank["type"] != "lifestyle" and "other_benefits" in merged:
+                derived_value = other_benefits_text(merged)
+                component_ids = (
+                    "always_included_options", "selectable_options",
+                    "ecosystem", "auto", "concierge",
+                )
+                source_urls = [
+                    merged[fid].get("source_url", "")
+                    for fid in component_ids
+                    if isinstance(merged.get(fid), dict)
+                    and merged[fid].get("publication_status") == "published"
+                    and merged[fid].get("source_url")
+                ]
+                merged["other_benefits"]["value"] = derived_value
+                merged["other_benefits"]["source_id"] = "derived"
+                merged["other_benefits"]["source_name"] = "Нормализация"
+                merged["other_benefits"]["quality"] = "derived"
+                merged["other_benefits"]["source_url"] = "; ".join(
+                    dict.fromkeys(source_urls)
+                )
+                merged["other_benefits"]["raw_text"] = derived_value
+                merged["other_benefits"]["derived_from"] = derivation_components(
+                    merged, component_ids,
+                )
+                merged["other_benefits"] = gate_field(
+                    merged["other_benefits"], "other_benefits",
+                )
             entry = {
                 "bank": bank["name"],
                 "tier": tier["tier_name"],
@@ -175,8 +216,18 @@ def run_scan(mode: str, bank_id: str = None):
     }
     if mode == "all":
         new_scan["meta"]["cbr_rates"] = fetch_cbr_rates()
+    quality_results = results
     if mode != "all":
         new_scan = merge_partial_scan(history, new_scan)
+    else:
+        quality_results = new_scan.get("results", {})
+
+    quality_issues = validate_scan_contracts(quality_results)
+    new_scan["meta"]["quality_issues"] = quality_issues
+    new_scan["meta"]["quality_errors"] = sum(
+        1 for issue in quality_issues if issue.get("severity") == "error")
+    new_scan["meta"]["quality_warnings"] = sum(
+        1 for issue in quality_issues if issue.get("severity") == "warning")
 
     changes = []
     if history["scans"]:
@@ -195,6 +246,17 @@ def run_scan(mode: str, bank_id: str = None):
          "kind": "service", "source": "", "source_url": ""}
         for name, err in failed.items()
     ]
+    service_changes += [
+        {"scan_date": scan_dt, "bank": "— quality gate —",
+         "tier": f"{issue.get('bank', '')} / {issue.get('tier', '')}",
+         "field": issue.get("field_id", ""),
+         "old": issue.get("code", ""),
+         "new": issue.get("message", ""),
+         "kind": "service",
+         "source": issue.get("severity", ""),
+         "source_url": ""}
+        for issue in quality_issues
+    ]
     append_log(SERVICE_LOG_PATH, service_changes, cap=MAX_SERVICE_LOG)
 
     fields_updated = sum(
@@ -208,8 +270,25 @@ def run_scan(mode: str, bank_id: str = None):
     history["scans"].append(new_scan)
     save_history(history, HISTORY_PATH)
     write_report(history, OUTPUT_PATH)
+    write_comparison_json(history, COMPARISON_JSON_PATH)
+    html_generated = False
     if mode == "all":
         build_full_scan_outputs()
+        html_generated = True
+
+    _write_run_reports(
+        run_id=_run_id(scan_dt),
+        started_at=scan_dt,
+        finished_at=datetime.now().isoformat(timespec="seconds"),
+        banks=banks,
+        ok=ok,
+        failed=failed,
+        changes=changes,
+        quality_issues=quality_issues,
+        excel_updated=True,
+        html_generated=html_generated,
+        github_pages_published=html_generated,
+    )
 
     log.info("")
     log.info("═══ Сводка скана ═══")
@@ -217,6 +296,9 @@ def run_scan(mode: str, bank_id: str = None):
     log.info("Полей заполнено данными: %d", fields_updated)
     log.info("Изменений всего: %d (рыночных: %d, технических: %d)",
              len(changes), market_count, len(changes) - market_count)
+    log.info("Проверка качества: ошибок %d, предупреждений %d",
+             new_scan["meta"]["quality_errors"],
+             new_scan["meta"]["quality_warnings"])
     log.info("Отчёт: %s", OUTPUT_PATH)
     log.info("Техлог: %s", SERVICE_LOG_PATH)
 
@@ -267,22 +349,78 @@ def list_sources():
 def build_sber_vs_only():
     from landing.sber_vs import build_sber_vs_landing
 
-    stats = build_sber_vs_landing(OUTPUT_PATH, SBER_VS_PATH)
+    history = load_history(HISTORY_PATH)
+    write_comparison_json(history, COMPARISON_JSON_PATH)
+    stats = build_sber_vs_landing(COMPARISON_JSON_PATH, SBER_VS_PATH)
     log.info("Лендинг Сбер VS банки собран: %s", stats["output"])
     log.info("Банков: %d; уровней пакетов: %d",
              stats["banks"], stats["levels"])
+    publish_site(Path(stats["output"]))
     return stats
 
 
 def build_premium_changes_only():
     from landing.premium_changes import build_premium_changes_landing
 
-    stats = build_premium_changes_landing(RAW_DIR, PREMIUM_CHANGES_PATH)
+    stats = build_premium_changes_landing(OUTPUT_PATH, PREMIUM_CHANGES_PATH)
     log.info("Лендинг изменений премиальных программ собран: %s",
              stats["output"])
     log.info("Банков: %d; изменений: %d; ошибок: %d",
              stats["banks"], stats["changes"], stats["failed"])
     return stats
+
+
+def _run_id(scan_dt: str) -> str:
+    return f"run_{scan_dt.replace('-', '').replace(':', '').replace('T', '_')}"
+
+
+def _write_run_reports(run_id: str, started_at: str, finished_at: str,
+                       banks: list, ok: list, failed: dict, changes: list,
+                       quality_issues: list,
+                       excel_updated: bool, html_generated: bool,
+                       github_pages_published: bool):
+    market_changes = [c for c in changes if c.get("kind") == "market"]
+    confirmed = [c for c in market_changes if c.get("source_url")]
+    requiring_review = [c for c in market_changes if not c.get("source_url")]
+    report = {
+        "run_id": run_id,
+        "started_at": started_at,
+        "finished_at": finished_at,
+        "banks_checked": len([b for b in banks if b["type"] != "lifestyle"]),
+        "sources_checked": len(ok) + len(failed),
+        "documents_checked": 0,
+        "new_changes_found": len(market_changes),
+        "confirmed_changes": len(confirmed),
+        "changes_requiring_review": len(requiring_review),
+        "duplicate_changes_skipped": 0,
+        "errors": len(failed),
+        "quality_errors": sum(1 for i in quality_issues if i.get("severity") == "error"),
+        "quality_warnings": sum(1 for i in quality_issues if i.get("severity") == "warning"),
+        "quality_issues": quality_issues[:200],
+        "excel_updated": excel_updated,
+        "html_generated": html_generated,
+        "github_pages_published": github_pages_published,
+    }
+    RUN_REPORT_JSON_PATH.parent.mkdir(parents=True, exist_ok=True)
+    RUN_REPORT_JSON_PATH.write_text(
+        json.dumps(report, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    changed_banks = sorted({c.get("bank", "") for c in market_changes if c.get("bank")})
+    text = "\n".join([
+        f"run_id: {run_id}",
+        f"Проверены банки: {', '.join(b['name'] for b in banks) or 'нет'}",
+        f"Банки с изменениями: {', '.join(changed_banks) or 'нет'}",
+        f"Подтвержденные изменения: {len(confirmed)}",
+        f"Требуют ручной проверки: {len(requiring_review)}",
+        f"Недоступные источники: {len(failed)}",
+        f"Ошибки качества данных: {report['quality_errors']}",
+        f"Предупреждения качества данных: {report['quality_warnings']}",
+        f"Excel обновлен: {'да' if excel_updated else 'нет'}",
+        f"HTML пересоздан: {'да' if html_generated else 'нет'}",
+        f"GitHub Pages публикация: {'да' if github_pages_published else 'нет'}",
+    ])
+    RUN_REPORT_TEXT_PATH.write_text(text + "\n", encoding="utf-8")
 
 
 def build_full_scan_outputs():
@@ -294,6 +432,7 @@ def build_full_scan_outputs():
     log.info("")
     log.info("═══ Артефакты полного скана ═══")
     log.info("Excel: %s", OUTPUT_PATH)
+    log.info("JSON сравнения: %s", COMPARISON_JSON_PATH)
     log.info("Сравнение банков: %s", sber_vs_stats["output"])
     log.info("Новые изменения банков: %s", premium_stats["output"])
 
@@ -309,7 +448,7 @@ def main():
     group.add_argument("--scan-lifestyle", action="store_true",
                        help="скан только экосистемных подписок")
     group.add_argument("--build-sber-vs", action="store_true",
-                       help="собрать HTML-лендинг Сбер VS банки из Excel-отчёта")
+                       help="собрать HTML-лендинг Сбер VS банки из JSON-экспорта")
     group.add_argument("--build-premium-changes", action="store_true",
                        help="собрать HTML-лендинг изменений премиальных программ "
                             "с premiumbanking.info")

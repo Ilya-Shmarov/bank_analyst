@@ -30,6 +30,19 @@
 - Preserve provenance when changing merge, diff, scoring, or report logic.
 - Keep service events in `data/service_log.json`.
 
+## Source policy for bank data
+
+- Banking facts must follow `SOURCE_POLICY.md`. This is a permanent project rule for parser, JSON, Excel, and landing changes.
+- Never invent, infer, copy, or transfer banking conditions without direct confirmation from an allowed source.
+- Every user-facing fact must be tied to a concrete `(bank_id, tier_id, field_id)` key and must preserve value, source URL, source type, check date, raw text, and reliability status.
+- Source priority is strict: official bank documents and pages first, PremiumBanking.info second, other existing sources third. Official values win conflicts.
+- PremiumBanking.info is fallback for missing or unavailable official data; do not replace a found official value with PBI.
+- Do not transfer data between banks, between levels, or between Premium and Private products. Alfa Only data must not be used for A-Club unless the source explicitly says so.
+- If a fact is missing, write `sources.NOT_FOUND` in data and display `sources.NOT_FOUND_AVAILABLE` (`Не найдено в доступных источниках`) to users.
+- Conflicts between official sources and PremiumBanking.info must be preserved in provenance and in the `Конфликты источников` sheet.
+- The Sber VS HTML landing must use `output/comparison_data.json` as its user-facing source and must not read Excel, re-fetch sites, parse PDFs, or invent missing values.
+- Do not put insurance risks, assistance, insured sums, medical expenses, trip duration, baggage, flight delay/cancellation, skiing, or snowboarding into `Другие привилегии`.
+
 ## Self-Check
 
 - Run `.venv/bin/python main.py --list-sources` after meaningful changes.
