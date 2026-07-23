@@ -22,6 +22,7 @@
 STALE_DAYS = 90
 
 _SBER_PREMIER = "https://www.sberbank.ru/ru/person/sb_premier_new"
+_SBER_PREMIUM_LEVELS = "https://www.sberbank.ru/ru/person/premium"
 _SBER_FIRST = "https://www.sberbank.ru/first"
 _SBER_VKLAD = "https://www.sberbank.ru/ru/person/premium/premium_vklad"
 _SBER_FIRST_VKLADY = "https://www.sberbank.ru/ru/person/sb1/vklad/vse_vklady"
@@ -43,17 +44,17 @@ def _fact_from(source_fact, value, note=""):
 # ---------- Карты (Премиальная СберКарта, тарифы одной страницы для всех уровней)
 _PREMIER_CARD = {
     "value": ("Премиальная СберКарта: пластик или металл (металлический носитель "
-              "доступен всем премиальным уровням). Переводы без комиссии до "
-              "35 млн ₽ в сутки; снятие наличных до 1 млн ₽ в день. Стоимость "
+              "доступен всем премиальным уровням). Снятие наличных до 1 млн ₽ "
+              "в день. Стоимость "
               "выпуска металлической карты на странице тарифов не указана"),
     "source_url": _SBER_CARD,
     "date_checked": _CHECKED,
-    "note": "Лимит «до 35 млн ₽/сутки» из вводной подтверждён (Премьер и Первый)",
+    "note": "Лимиты переводов зависят от уровня и хранятся отдельными фактами",
 }
 
 _FIRST_CARD = {
-    "value": ("Премиальная СберКарта: пластик или металл. Переводы без комиссии "
-              "до 35 млн ₽ в сутки; снятие наличных до 2 млн ₽ в день"),
+    "value": ("Премиальная СберКарта: пластик или металл. Снятие наличных "
+              "до 2 млн ₽ в день"),
     "source_url": _SBER_CARD,
     "date_checked": _CHECKED,
     "note": ("Вторичные источники (banki.ru) упоминали выпуск металлической "
@@ -62,13 +63,60 @@ _FIRST_CARD = {
 }
 
 _PRIVATE_CARD = {
-    "value": ("Премиальная СберКарта уровня Private: переводы без комиссии до "
-              "50 млн ₽ в сутки; снятие наличных до 3 млн ₽ в день; "
+    "value": ("Премиальная СберКарта уровня Private: снятие наличных до "
+              "3 млн ₽ в день; "
               "лимитированная серия металлических карт (чёрные и белые) — "
               "только для уровня 6 / Sber Private Banking"),
     "source_url": _SBER_CARD,
     "date_checked": _CHECKED,
-    "note": "Лимиты Private выше вводной: 50 млн ₽/сутки, а не 35",
+    "note": "Лимит переводов уровня 6 хранится отдельным фактом",
+}
+
+# Официальный popup «Переводы и платежи без комиссии» задаёт разные лимиты
+# для конкретных уровней. Не объединять и не переносить их между тирами.
+_SBER_TRANSFER_LEVELS = {
+    "sber_premier_1": {
+        "value": "Переводы без комиссии до 1 млн ₽ в месяц",
+        "source_url": _SBER_PREMIUM_LEVELS,
+        "date_checked": "2026-07-23",
+        "note": ("Официальный popup: «1 и 2 уровни — 1 млн ₽ в месяц». "
+                 "Лимит относится к переводам клиентам Сбера и платежам юрлицам"),
+    },
+    "sber_premier_2": {
+        "value": "Переводы без комиссии до 1 млн ₽ в месяц",
+        "source_url": _SBER_PREMIUM_LEVELS,
+        "date_checked": "2026-07-23",
+        "note": ("Официальный popup: «1 и 2 уровни — 1 млн ₽ в месяц». "
+                 "Лимит относится к переводам клиентам Сбера и платежам юрлицам"),
+    },
+    "sber_premier_3": {
+        "value": "Переводы без комиссии до 1 млн ₽ в сутки",
+        "source_url": _SBER_PREMIUM_LEVELS,
+        "date_checked": "2026-07-23",
+        "note": ("Официальный popup: «3 уровень — 1 млн ₽ в сутки». "
+                 "Лимит относится к переводам клиентам Сбера и платежам юрлицам"),
+    },
+    "sber_first_4": {
+        "value": "Переводы без комиссии до 35 млн ₽ в сутки",
+        "source_url": _SBER_PREMIUM_LEVELS,
+        "date_checked": "2026-07-23",
+        "note": ("Официальный popup: «4 и 5 уровни — 35 млн ₽ в сутки». "
+                 "Лимит относится к переводам клиентам Сбера и платежам юрлицам"),
+    },
+    "sber_first_5": {
+        "value": "Переводы без комиссии до 35 млн ₽ в сутки",
+        "source_url": _SBER_PREMIUM_LEVELS,
+        "date_checked": "2026-07-23",
+        "note": ("Официальный popup: «4 и 5 уровни — 35 млн ₽ в сутки». "
+                 "Лимит относится к переводам клиентам Сбера и платежам юрлицам"),
+    },
+    "sber_private_6": {
+        "value": "Переводы без комиссии до 50 млн ₽ в сутки",
+        "source_url": _SBER_PREMIUM_LEVELS,
+        "date_checked": "2026-07-23",
+        "note": ("Официальный popup: «6 уровень — до 50 млн ₽ в сутки». "
+                 "Лимит относится к переводам клиентам Сбера и платежам юрлицам"),
+    },
 }
 
 # Консьерж на СберПремьер отсутствует — общая запись для уровней 1–3
@@ -161,8 +209,7 @@ CURATED_FACTS = {
                      "(6 категорий, безлимит), у Премьера/Первого — 5 категорий"),
         },
         "card_terms": _PREMIER_CARD,
-        "transfers_payments": _fact_from(
-            _PREMIER_CARD, "Переводы без комиссии до 35 млн ₽ в сутки"),
+        "transfers_payments": _SBER_TRANSFER_LEVELS["sber_premier_1"],
         "cash_withdrawal": _fact_from(
             _PREMIER_CARD, "Снятие наличных до 1 млн ₽ в день"),
         "deposits": _PREMIER_DEPOSITS,
@@ -178,8 +225,7 @@ CURATED_FACTS = {
             "note": "5 категорий (6 — только на Private)",
         },
         "card_terms": _PREMIER_CARD,
-        "transfers_payments": _fact_from(
-            _PREMIER_CARD, "Переводы без комиссии до 35 млн ₽ в сутки"),
+        "transfers_payments": _SBER_TRANSFER_LEVELS["sber_premier_2"],
         "cash_withdrawal": _fact_from(
             _PREMIER_CARD, "Снятие наличных до 1 млн ₽ в день"),
         "deposits": _PREMIER_DEPOSITS,
@@ -196,8 +242,7 @@ CURATED_FACTS = {
             "note": "Курс обмена — по ПБИ; ставка/категории — sberbank.ru",
         },
         "card_terms": _PREMIER_CARD,
-        "transfers_payments": _fact_from(
-            _PREMIER_CARD, "Переводы без комиссии до 35 млн ₽ в сутки"),
+        "transfers_payments": _SBER_TRANSFER_LEVELS["sber_premier_3"],
         "cash_withdrawal": _fact_from(
             _PREMIER_CARD, "Снятие наличных до 1 млн ₽ в день"),
         "deposits": _PREMIER_DEPOSITS,
@@ -223,8 +268,7 @@ CURATED_FACTS = {
             "note": "Курс подтверждён двумя источниками: sberbank.ru/first и ПБИ",
         },
         "card_terms": _FIRST_CARD,
-        "transfers_payments": _fact_from(
-            _FIRST_CARD, "Переводы без комиссии до 35 млн ₽ в сутки"),
+        "transfers_payments": _SBER_TRANSFER_LEVELS["sber_first_4"],
         "cash_withdrawal": _fact_from(
             _FIRST_CARD, "Снятие наличных до 2 млн ₽ в день"),
         "deposits": _FIRST_DEPOSITS,
@@ -245,8 +289,7 @@ CURATED_FACTS = {
             "note": "",
         },
         "card_terms": _FIRST_CARD,
-        "transfers_payments": _fact_from(
-            _FIRST_CARD, "Переводы без комиссии до 35 млн ₽ в сутки"),
+        "transfers_payments": _SBER_TRANSFER_LEVELS["sber_first_5"],
         "cash_withdrawal": _fact_from(
             _FIRST_CARD, "Снятие наличных до 2 млн ₽ в день"),
         "deposits": _FIRST_DEPOSITS,
@@ -277,8 +320,7 @@ CURATED_FACTS = {
                      "Курс обмена — по ПБИ /sber/6"),
         },
         "card_terms": _PRIVATE_CARD,
-        "transfers_payments": _fact_from(
-            _PRIVATE_CARD, "Переводы без комиссии до 50 млн ₽ в сутки"),
+        "transfers_payments": _SBER_TRANSFER_LEVELS["sber_private_6"],
         "cash_withdrawal": _fact_from(
             _PRIVATE_CARD, "Снятие наличных до 3 млн ₽ в день"),
         "deposits": _FIRST_DEPOSITS,
@@ -306,6 +348,14 @@ def _free_on_conditions(pbi_url):
 
 # ---------- Т-Банк ----------
 _TBANK_PREMIUM = "https://www.tbank.ru/tinkoff-premium/"
+_TBANK_SAVINGS = "https://www.tbank.ru/savings/saving-account/"
+_TBANK_PRIVATE_BANKING = "https://www.tbank.ru/private/banking-services/"
+_TBANK_PREMIUM_ACCESS = (
+    "https://www.tbank.ru/bank/help/general/premium/access/what-is/"
+)
+_TBANK_PREMIUM_TERMS = (
+    "https://www.tbank.ru/bank/help/general/premium/access/terms/"
+)
 _TBANK_SERVICES = "https://www.tbank.ru/bank/help/general/premium/services/"
 _TBANK_CARD = ("https://www.tbank.ru/tinkoff-premium/cards/debit-cards/"
                "tinkoff-black-premium/")
@@ -335,6 +385,34 @@ _TBANK_PREMIUM_SUPREME = _fact(
     "последние три календарных месяца",
     _TBANK_PREMIUM_TARIFF,
     "Официальные условия сервиса Premium, пункт 6.8")
+
+_TBANK_BRONZE_ENTRY = _fact(
+    "Premium Bronze доступен любому клиенту за 2 990 ₽ в месяц",
+    _TBANK_PREMIUM_TERMS,
+    "Официальная справка Т-Банка: у Bronze нет условия входа через акции; "
+    "вариант «5 000 акций» из PBI не применяется",
+    date_checked="2026-07-23")
+
+_TBANK_BRONZE_POSITIONING = _fact(
+    "Premium Bronze — платный базовый уровень сервиса Premium, доступный "
+    "любому клиенту Т-Банка",
+    _TBANK_PREMIUM_TERMS,
+    "Официальная справка Т-Банка; условие через акции отсутствует",
+    date_checked="2026-07-23")
+
+_TBANK_BRONZE_SERVICE_COST = _fact(
+    "2 990 ₽ в месяц",
+    _TBANK_PREMIUM_TERMS,
+    "Официальная справка Т-Банка, стоимость Premium Bronze",
+    date_checked="2026-07-23")
+
+_TBANK_SILVER_ENTRY = _fact(
+    "3 млн ₽ на счетах; или 1 млн ₽ на счетах и траты 200 тыс ₽ в месяц; "
+    "или зарплата 400 тыс ₽ в текущем месяце или в среднем за три "
+    "предыдущих календарных месяца",
+    _TBANK_PREMIUM_ACCESS,
+    "Официальная справка Т-Банка, условия бесплатного уровня Premium Silver",
+    date_checked="2026-07-21")
 
 _TBANK_PRIVATE_TRANSFERS = _fact(
     "Лимит бесплатных переводов с расчётной карты Т-Банка на карту другого "
@@ -386,12 +464,6 @@ _TBANK_SHARED = {
         "с Premium лимит кэшбэка повышен до 60 000 ₽/мес по картам Black Premium",
         _TBANK_PREMIUM,
         "Лимит без Premium — 30 000 ₽/мес"),
-    "deposits": _fact(
-        "Повышенная доходность по вкладам для клиентов Premium "
-        "(маркетинговое «до 15%» на странице Premium; базовая линейка вкладов "
-        "до 12% на дату проверки). Точная надбавка — в тарифах",
-        _TBANK_PREMIUM,
-        "Ставки меняются вслед за КС ЦБ"),
     "card_terms": _fact(
         "Металлическая дебетовая карта Black Premium для клиентов Premium. "
         "Снятие наличных: в банкоматах Т-Банка без ограничений, в чужих — "
@@ -409,6 +481,12 @@ _TBANK_SHARED = {
 
 _TBANK_PREMIUM_SHARED = {
     **_TBANK_SHARED,
+    "deposits": _fact(
+        "Накопительный счёт — 9% годовых с сервисом Premium",
+        _TBANK_SAVINGS,
+        "Официальная страница накопительного счёта: 9% с Premium, "
+        "6% без подписки и премиального сервиса",
+        date_checked="2026-07-23"),
     "transfers_payments": _TBANK_PREMIUM_TRANSFERS,
     "cash_withdrawal": _TBANK_PREMIUM_CASH_WITHDRAWAL,
     "supreme": _TBANK_PREMIUM_SUPREME,
@@ -416,6 +494,11 @@ _TBANK_PREMIUM_SHARED = {
 
 _TBANK_PRIVATE_SHARED = {
     **_TBANK_SHARED,
+    "deposits": _fact(
+        "Накопительный счёт — 10% годовых с сервисом Private",
+        _TBANK_PRIVATE_BANKING,
+        "Официальная страница банковских услуг T-Private",
+        date_checked="2026-07-23"),
     "transfers_payments": _TBANK_PRIVATE_TRANSFERS,
     "cash_withdrawal": _TBANK_PRIVATE_CASH_WITHDRAWAL,
     "supreme": _TBANK_PRIVATE_SUPREME,
@@ -427,6 +510,15 @@ _VTB_CARD = ("https://www.vtb.ru/privilegia/karty/debetovye/"
              "privilegiya-mir-supreme/")
 _VTB_MAIN = "https://www.vtb.ru/privilegia/"
 _VTB_CHECKED = "2026-07-15"
+
+_VTB_PRIVILEGE_1_ENTRY = _fact(
+    "3 990 ₽ в месяц; или траты 150 тыс ₽ в месяц; или зарплата 300 тыс ₽ "
+    "в месяц; или зарплата 700 тыс ₽ суммарно за три полных последовательных "
+    "календарных месяца; или 9 000 акций банка ВТБ",
+    _VTB_MAIN,
+    "Официальная страница ВТБ; добавлен отдельный трёхмесячный зарплатный "
+    "критерий, не выделенный в PBI",
+    date_checked="2026-07-21")
 
 _VTB_CASHBACK = _fact(
     "Кэшбэк рублями по карте ВТБ «Привилегия Mir Supreme»: до 30 000 ₽ "
@@ -554,6 +646,22 @@ _GPB_BONUS = "https://www.gazprombank.ru/premium/gazprom-bonus/"
 _GPB_PREMIUM = "https://www.gazprombank.ru/premium/"
 _GPB_PRIVATE = "https://www.gazprombank.ru/private/"
 
+_GPB_PREMIUM_1_ENTRY = _fact(
+    "2,5 млн ₽ среднемесячных остатков; или траты 150 тыс ₽ в месяц; или "
+    "1 млн ₽ среднемесячных остатков и траты 100 тыс ₽ в месяц; или "
+    "зарплата 250 тыс ₽ и траты 50 тыс ₽ в месяц; или 2 990 ₽ в месяц",
+    _GPB_BONUS,
+    "Официальная страница условий бесплатности Газпром Бонус «Премиум»",
+    date_checked="2026-07-21")
+
+_GPB_PREMIUM_2_ENTRY = _fact(
+    "6 млн ₽ среднемесячных остатков; или зарплата 750 тыс ₽ и траты "
+    "100 тыс ₽ в месяц",
+    "https://premiumbanking.info/gazprombank/2",
+    "Точное условие уровня 2 подтверждено в профильном источнике; на "
+    "официальной странице отдельная граница уровня не выделена",
+    date_checked="2026-07-21")
+
 _GPB_PREMIUM_DEPOSITS = _fact(
     "Надбавки по вкладам и накопительным счетам; доход по вкладам до 13,6%",
     _GPB_PREMIUM,
@@ -583,6 +691,10 @@ _GPB_PRIVATE_DEPOSITS = _fact(
 
 # ---------- Альфа-Банк ----------
 _ALFA_ONLY = "https://alfabank.ru/everyday/alfa-only/"
+_ALFA_ONLY_DEPOSIT = "https://alfabank.ru/everyday/package/premium/vklad/"
+_ALFA_ONLY_SALARY = (
+    "https://alfabank.ru/everyday/debit-cards/premium/zarplatnaya-karta/"
+)
 _ALFA_ACLUB_OFFICIAL = "https://alfabank.ru/a-club/"
 _ALFA_CONCIERGE = "https://alfabank.ru/everyday/package/premium/konserzh-servis/"
 _PBI_ACLUB = "https://premiumbanking.info/alfabank/5"
@@ -596,6 +708,14 @@ _ALFA_CONCIERGE_FACT = _fact(
     "«Консьерж-сервис — премиум-услуги для клиентов Alfa Only»)",
     _ALFA_CONCIERGE,
     "Ложное «нет» из автопарсинга ПБИ исправлено по официальному сайту")
+
+_ALFA_ONLY_1_ENTRY = _fact(
+    "2 990 ₽ в месяц; или зарплата 400 тыс ₽ в месяц через зарплатный "
+    "сервис Альфа-Банка",
+    _ALFA_ONLY_SALARY,
+    "Официальная зарплатная страница подтверждает порог; привязка к "
+    "базовому уровню Alfa Only подтверждена PBI",
+    date_checked="2026-07-21")
 
 _ALFA_ADDONS_ABSENT = _fact(
     "— (докупаемых опций нет: набор привилегий Alfa Only фиксированный — "
@@ -641,10 +761,13 @@ _ALFA_ONLY_SUPREME = _fact(
     "Официальный тарифный PDF по карте Alfa Only, блок премиальных карт")
 
 _ALFA_ONLY_DEPOSITS = _fact(
-    "Премиальный вклад заявлен в составе фиксированного набора привилегий "
-    "Alfa Only; точные ставки в доступном HTML-источнике не выделены",
-    _ALFA_ONLY,
-    "Официальная страница Alfa Only используется как источник состава пакета")
+    "Премиум-вклад Alfa Only: до 13,8% годовых в рублях или до 4% годовых "
+    "в юанях; минимальная сумма 10 000 ₽ или 500 ¥; срок от 2 месяцев до "
+    "3 лет; с капитализацией процентов или без неё",
+    _ALFA_ONLY_DEPOSIT,
+    "Официальная продуктовая страница подтверждает условия для клиентов "
+    "Alfa Only без разделения по уровням",
+    date_checked="2026-07-21")
 
 _ALFA_ACLUB_DEPOSITS = _fact(
     "Повышенный доход по накопительным счетам и вкладам",
@@ -667,8 +790,14 @@ _YANDEX_PLUS_SUPPORT = "https://yandex.ru/support/plus-ru/ru/cashback"
 
 _COMPETITOR_FACTS = {
     # ----- Т-Банк -----
-    "tbank_bronze": dict(_TBANK_PREMIUM_SHARED),
+    "tbank_bronze": {
+        **_TBANK_PREMIUM_SHARED,
+        "positioning": _TBANK_BRONZE_POSITIONING,
+        "entry_conditions": _TBANK_BRONZE_ENTRY,
+        "service_cost": _TBANK_BRONZE_SERVICE_COST,
+    },
     "tbank_silver": {**_TBANK_PREMIUM_SHARED,
+                     "entry_conditions": _TBANK_SILVER_ENTRY,
                      "service_cost": _free_on_conditions(
                          "https://premiumbanking.info/tbank/2")},
     "tbank_gold": {**_TBANK_PREMIUM_SHARED,
@@ -696,6 +825,7 @@ _COMPETITOR_FACTS = {
     # условия ВТБ по карте/сбережениям, явно опубликованные на официальных
     # страницах ВТБ. Не переносить сюда уникальные сервисы без tier-source.
     "vtb_privilege_1": {**_VTB_PRIVILEGE_SHARED,
+                        "entry_conditions": _VTB_PRIVILEGE_1_ENTRY,
                         "addons": _fact(
                             "— (механика выбора привилегий на уровне 1 не "
                             "заявлена на странице уровня; появляется с "
@@ -760,12 +890,14 @@ _COMPETITOR_FACTS = {
                                     "https://premiumbanking.info/ozon/4")},
     # ----- Газпромбанк Premium -----
     "gpb_premium_1": {
+        "entry_conditions": _GPB_PREMIUM_1_ENTRY,
         "deposits": _GPB_PREMIUM_DEPOSITS,
         "transfers_payments": _GPB_PREMIUM_TRANSFERS,
         "cash_withdrawal": _GPB_PREMIUM_CASH,
         "supreme": _GPB_PREMIUM_SUPREME,
     },
     "gpb_premium_2": {
+        "entry_conditions": _GPB_PREMIUM_2_ENTRY,
         "deposits": _GPB_PREMIUM_DEPOSITS,
         "transfers_payments": _GPB_PREMIUM_TRANSFERS,
         "cash_withdrawal": _GPB_PREMIUM_CASH,
@@ -795,7 +927,8 @@ _COMPETITOR_FACTS = {
             "указана премиальная версия программы банка"),
     },
     # ----- Альфа-Банк -----
-    "alfa_only_1": {"addons": _ALFA_ADDONS_ABSENT,
+    "alfa_only_1": {"entry_conditions": _ALFA_ONLY_1_ENTRY,
+                    "addons": _ALFA_ADDONS_ABSENT,
                     "concierge": _ALFA_CONCIERGE_FACT,
                     "cashback": _ALFA_ONLY_CASHBACK,
                     "card_terms": _ALFA_ONLY_CARD_FREE,

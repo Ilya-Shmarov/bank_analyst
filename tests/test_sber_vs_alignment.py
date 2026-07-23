@@ -60,6 +60,8 @@ class SberVsAlignmentTests(unittest.TestCase):
         self.assertIn("grid-template-columns: var(--compare-grid-template);", html)
         self.assertIn(".cmp-table tr {\n  display: grid;", html)
         self.assertIn("cmp.style.setProperty('--compare-level-count'", html)
+        self.assertIn("currencies.size > 1", html)
+        self.assertIn("Страховые суммы указаны в разных валютах", html)
         self.assertIn(".cmp-attr-spacer { display: none; }", html)
         forbidden_offsets = ("translateX", ".cmp-head { margin-left", "#compare { margin-left")
         for token in forbidden_offsets:
@@ -78,6 +80,17 @@ class SberVsAlignmentTests(unittest.TestCase):
 
         self.assertEqual(len(data), 3)
         self.assertTrue(all(len(bank["levels"]) == 4 for bank in data))
+        self.assertTrue(all(
+            level["entry_match"]["eligible"]
+            for bank in data for level in bank["levels"]
+        ))
+        bank_one = next(bank for bank in data if bank["bank"] == "Банк Один")
+        self.assertEqual(
+            bank_one["levels"][1]["entry_match"]["min_amount"],
+            3_000_000,
+        )
+        self.assertIn('class="pickers"', html)
+        self.assertIn("'chip level-chip'", html)
         self.assertIn("очень длинным названием", html)
 
     def test_level_cards_align_with_table_columns_in_browser_if_available(self):
@@ -97,6 +110,72 @@ class SberVsAlignmentTests(unittest.TestCase):
                         self._assert_alignment(page, output)
                         page.set_viewport_size({"width": 390, "height": 900})
                         self._assert_alignment(page, output, mobile=True)
+                    finally:
+                        browser.close()
+            except PlaywrightError as exc:
+                self.skipTest(f"Playwright browser is unavailable: {exc}")
+
+    def test_recommendations_fill_second_and_third_banks_in_rank_order(self):
+        try:
+            from playwright.sync_api import Error as PlaywrightError
+            from playwright.sync_api import sync_playwright
+        except ImportError:
+            self.skipTest("Playwright is not installed")
+
+        with tempfile.TemporaryDirectory() as tmp:
+            output = self._write_fixture(tmp)
+            try:
+                with sync_playwright() as p:
+                    browser = p.chromium.launch()
+                    try:
+                        page = browser.new_page(viewport={"width": 1440, "height": 900})
+                        page.add_init_script(
+                            "window.__scrolledSections = [];"
+                            "const originalScrollIntoView = Element.prototype.scrollIntoView;"
+                            "Element.prototype.scrollIntoView = function(options) {"
+                            "  window.__scrolledSections.push(this.id);"
+                            "  return originalScrollIntoView.call(this, options);"
+                            "};"
+                        )
+                        page.goto(output.as_uri())
+                        primary = page.locator('.picker[data-side="a"]')
+                        primary.get_by_role(
+                            "button", name="Банк Один", exact=True
+                        ).click()
+                        # Банк Один: level 2 has the 3 млн ₽ reference threshold.
+                        primary.locator(".levels .level-chip").nth(1).click()
+
+                        recommendations = page.locator(".recommendation-card")
+                        self.assertEqual(recommendations.count(), 2)
+                        page.wait_for_function(
+                            "window.__scrolledSections.includes('recommendations')"
+                        )
+                        card_texts = recommendations.all_text_contents()
+                        self.assertIn("Банк Два", card_texts[0])
+                        self.assertIn("Точное совпадение", card_texts[0])
+                        self.assertIn("Банк Три", card_texts[1])
+                        self.assertIn("На 1 млн ₽ выше", card_texts[1])
+                        self.assertFalse(page.locator("#compare").is_visible())
+
+                        page.locator(".recommendation-card").nth(0).click()
+                        self.assertIn(
+                            "Банк Два",
+                            page.locator('.picker[data-side="b"] .banks .active').inner_text(),
+                        )
+                        self.assertFalse(page.locator("#compare").is_visible())
+
+                        page.locator(".recommendation-card:not(:disabled)").click()
+                        self.assertIn(
+                            "Банк Три",
+                            page.locator('.picker[data-side="c"] .banks .active').inner_text(),
+                        )
+                        page.locator("#compare").wait_for(state="visible")
+
+                        page.set_viewport_size({"width": 390, "height": 900})
+                        has_overflow = page.locator("main.page").evaluate(
+                            "(node) => node.scrollWidth > node.clientWidth"
+                        )
+                        self.assertFalse(has_overflow)
                     finally:
                         browser.close()
             except PlaywrightError as exc:

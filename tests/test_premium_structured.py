@@ -9,8 +9,12 @@ from openpyxl import load_workbook
 
 from landing.sber_vs import (
     build_sber_vs_landing,
+    _benefit_display,
+    _benefits_evaluation,
     _compensation_evaluation,
     _condition_summary,
+    _entry_match_from_text,
+    _insurance_evaluation,
     _service_evaluation,
     _service_cost_summary,
 )
@@ -50,6 +54,129 @@ class PremiumStructuredTests(unittest.TestCase):
         "Райффайзен Банк",
         "Lifestyle-конкуренты",
     ]
+
+    def test_other_benefits_compare_same_service_by_confirmed_nominal(self):
+        lower = _benefits_evaluation(
+            "• Самокат — 2 заказа по 500 ₽ [опция на выбор]",
+            None,
+        )
+        higher = _benefits_evaluation(
+            "• Самокат — 2 заказа по 1000 ₽ [опция на выбор]",
+            None,
+        )
+
+        self.assertEqual(
+            lower["metrics"]["benefits"]["самокат"]["rub_total"], 1_000
+        )
+        self.assertEqual(
+            higher["metrics"]["benefits"]["самокат"]["rub_total"], 2_000
+        )
+        self.assertIn("Самокат: 1 тыс ₽", lower["summary"])
+        self.assertIn("Самокат: 2 тыс ₽", higher["summary"])
+
+    def test_tbank_savings_wording_is_current_and_product_specific(self):
+        premium = curated_for("tbank_bronze")["deposits"]
+        private = curated_for("tbank_private_30")["deposits"]
+
+        self.assertEqual(
+            premium["value"],
+            "Накопительный счёт — 9% годовых с сервисом Premium",
+        )
+        self.assertEqual(
+            private["value"],
+            "Накопительный счёт — 10% годовых с сервисом Private",
+        )
+        self.assertNotIn("на дату проверки", premium["value"].lower())
+        self.assertNotEqual(premium["source_url"], private["source_url"])
+
+    def test_insurance_keeps_owner_family_order_and_hides_policy_estimate(self):
+        evaluation = _insurance_evaluation(
+            "$150/35 тыс, 90 дн, ассистанс Class Assistance"
+        )
+        self.assertEqual(evaluation["metrics"]["coverage"], 150_000)
+        self.assertEqual(evaluation["metrics"]["secondary_coverage"], 35_000)
+        self.assertIn("владелец: 150000 $", evaluation["summary"])
+        self.assertIn("член семьи: 35000 $", evaluation["summary"])
+
+        display = _benefit_display(
+            "insurance",
+            "$100 тыс, 90 дн, ассистанс Mondial Assistance и "
+            "Примерная стоимость на 2 взрослых ≈ 44 000 ₽",
+            "",
+        )
+        self.assertIn("Страховое покрытие: $100 тыс", display)
+        self.assertNotIn("Примерная стоимость", display)
+        self.assertNotIn("44 000 ₽", display)
+
+        family_display = _benefit_display(
+            "insurance",
+            "$150/35 тыс, 90 дн, ассистанс Class Assistance",
+            "",
+        )
+        self.assertIn("$150 тыс для владельца", family_display)
+        self.assertIn("$35 тыс для члена семьи", family_display)
+
+    def test_entry_match_prefers_pure_capital_over_combined_lower_route(self):
+        match = _entry_match_from_text(
+            "3 млн ₽ или 1 млн ₽ и траты 200 тыс ₽"
+        )
+
+        self.assertTrue(match["eligible"])
+        self.assertEqual(match["min_amount"], 3_000_000)
+        self.assertEqual(match["max_amount"], 3_000_000)
+        self.assertEqual(match["label"], "3 млн ₽")
+
+    def test_entry_match_preserves_moscow_and_regions_as_range(self):
+        match = _entry_match_from_text(
+            "2,5 млн ₽ для Мск и 2 млн ₽ регионы"
+        )
+
+        self.assertTrue(match["eligible"])
+        self.assertEqual(match["min_amount"], 2_000_000)
+        self.assertEqual(match["max_amount"], 2_500_000)
+        self.assertEqual(match["label"], "2–2,5 млн ₽ по региону")
+
+    def test_entry_match_rejects_non_capital_only_routes(self):
+        excluded = (
+            "2990 ₽ в мес",
+            "траты 150 тыс ₽",
+            "400 тыс ₽ зарплата",
+            "5000 акций (≈1,2 млн ₽)",
+            "10 млн ₽ в совместном доступе",
+        )
+
+        for value in excluded:
+            with self.subTest(value=value):
+                self.assertFalse(_entry_match_from_text(value)["eligible"])
+
+    def test_condition_summary_keeps_and_names_salary_routes(self):
+        summary = _condition_summary(
+            "3 млн ₽, Или 1 млн ₽ и траты 200 тыс ₽ и Или 400 тыс зп",
+            "tbank_silver",
+        )
+        self.assertIn("3 млн ₽", summary)
+        self.assertIn("1 млн ₽ и траты 200 тыс ₽", summary)
+        self.assertIn("400 тыс зарплата", summary)
+        self.assertNotIn("зп", summary.lower())
+
+        vtb = curated_for("vtb_privilege_1")["entry_conditions"]
+        self.assertIn("зарплата 300 тыс ₽", vtb["value"])
+        self.assertIn("зарплата 700 тыс ₽", vtb["value"])
+        self.assertIn("три полных последовательных", vtb["value"])
+        self.assertIn("vtb.ru/privilegia", vtb["source_url"])
+
+        expected = {
+            "tbank_silver": "зарплата 400 тыс ₽",
+            "alfa_only_1": "зарплата 400 тыс ₽",
+            "gpb_premium_1": "зарплата 250 тыс ₽",
+            "gpb_premium_2": "зарплата 750 тыс ₽",
+        }
+        for tier_id, marker in expected.items():
+            with self.subTest(tier_id=tier_id):
+                self.assertIn(
+                    marker,
+                    curated_for(tier_id)["entry_conditions"]["value"],
+                )
 
     def test_unlimited_restaurant_compensation_has_no_fake_period_totals(self):
         evaluation = _compensation_evaluation(
@@ -1093,15 +1220,30 @@ class PremiumStructuredTests(unittest.TestCase):
         self.assertIn("5000 акций", bronze["entry_conditions"])
         self.assertNotIn("Минимальный остаток", bronze["entry_conditions"])
 
-    def test_tbank_bronze_entry_conditions_keep_fee_and_shares_in_landing(self):
+    def test_tbank_bronze_entry_conditions_show_official_monthly_fee_only(self):
         summary = _condition_summary(
-            "2990 ₽ в мес; или 5000 акций (≈1,220,000₽)",
+            "Premium Bronze доступен любому клиенту за 2 990 ₽ в месяц",
             "tbank_bronze",
         )
 
         self.assertEqual(
             summary,
-            "Уровень за 2990 ₽ в мес\nили 5000 акций (≈1,220,000₽)",
+            "Premium Bronze доступен любому клиенту за 2 990 ₽ в месяц",
+        )
+
+        from scanner.curated import curated_for
+
+        facts = curated_for("tbank_bronze")
+        self.assertEqual(
+            facts["entry_conditions"]["value"],
+            "Premium Bronze доступен любому клиенту за 2 990 ₽ в месяц",
+        )
+        self.assertEqual(facts["service_cost"]["value"], "2 990 ₽ в месяц")
+        self.assertNotIn("акци", facts["entry_conditions"]["value"].lower())
+        self.assertNotIn("5 000", facts["positioning"]["value"])
+        self.assertEqual(
+            facts["entry_conditions"]["source_url"],
+            "https://www.tbank.ru/bank/help/general/premium/access/terms/",
         )
 
     def test_raiffeisen_paid_entry_conditions_show_monthly_fee_only(self):
@@ -1302,7 +1444,11 @@ class PremiumStructuredTests(unittest.TestCase):
         self.assertNotIn('"label": "Правила выбора"', html)
         self.assertNotIn('"label": "Авто"', html)
         self.assertIn('benefits-list', html)
-        self.assertIn("$150/35 тыс, 90 дн, ассистанс Class Assistance", html)
+        self.assertIn(
+            "$150 тыс для владельца / $35 тыс для члена семьи, "
+            "90 дн, ассистанс Class Assistance",
+            html,
+        )
         match = re.search(
             r'<script id="data" type="application/json">(.*?)</script>',
             html,
@@ -1554,6 +1700,27 @@ class PremiumStructuredTests(unittest.TestCase):
                     self.assertIn(marker, text)
                 self.assertNotIn("Ð", text)
 
+    def test_sber_transfer_limits_are_kept_tier_specific(self):
+        from scanner.curated import curated_for
+
+        expected = {
+            "sber_premier_1": "Переводы без комиссии до 1 млн ₽ в месяц",
+            "sber_premier_2": "Переводы без комиссии до 1 млн ₽ в месяц",
+            "sber_premier_3": "Переводы без комиссии до 1 млн ₽ в сутки",
+            "sber_first_4": "Переводы без комиссии до 35 млн ₽ в сутки",
+            "sber_first_5": "Переводы без комиссии до 35 млн ₽ в сутки",
+            "sber_private_6": "Переводы без комиссии до 50 млн ₽ в сутки",
+        }
+        for tier_id, value in expected.items():
+            with self.subTest(tier_id=tier_id):
+                fact = curated_for(tier_id)["transfers_payments"]
+                self.assertEqual(fact["value"], value)
+                self.assertEqual(
+                    fact["source_url"],
+                    "https://www.sberbank.ru/ru/person/premium",
+                )
+                self.assertEqual(fact["date_checked"], "2026-07-23")
+
     def test_alfa_pdf_source_and_cashback_curated(self):
         alfa = next(bank for bank in BANKS if bank["id"] == "alfa")
         urls = [
@@ -1570,8 +1737,13 @@ class PremiumStructuredTests(unittest.TestCase):
         self.assertIn("30 000 ₽", fact["value"])
         self.assertIn("суперкэшбэк до 100%", fact["value"])
         deposits = curated_for("alfa_only_2")["deposits"]
-        self.assertIn("Премиальный вклад", deposits["value"])
-        self.assertIn("alfabank.ru/everyday/alfa-only", deposits["source_url"])
+        self.assertIn("Премиум-вклад Alfa Only", deposits["value"])
+        self.assertIn("до 13,8%", deposits["value"])
+        self.assertIn("до 4%", deposits["value"])
+        self.assertIn("10 000 ₽", deposits["value"])
+        self.assertIn("500 ¥", deposits["value"])
+        self.assertIn("package/premium/vklad", deposits["source_url"])
+        self.assertEqual(deposits["date_checked"], "2026-07-21")
 
         alfa_only = curated_for("alfa_only_2")
         self.assertIn("до 100 000 ₽ в месяц", alfa_only["transfers_payments"]["value"])
