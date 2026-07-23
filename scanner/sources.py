@@ -270,6 +270,12 @@ _SBER_PRIVATE_TARIFF_PDF = "https://www.sberbank.ru/common/img/uploaded/redirect
 _TBANK_PREMIUM_TARIFF_PDF = "https://cdn.tbank.ru/static/documents/docs-terms-of-service-premium.pdf"
 _TBANK_PRIVATE_TARIFF_PDF = "https://cdn.tbank.ru/static/documents/docs-terms-of-service-private.pdf"
 _TBANK_PREMIUM_OFFICIAL = "https://www.tbank.ru/tinkoff-premium/"
+_TBANK_PREMIUM_ACCESS_OFFICIAL = (
+    "https://www.tbank.ru/bank/help/general/premium/access/what-is/"
+)
+_TBANK_PREMIUM_TERMS_OFFICIAL = (
+    "https://www.tbank.ru/bank/help/general/premium/access/terms/"
+)
 _TBANK_PRIVATE_OFFICIAL = "https://www.tbank.ru/private/"
 _OZON_ULTRA_TARIFF_PDF = "https://cdn1.ozone.ru/s3/ob-landing/static/docs/ecom/products/rules/2026.05.18%20-%20Тариф%20Ultra.pdf"
 _OZON_PRODUCTS_OFFICIAL = "https://finance.ozon.ru/products"
@@ -284,12 +290,19 @@ _RAIF_PACKAGE_TARIFF_PDF = "https://www.raiffeisen.ru/common/img/uploaded/files/
 _RAIF_PREMIUM_OFFICIAL = "https://www.raiffeisen.ru/premium/"
 _GPB_PREMIUM_BONUS_TARIFF_PDF = "https://www.gazprombank.ru/upload/files/iblock/9ff/1ha4uno7pm7yti3z20ke9bdre727aog7/Tarify-po-predostavleniyu-fizicheskim-litsam-_-klientam-Banka-GPB-servisa-Gazprom-Bonus-_Premium_-_s-27.01.2026_.pdf"
 _GPB_PREMIUM_OFFICIAL = "https://www.gazprombank.ru/premium/"
+_GPB_PREMIUM_BONUS_OFFICIAL = "https://www.gazprombank.ru/premium/gazprom-bonus/"
 _GPB_PRIVATE_OFFICIAL = "https://www.gazprombank.ru/private/"
 _ALFA_ONLY_CARD_TARIFFS = (
     "https://alfabank.servicecdn.ru/site-upload/c1/65/275/"
     "Tariffs_Alfa_Only_Card.pdf"
 )
 _ALFA_ONLY_OFFICIAL = "https://alfabank.ru/everyday/package/premium/"
+_ALFA_ONLY_DEPOSIT_OFFICIAL = (
+    "https://alfabank.ru/everyday/package/premium/vklad/"
+)
+_ALFA_ONLY_SALARY_OFFICIAL = (
+    "https://alfabank.ru/everyday/debit-cards/premium/zarplatnaya-karta/"
+)
 _ALFA_ACLUB_OFFICIAL = "https://alfabank.ru/a-club/"
 
 PRIORITY_SOURCE_URLS = {
@@ -307,18 +320,24 @@ PRIORITY_SOURCE_URLS = {
         "alfa_aclub": _ALFA_ACLUB_OFFICIAL,
     },
     "official_landing": {
+        "sber_premium_levels": _SBER_PREMIUM_OFFICIAL,
         "sber_premier": _SBER_PREMIER_OFFICIAL,
         "sber_first": _SBER_FIRST_OFFICIAL,
         "sber_private": "https://sberpb.ru/",
         "tbank_premium": _TBANK_PREMIUM_OFFICIAL,
+        "tbank_premium_access": _TBANK_PREMIUM_ACCESS_OFFICIAL,
+        "tbank_premium_terms": _TBANK_PREMIUM_TERMS_OFFICIAL,
         "tbank_private": _TBANK_PRIVATE_OFFICIAL,
         "ozon_products": _OZON_PRODUCTS_OFFICIAL,
         "vtb_privilege": _VTB_PRIVILEGE_OFFICIAL,
         "vtb_prime_plus": _VTB_PRIME_PLUS_OFFICIAL,
         "raiffeisen": _RAIF_PREMIUM_OFFICIAL,
         "gazprombank_premium": _GPB_PREMIUM_OFFICIAL,
+        "gazprombank_premium_bonus": _GPB_PREMIUM_BONUS_OFFICIAL,
         "gazprombank_private": _GPB_PRIVATE_OFFICIAL,
         "alfa_only": _ALFA_ONLY_OFFICIAL,
+        "alfa_only_deposit": _ALFA_ONLY_DEPOSIT_OFFICIAL,
+        "alfa_only_salary": _ALFA_ONLY_SALARY_OFFICIAL,
         "alfa_aclub": _ALFA_ACLUB_OFFICIAL,
     },
     "pbi": {
@@ -371,6 +390,7 @@ BANKS = [
                 "tier_name": "СберПремьер — уровень 1",
                 "segment": "0–3 млн ₽",
                 "sources": [
+                    _src("official", _SBER_PREMIUM_OFFICIAL),
                     _src("official", _SBER_PREMIER_OFFICIAL),
                     _src("official", _SBER_PREMIUM_TARIFF_PDF),
                     _src("official", _SBER_PREMIUM_VKLAD),
@@ -383,6 +403,7 @@ BANKS = [
                 "tier_name": "СберПремьер — уровень 2",
                 "segment": "3–10 млн ₽",
                 "sources": [
+                    _src("official", _SBER_PREMIUM_OFFICIAL),
                     _src("official", _SBER_PREMIER_OFFICIAL),
                     _src("official", _SBER_PREMIUM_TARIFF_PDF),
                     _src("official", _SBER_PREMIUM_VKLAD),
@@ -395,6 +416,7 @@ BANKS = [
                 "tier_name": "СберПремьер — уровень 3",
                 "segment": "3–10 млн ₽",
                 "sources": [
+                    _src("official", _SBER_PREMIUM_OFFICIAL),
                     _src("official", _SBER_PREMIER_OFFICIAL),
                     _src("official", _SBER_PREMIUM_TARIFF_PDF),
                     _src("official", _SBER_PREMIUM_VKLAD),
@@ -407,6 +429,7 @@ BANKS = [
                 "tier_name": "СберПервый — уровень 4",
                 "segment": "10–25 млн ₽",
                 "sources": [
+                    _src("official", _SBER_PREMIUM_OFFICIAL),
                     _src("official", _SBER_FIRST_OFFICIAL),
                     _src("official", _SBER_PREMIUM_TARIFF_PDF),
                     _src("official", _SBER_FIRST_VKLADY),
@@ -419,6 +442,7 @@ BANKS = [
                 "tier_name": "СберПервый — уровень 5",
                 "segment": "25–100 млн ₽",
                 "sources": [
+                    _src("official", _SBER_PREMIUM_OFFICIAL),
                     _src("official", _SBER_FIRST_OFFICIAL),
                     _src("official", _SBER_PREMIUM_TARIFF_PDF),
                     _src("official", _SBER_FIRST_VKLADY),
@@ -455,6 +479,7 @@ BANKS = [
                 "segment": "0–3 млн ₽",
                 "sources": [
                     _src("official", _TBANK_PREMIUM_OFFICIAL),
+                    _src("official", _TBANK_PREMIUM_TERMS_OFFICIAL),
                     _src("official", _TBANK_PREMIUM_TARIFF_PDF),
                     _src("pbi", _PBI_TBANK, f"{_PBI_TBANK}/1"),
                 ],
@@ -465,6 +490,7 @@ BANKS = [
                 "segment": "3–10 млн ₽",
                 "sources": [
                     _src("official", _TBANK_PREMIUM_OFFICIAL),
+                    _src("official", _TBANK_PREMIUM_ACCESS_OFFICIAL),
                     _src("official", _TBANK_PREMIUM_TARIFF_PDF),
                     _src("pbi", _PBI_TBANK, f"{_PBI_TBANK}/2"),
                 ],
@@ -536,6 +562,8 @@ BANKS = [
                 "segment": "0–3 млн ₽",
                 "sources": [
                     _src("official", _ALFA_ONLY_OFFICIAL),
+                    _src("official", _ALFA_ONLY_SALARY_OFFICIAL),
+                    _src("official", _ALFA_ONLY_DEPOSIT_OFFICIAL),
                     _src("official", _ALFA_ONLY_CARD_TARIFFS),
                     _src("pbi", _PBI_ALFABANK, f"{_PBI_ALFABANK}/1"),
                 ],
@@ -546,6 +574,7 @@ BANKS = [
                 "segment": "3–10 млн ₽",
                 "sources": [
                     _src("official", _ALFA_ONLY_OFFICIAL),
+                    _src("official", _ALFA_ONLY_DEPOSIT_OFFICIAL),
                     _src("official", _ALFA_ONLY_CARD_TARIFFS),
                     _src("pbi", _PBI_ALFABANK, f"{_PBI_ALFABANK}/2"),
                 ],
@@ -556,6 +585,7 @@ BANKS = [
                 "segment": "3–10 млн ₽",
                 "sources": [
                     _src("official", _ALFA_ONLY_OFFICIAL),
+                    _src("official", _ALFA_ONLY_DEPOSIT_OFFICIAL),
                     _src("official", _ALFA_ONLY_CARD_TARIFFS),
                     _src("pbi", _PBI_ALFABANK, f"{_PBI_ALFABANK}/3"),
                 ],
@@ -566,6 +596,7 @@ BANKS = [
                 "segment": "10–25 млн ₽",
                 "sources": [
                     _src("official", _ALFA_ONLY_OFFICIAL),
+                    _src("official", _ALFA_ONLY_DEPOSIT_OFFICIAL),
                     _src("official", _ALFA_ONLY_CARD_TARIFFS),
                     _src("pbi", _PBI_ALFABANK, f"{_PBI_ALFABANK}/4"),
                 ],
@@ -697,6 +728,7 @@ BANKS = [
                 "segment": "0–3 млн ₽",
                 "sources": [
                     _src("official", _GPB_PREMIUM_OFFICIAL),
+                    _src("official", _GPB_PREMIUM_BONUS_OFFICIAL),
                     _src("official", _GPB_PREMIUM_BONUS_TARIFF_PDF),
                     _src("pbi", _PBI_GAZPROMBANK, f"{_PBI_GAZPROMBANK}/1"),
                 ],

@@ -54,7 +54,7 @@ FIELD_LABELS = {
     "transfers_payments": "Переводы и платежи",
     "cash_withdrawal": "Снятие наличных",
     "supreme": "Supreme",
-    "deposits": "Вклады",
+    "deposits": "Вклады и накопительные счета",
     "taxi": "Такси",
     "restaurants": "Рестораны",
     "insurance": "Страхование",
@@ -211,6 +211,7 @@ def build_payload(rows: list[dict]) -> list[dict]:
                 "segment": row["segment"],
                 "scan_date": (row.get("scan_date") or "")[:10],
                 "entry_hint": _entry_hint(row, attrs),
+                "entry_match": _entry_match(row),
                 "attrs": attrs,
             })
         banks.append({"bank": name, "levels": levels})
@@ -267,8 +268,12 @@ def _attr_metric(field: str, row: dict) -> dict:
             if summary:
                 value = f"{value.rstrip(' .')}. Лимит без комиссии: {summary}."
     score = _comparison_score(field, raw)
-    return {"value": value, "score": score, "note": _shorten(raw, 260),
-            "details": _details(detail_raw, value)}
+    public_raw = _insurance_display(raw) if field == "insurance" else raw
+    public_details = (
+        _insurance_display(detail_raw) if field == "insurance" else detail_raw
+    )
+    return {"value": value, "score": score, "note": _shorten(public_raw, 260),
+            "details": _details(public_details, value)}
 
 
 def _sber_landing_override(field: str, row: dict):
@@ -353,9 +358,9 @@ def render_html(banks: list[dict], rows: list[dict], changes: list[dict] = None)
     <section class="hero">
       <p class="eyebrow">Премиальный банкинг РФ</p>
       <h1>Сравнение уровней пакетов</h1>
-      <p class="lead">Выберите два или три банка и уровень пакета у каждого —
-      сравнение по ключевым условиям и привилегиям появится сразу,
-      без прокрутки страницы.</p>
+      <p class="lead">Выберите Банк 1 и уровень пакета — мы предложим
+      сопоставимые уровни других банков. После выбора трёх банков сравнение
+      условий и привилегий появится на этой странице.</p>
       <div class="stats">
         <div><b>{len(banks)}</b><span>банков</span></div>
         <div><b>{total_levels}</b><span>уровней пакетов</span></div>
@@ -383,6 +388,16 @@ def render_html(banks: list[dict], rows: list[dict], changes: list[dict] = None)
         <h3 class="lvl-title" hidden>Уровень пакета</h3>
         <div class="chip-row levels"></div>
       </div>
+    </section>
+    <section id="recommendations" class="recommendations" hidden aria-live="polite">
+      <div class="recommendations-head">
+        <div>
+          <p class="recommendations-kicker">Быстрый подбор</p>
+          <h2>Подходящие уровни</h2>
+        </div>
+        <p id="recommendations-summary" class="recommendations-summary"></p>
+      </div>
+      <div id="recommendations-list" class="recommendation-grid"></div>
     </section>
     <p id="js-warning" class="js-warning">Если банки не выбираются, файл открыт
     во встроенном просмотрщике без JavaScript. Нажмите «Поделиться» → «Открыть
@@ -468,6 +483,10 @@ def _condition_summary(value: str, tier_id=None, limit: int = 5) -> str:
     if not text or _is_missing(text):
         return ""
     keep_monthly_fee = tier_id in {"tbank_bronze", "raif_premium_1"}
+    text = re.sub(r"\bзп\b", "зарплата", text, flags=re.IGNORECASE)
+    text = re.sub(r"\s*,\s*(?:и\s+)?или\s+", " | ", text,
+                  flags=re.IGNORECASE)
+    text = re.sub(r"\s+и\s+или\s+", " | ", text, flags=re.IGNORECASE)
     text = re.sub(r"\s*;\s*", " | ", text)
     text = re.sub(r"\s+\|\s+или\s+\|", " | ", text)
     text = re.sub(r"\|\s*или\s*\|", "|", text)
@@ -520,6 +539,93 @@ def _entry_hint(row: dict, attrs: list[dict]) -> str:
     raw_record = row["fields"].get("entry_conditions", "")
     raw = _json_field_value(raw_record) if isinstance(raw_record, dict) else raw_record
     return _entry_hint_from_text(f"{summary} | {raw}")
+
+
+def _entry_match(row: dict) -> dict:
+    """Return a conservative capital interval for level recommendations."""
+    raw_record = row["fields"].get("entry_conditions", "")
+    raw = _json_field_value(raw_record) if isinstance(raw_record, dict) else raw_record
+    return _entry_match_from_text(raw)
+
+
+def _entry_match_from_text(value: str) -> dict:
+    """Extract only standalone personal-capital entry routes from source text.
+
+    The comparison evaluator intentionally merges alternative metrics.  A
+    recommendation must be stricter: a lower balance combined with spending,
+    salary, shares, joint access, or a monthly fee is not the same as a pure
+    capital threshold and therefore cannot replace it.
+    """
+    empty = {
+        "eligible": False,
+        "min_amount": None,
+        "max_amount": None,
+        "label": "",
+    }
+    text = _public_text(value)
+    if not text or _is_missing(text):
+        return empty
+
+    clauses = [
+        part.strip(" ,;.|.")
+        for part in re.split(
+            r"\s*(?:[;|\n]+|,\s*(?=(?:и\s+)?или\b)|\bи\s+или\b|\bили\b|"
+            r"\bи\b(?=\s*\d[^;|]*(?:моск|мск|регион)))\s*",
+            text,
+            flags=re.IGNORECASE,
+        )
+        if part.strip(" ,;.|.")
+    ]
+    excluded_markers = (
+        "трат", "покуп", "оборот", "зарплат", "зп", "поступлен",
+        "зачислен", "акци", "совмест", "платное обслуж", "в мес",
+        "в месяц", "/мес",
+    )
+    generic = []
+    regional = []
+    for clause in clauses:
+        low = clause.lower()
+        amounts = _rub_amounts(clause)
+        if len(amounts) != 1 or _monthly_rub_cost(clause) is not None:
+            continue
+        if any(marker in low for marker in excluded_markers):
+            continue
+        amount = amounts[0]
+        if "моск" in low or re.search(r"\bмск\b", low):
+            regional.append(("moscow", amount))
+        elif "регион" in low:
+            regional.append(("regions", amount))
+        else:
+            generic.append(amount)
+
+    if generic:
+        amount = generic[0]
+        return {
+            "eligible": True,
+            "min_amount": amount,
+            "max_amount": amount,
+            "label": _compact_rub(amount),
+        }
+    if regional:
+        values = [amount for _scope, amount in regional]
+        minimum, maximum = min(values), max(values)
+        return {
+            "eligible": True,
+            "min_amount": minimum,
+            "max_amount": maximum,
+            "label": f"{_rub_interval_label(minimum, maximum)} по региону",
+        }
+    return empty
+
+
+def _rub_interval_label(minimum, maximum) -> str:
+    left, right = _compact_rub(minimum), _compact_rub(maximum)
+    if minimum == maximum:
+        return left
+    for suffix in (" млн ₽", " тыс ₽", " ₽"):
+        if left.endswith(suffix) and right.endswith(suffix):
+            return f"{left[:-len(suffix)]}–{right}"
+    return f"{left}–{right}"
 
 
 def _entry_hint_from_text(value: str) -> str:
@@ -1193,9 +1299,9 @@ def _insurance_evaluation(text: str) -> dict:
         second_value = float(second.replace(",", ".")) if second else first
         unit = (coverage_match.group(4) or "").lower()
         multiplier = 1_000_000 if unit == "млн" else 1000 if unit == "тыс" else 1
-        metrics["coverage"] = max(first, second_value) * multiplier
-        if first != second_value:
-            metrics["secondary_coverage"] = min(first, second_value) * multiplier
+        metrics["coverage"] = first * multiplier
+        if second is not None:
+            metrics["secondary_coverage"] = second_value * multiplier
         scope["currency"] = coverage_match.group(1)
     days = [float(value) for value in re.findall(r"(\d+)\s*(?:дн|дней|дня)", low)]
     if days:
@@ -1213,18 +1319,48 @@ def _insurance_evaluation(text: str) -> dict:
         )
     summary_parts = []
     if "coverage" in metrics:
-        summary_parts.append(f"покрытие {metrics['coverage']:g} {scope.get('currency', '')}".strip())
+        summary_parts.append(
+            f"владелец: {metrics['coverage']:g} {scope.get('currency', '')}".strip()
+        )
     if "secondary_coverage" in metrics:
         summary_parts.append(
-            f"доп. покрытие {metrics['secondary_coverage']:g} {scope.get('currency', '')}".strip()
+            f"член семьи: {metrics['secondary_coverage']:g} "
+            f"{scope.get('currency', '')}".strip()
         )
     if "trip_days" in metrics:
         summary_parts.append(f"до {metrics['trip_days']:g} дней")
     return _evaluation(
         "dominance", metrics, {key: "higher" for key in metrics},
         ", ".join(summary_parts) or "Подтверждённое страхование", scope=scope,
-        reason="Учитываются сумма, срок, территория и статус подключения без подсчёта текстовых пунктов.",
+        reason=("Учитываются сумма, срок, территория и статус подключения. "
+                "Страховые суммы сравниваются только в одинаковой валюте."),
     )
+
+
+def _insurance_display(text: str) -> str:
+    """Show insured amounts, never PBI's estimated market price of a policy."""
+    estimate_pattern = (
+        r"(?:и|;)?\s*Примерная стоимость на 2 взрослых\s*≈\s*"
+        r"[\d\s]+\s*₽"
+    )
+    text = re.sub(estimate_pattern, "", text, flags=re.IGNORECASE).rstrip(" ;,.")
+    coverage = re.search(
+        r"([$€])\s*(\d+(?:[.,]\d+)?)"
+        r"(?:\s*/\s*(\d+(?:[.,]\d+)?))?\s*(млн|тыс)?",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if not coverage:
+        return text
+    currency, owner, family, unit = coverage.groups()
+    unit_suffix = f" {unit}" if unit else ""
+    label = f"Страховое покрытие: {currency}{owner}{unit_suffix}"
+    if family is not None:
+        label += (
+            f" для владельца / {currency}{family}{unit_suffix} "
+            "для члена семьи"
+        )
+    return text[:coverage.start()] + label + text[coverage.end():]
 
 
 def _service_presence_evaluation(text: str, field: str) -> dict:
@@ -1268,6 +1404,29 @@ def _benefit_key(title: str) -> str:
     return re.sub(r"[^a-zа-яё0-9]+", " ", title.lower()).strip()
 
 
+def _benefit_rub_total(description: str):
+    """Return a confirmed total when one benefit states count × rubles."""
+    match = re.search(
+        r"(\d+(?:[.,]\d+)?)\s*"
+        r"(?:заказ(?:а|ов)?|посещени(?:е|я|й)|поезд(?:ка|ки|ок))\s+"
+        r"по\s+(\d[\d\s.,]*)\s*(тыс|млн)?\s*₽",
+        description,
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        return None
+    count = _parse_float(match.group(1))
+    amount = _parse_rub_number(match.group(2))
+    if count is None or amount is None:
+        return None
+    unit = (match.group(3) or "").lower()
+    if unit == "тыс":
+        amount *= 1000
+    elif unit == "млн":
+        amount *= 1_000_000
+    return count * amount
+
+
 def _benefits_evaluation(raw_value, display_value) -> dict:
     raw = _public_text(raw_value)
     if _is_missing(raw):
@@ -1287,7 +1446,11 @@ def _benefits_evaluation(raw_value, display_value) -> dict:
         if availability not in status_rank:
             unknown.append(item.get("title", key))
             continue
-        benefits[key] = status_rank[availability]
+        benefit = {"status": status_rank[availability]}
+        rub_total = _benefit_rub_total(item.get("description", ""))
+        if rub_total is not None:
+            benefit["rub_total"] = rub_total
+        benefits[key] = benefit
         labels[key] = item.get("title", key)
     if unknown:
         return _incomparable_evaluation(
@@ -1299,12 +1462,24 @@ def _benefits_evaluation(raw_value, display_value) -> dict:
             "Не найден набор привилегий с подтверждённым статусом.",
             _shorten(raw, 110),
         )
-    always_count = sum(1 for rank in benefits.values() if rank == 2)
-    selectable_count = sum(1 for rank in benefits.values() if rank == 1)
+    always_count = sum(
+        1 for benefit in benefits.values() if benefit["status"] == 2
+    )
+    selectable_count = sum(
+        1 for benefit in benefits.values() if benefit["status"] == 1
+    )
     summary = f"{always_count} постоянно, {selectable_count} на выбор"
+    valued = [
+        f"{labels[key]}: {_compact_rub(benefit['rub_total'])}"
+        for key, benefit in benefits.items()
+        if "rub_total" in benefit
+    ]
+    if valued:
+        summary += f"; {', '.join(valued)}"
     return _evaluation(
         "benefit_set", {"benefits": benefits, "labels": labels}, {}, summary,
-        reason="Наборы сравниваются по включению одинаковых привилегий и их статусу, а не по числу строк.",
+        reason=("Наборы сравниваются по включению одинаковых привилегий, "
+                "их статусу и подтверждённому номиналу одинаковых услуг."),
     )
 
 
@@ -1558,7 +1733,7 @@ def _display_text(value) -> str:
 def _benefit_display(field: str, raw: str, metric: str) -> str:
     text = _public_text(raw)
     if field == "insurance":
-        return _shorten(text, 180)
+        return _shorten(_insurance_display(text), 230)
     if field in {
         "cashback", "deposits", "taxi", "restaurants",
         "always_included_options", "selectable_options", "selection_rules",
@@ -1725,6 +1900,35 @@ h1 { margin: 0; font-size: 42px; line-height: 1.08; }
 .chip:hover { border-color: var(--green); color: var(--green); }
 .chip.active { background: var(--green); border-color: var(--green); color: #fff; }
 .chip.active .chip-meta { color: rgba(255, 255, 255, 0.84); }
+.recommendations { margin-top: 16px; padding: 16px; border: 1px solid var(--line);
+  border-radius: 8px; background: var(--surface); box-shadow: var(--shadow); }
+.recommendations-head { display: flex; align-items: end; justify-content: space-between;
+  gap: 16px; margin-bottom: 12px; }
+.recommendations-kicker { margin: 0 0 2px; color: var(--green); font-size: 11px;
+  font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.recommendations h2 { margin: 0; font-size: 20px; }
+.recommendations-summary { max-width: 620px; margin: 0; color: var(--muted);
+  font-size: 13px; text-align: right; }
+.recommendation-grid { display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 8px; }
+.recommendation-card { display: flex; min-width: 0; min-height: 116px;
+  flex-direction: column; align-items: flex-start; gap: 5px; padding: 12px;
+  border: 1px solid var(--line); border-radius: 8px; background: #fff;
+  color: var(--ink); cursor: pointer; text-align: left; font: inherit; }
+.recommendation-card:hover:not(:disabled),
+.recommendation-card:focus-visible:not(:disabled) { border-color: var(--green);
+  box-shadow: 0 0 0 2px rgba(24, 143, 79, 0.12); outline: 0; }
+.recommendation-card:disabled { cursor: default; opacity: .55; }
+.recommendation-bank { color: var(--green); font-size: 12px; font-weight: 800; }
+.recommendation-tier { font-size: 14px; font-weight: 750; line-height: 1.3; }
+.recommendation-threshold { color: var(--muted); font-size: 12px; }
+.recommendation-match { margin-top: auto; padding: 3px 7px; border-radius: 999px;
+  background: var(--green-soft); color: var(--green); font-size: 11px;
+  font-weight: 750; }
+.recommendation-card.nearest .recommendation-match { background: #fff8e8;
+  color: #795f1e; }
+.recommendation-empty { grid-column: 1 / -1; margin: 0; padding: 12px;
+  border-radius: 8px; background: #f7f9f5; color: var(--muted); font-size: 13px; }
 .hint { margin: 18px 0 0; color: var(--muted); }
 .js-warning { margin: 14px 0 0; padding: 12px 14px; border: 1px solid var(--line);
   border-radius: 8px; background: #fff8e8; color: #6f5a25; font-size: 14px; }
@@ -1829,7 +2033,11 @@ h1 { margin: 0; font-size: 42px; line-height: 1.08; }
   .stats div { flex: 1 1 138px; min-width: 0; }
   .pickers, .cmp-head { grid-template-columns: 1fr; }
   .cmp-attr-spacer { display: none; }
-  .picker { padding: 14px; }
+  .picker, .recommendations { padding: 14px; }
+  .recommendations-head { display: block; }
+  .recommendations-summary { margin-top: 6px; text-align: left; }
+  .recommendation-grid { grid-template-columns: 1fr; }
+  .recommendation-card { min-height: 0; }
   .chip-row { gap: 8px; }
   .chip { flex: 1 1 auto; justify-content: center; min-width: min(46%, 220px); }
   .level-chip { align-items: center; min-width: min(100%, 220px); text-align: center; }
@@ -1862,7 +2070,9 @@ h1 { margin: 0; font-size: 42px; line-height: 1.08; }
   }
   body { background: #fff; color: #111; font-size: 10px; line-height: 1.35; }
   .page { max-width: none; margin: 0; padding: 0; }
-  .hero, .pickers, #hint, #js-warning, .footer, .compare-actions .pdf-button {
+  .hero, .pickers, .recommendations, #hint,
+  #js-warning, .footer,
+  .compare-actions .pdf-button {
     display: none !important;
   }
   #compare { display: block !important; margin: 0; }
@@ -1921,14 +2131,6 @@ function el(tag, cls, text) {
 function renderBanks(side) {
   const picker = document.querySelector(`.picker[data-side="${side}"]`);
   const row = picker.querySelector('.banks');
-  if (!row.children.length) {
-    DATA.forEach((bank, i) => {
-      const chip = el('button', 'chip', bank.bank);
-      chip.type = 'button';
-      chip.dataset.bankIndex = i;
-      row.appendChild(chip);
-    });
-  }
   row.querySelectorAll('.chip').forEach((chip) => {
     const i = Number(chip.dataset.bankIndex);
     if (state[side].bank === i) chip.classList.add('active');
@@ -1938,6 +2140,7 @@ function renderBanks(side) {
       state[side].level = null;
       renderBanks(side);
       renderLevels(side);
+      renderRecommendations();
       renderCompare();
     };
   });
@@ -1960,9 +2163,22 @@ function renderLevels(side) {
     chip.onclick = () => {
       state[side].level = i;
       renderLevels(side);
+      renderRecommendations();
       renderCompare();
+      if (side === 'a') scrollToRecommendations();
     };
     row.appendChild(chip);
+  });
+}
+
+function scrollToRecommendations() {
+  const section = document.getElementById('recommendations');
+  if (section.hidden) return;
+  const reduceMotion = window.matchMedia
+    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  section.scrollIntoView({
+    behavior: reduceMotion ? 'auto' : 'smooth',
+    block: 'start'
   });
 }
 
@@ -1970,6 +2186,156 @@ function selected(side) {
   const s = state[side];
   if (s.bank === null || s.level === null) return null;
   return { bank: DATA[s.bank].bank, ...DATA[s.bank].levels[s.level] };
+}
+
+function validEntryMatch(level) {
+  const match = level && level.entry_match;
+  return Boolean(match && match.eligible
+    && Number.isFinite(Number(match.min_amount))
+    && Number.isFinite(Number(match.max_amount)));
+}
+
+function intervalDistance(left, right) {
+  const leftMin = Number(left.min_amount);
+  const leftMax = Number(left.max_amount);
+  const rightMin = Number(right.min_amount);
+  const rightMax = Number(right.max_amount);
+  if (leftMax < rightMin) return rightMin - leftMax;
+  if (rightMax < leftMin) return leftMin - rightMax;
+  return 0;
+}
+
+function recommendationKind(reference, candidate) {
+  const sameScalar = Number(reference.min_amount) === Number(reference.max_amount)
+    && Number(candidate.min_amount) === Number(candidate.max_amount)
+    && Number(reference.min_amount) === Number(candidate.min_amount);
+  if (sameScalar) return { id: 'exact', rank: 0, label: 'Точное совпадение' };
+  const distance = intervalDistance(reference, candidate);
+  if (distance === 0) {
+    return { id: 'overlap', rank: 1, label: 'Подходит по диапазону' };
+  }
+  const direction = Number(candidate.max_amount) < Number(reference.min_amount)
+    ? 'ниже' : 'выше';
+  return {
+    id: 'nearest', rank: 2,
+    label: `На ${formatRub(distance)} ${direction}`
+  };
+}
+
+function formatRub(amount) {
+  const value = Number(amount);
+  if (!Number.isFinite(value)) return '';
+  if (value >= 1000000) {
+    const millions = value / 1000000;
+    return `${new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 2 })
+      .format(millions)} млн ₽`;
+  }
+  if (value >= 1000 && value % 1000 === 0) {
+    return `${new Intl.NumberFormat('ru-RU').format(value / 1000)} тыс ₽`;
+  }
+  return `${new Intl.NumberFormat('ru-RU').format(value)} ₽`;
+}
+
+function buildRecommendations(referenceBankIndex, referenceLevel) {
+  const reference = referenceLevel.entry_match;
+  const recommendations = [];
+  DATA.forEach((bank, bankIndex) => {
+    if (bankIndex === referenceBankIndex) return;
+    const candidates = bank.levels
+      .map((level, levelIndex) => {
+        if (!validEntryMatch(level)) return null;
+        const kind = recommendationKind(reference, level.entry_match);
+        return {
+          bank: bank.bank,
+          bankIndex,
+          level,
+          levelIndex,
+          distance: intervalDistance(reference, level.entry_match),
+          width: Number(level.entry_match.max_amount)
+            - Number(level.entry_match.min_amount),
+          kind
+        };
+      })
+      .filter(Boolean)
+      .sort((left, right) => left.kind.rank - right.kind.rank
+        || left.distance - right.distance
+        || left.width - right.width
+        || left.levelIndex - right.levelIndex);
+    if (candidates.length) recommendations.push(candidates[0]);
+  });
+  return recommendations.sort((left, right) => left.kind.rank - right.kind.rank
+    || left.distance - right.distance
+    || left.bank.localeCompare(right.bank, 'ru'));
+}
+
+function nextRecommendationSide() {
+  return ['b', 'c'].find((side) => state[side].bank === null
+    || state[side].level === null) || null;
+}
+
+function applyRecommendation(recommendation) {
+  const side = nextRecommendationSide();
+  if (!side) return;
+  state[side].bank = recommendation.bankIndex;
+  state[side].level = recommendation.levelIndex;
+  renderBanks(side);
+  renderLevels(side);
+  renderRecommendations();
+  renderCompare();
+}
+
+function renderRecommendations() {
+  const section = document.getElementById('recommendations');
+  const summary = document.getElementById('recommendations-summary');
+  const list = document.getElementById('recommendations-list');
+  const referenceState = state.a;
+  if (referenceState.bank === null || referenceState.level === null) {
+    section.hidden = true;
+    list.innerHTML = '';
+    return;
+  }
+
+  section.hidden = false;
+  list.innerHTML = '';
+  const referenceLevel = DATA[referenceState.bank].levels[referenceState.level];
+  if (!validEntryMatch(referenceLevel)) {
+    summary.textContent = 'Автоматический подбор доступен для уровней '
+      + 'с подтверждённым условием по капиталу или остатку.';
+    list.appendChild(el('p', 'recommendation-empty',
+      'У выбранного уровня нет отдельного подтверждённого порога капитала. '
+      + 'Банки 2 и 3 можно выбрать вручную.'));
+    return;
+  }
+
+  summary.textContent = `Ориентир: ${referenceLevel.entry_match.label}. `
+    + 'Сначала показаны точные совпадения, затем ближайшие уровни.';
+  const recommendations = buildRecommendations(referenceState.bank, referenceLevel);
+  if (!recommendations.length) {
+    list.appendChild(el('p', 'recommendation-empty',
+      'В доступных данных нет других уровней с подтверждённым порогом капитала.'));
+    return;
+  }
+
+  const selectedBanks = new Set(['b', 'c']
+    .map((side) => state[side].bank)
+    .filter((bankIndex) => bankIndex !== null));
+  const slotsFull = nextRecommendationSide() === null;
+  recommendations.forEach((recommendation) => {
+    const alreadySelected = selectedBanks.has(recommendation.bankIndex);
+    const card = el('button', `recommendation-card ${recommendation.kind.id}`);
+    card.type = 'button';
+    card.disabled = alreadySelected || slotsFull;
+    card.appendChild(el('span', 'recommendation-bank', recommendation.bank));
+    card.appendChild(el('span', 'recommendation-tier', recommendation.level.tier));
+    card.appendChild(el('span', 'recommendation-threshold',
+      `Вход: ${recommendation.level.entry_match.label}`));
+    let matchLabel = recommendation.kind.label;
+    if (alreadySelected) matchLabel += ' · Уже выбран';
+    else if (slotsFull) matchLabel += ' · Места заполнены';
+    card.appendChild(el('span', 'recommendation-match', matchLabel));
+    card.onclick = () => applyRecommendation(recommendation);
+    list.appendChild(card);
+  });
 }
 
 function renderHead(node, item) {
@@ -1984,7 +2350,11 @@ function renderCompare() {
     .filter((entry) => entry.item);
   const cmp = document.getElementById('compare');
   const hint = document.getElementById('hint');
-  if (selectedItems.length < SIDES.length) { cmp.hidden = true; hint.hidden = false; return; }
+  if (selectedItems.length < SIDES.length) {
+    cmp.hidden = true;
+    hint.hidden = false;
+    return;
+  }
   cmp.hidden = false; hint.hidden = true;
   cmp.style.setProperty('--compare-level-count', String(selectedItems.length));
 
@@ -2182,6 +2552,23 @@ function rankEvaluations(entries) {
   );
   if (!available.length) return entries.map((entry) => results.get(entry.side));
 
+  if (available[0].attr.id === 'insurance') {
+    const currencies = new Set(available
+      .map((entry) => entry.evaluation.scope && entry.evaluation.scope.currency)
+      .filter(Boolean));
+    if (currencies.size > 1) {
+      available.forEach((entry) => {
+        results.set(entry.side, {
+          side: entry.side,
+          status: 'incomparable',
+          summary: entry.evaluation.summary,
+          reason: 'Страховые суммы указаны в разных валютах и не пересчитываются без подтверждённого курса.'
+        });
+      });
+      return entries.map((entry) => results.get(entry.side));
+    }
+  }
+
   if (available.every((entry) => entry.evaluation.status === 'comparable')) {
     const totals = new Map(available.map((entry) => [entry.side, 0]));
     let structuredOrder = true;
@@ -2368,7 +2755,11 @@ function fallbackRankVector(entry) {
     const always = items.filter((item) => item.availability === 'always_included').length;
     const selectable = items.filter((item) => item.availability === 'selectable').length;
     const confirmed = items.filter((item) => item.availability !== 'rule').length;
-    return [always, selectable, confirmed];
+    const benefitValues = Object.values(metrics.benefits || {});
+    const rubTotal = benefitValues.reduce(
+      (total, item) => total + (Number(item.rub_total) || 0), 0
+    );
+    return [always, selectable, confirmed, rubTotal];
   }
   return [legacyScore ?? 0];
 }
@@ -2528,10 +2919,36 @@ function compareBenefitSets(left, right) {
   const leftContainsRight = [...rightKeys].every((key) => leftKeys.has(key));
   const rightContainsLeft = [...leftKeys].every((key) => rightKeys.has(key));
 
+  function compareBenefitValue(containerValue, containedValue) {
+    let containerBetter = false;
+    let containedBetter = false;
+    const containerStatus = Number(containerValue.status);
+    const containedStatus = Number(containedValue.status);
+    if (containerStatus !== containedStatus) {
+      if (containerStatus > containedStatus) containerBetter = true;
+      else containedBetter = true;
+    }
+    const containerRub = Number(containerValue.rub_total);
+    const containedRub = Number(containedValue.rub_total);
+    const containerHasRub = Number.isFinite(containerRub);
+    const containedHasRub = Number.isFinite(containedRub);
+    if (containerHasRub !== containedHasRub) return null;
+    if (containerHasRub && containerRub !== containedRub) {
+      if (containerRub > containedRub) containerBetter = true;
+      else containedBetter = true;
+    }
+    if (containerBetter && containedBetter) return null;
+    if (containerBetter) return 1;
+    if (containedBetter) return -1;
+    return 0;
+  }
+
   function containsWithoutWeaker(container, contained) {
-    return Object.keys(contained).every(
-      (key) => container[key] !== undefined && container[key] >= contained[key]
-    );
+    return Object.keys(contained).every((key) => {
+      if (container[key] === undefined) return false;
+      const comparison = compareBenefitValue(container[key], contained[key]);
+      return comparison !== null && comparison >= 0;
+    });
   }
 
   const leftDominates = leftContainsRight
@@ -2618,6 +3035,7 @@ function hasMixedBenefitStatuses(items) {
 SIDES.forEach((side) => {
   renderBanks(side);
 });
+renderRecommendations();
 document.getElementById('pdf-button').addEventListener('click', exportComparePdf);
 initChangesApp(document.querySelector('.changes-app'));
 initChangesPanel(document.querySelector('.js-changes-panel'));
