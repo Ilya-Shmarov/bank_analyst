@@ -1457,6 +1457,14 @@ def _benefit_rub_total(description: str):
         flags=re.IGNORECASE,
     )
     if not match:
+        bonus_rubles = re.search(
+            r"(\d[\d\s.,]*)\s*бонусн(?:ых|ые)?\s+руб(?:лей|ля|ль)?"
+            r"(?:\s+в\s+(?:месяц|мес\.?))?",
+            description,
+            flags=re.IGNORECASE,
+        )
+        if bonus_rubles:
+            return _parse_rub_number(bonus_rubles.group(1))
         promo = re.search(
             r"промокод(?:ы|ов)?\s+на\s+(\d[\d\s.,]*)\s*(тыс|млн)?(?:\s*₽)?",
             description,

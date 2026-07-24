@@ -133,6 +133,16 @@ class PremiumStructuredTests(unittest.TestCase):
             2_000,
         )
 
+    def test_gpb_sport_bonus_rubles_are_comparable(self):
+        amounts = [
+            _benefit_rub_total(
+                f"Фитмост ({amount} бонусных рублей в мес на спорт и спа)"
+            )
+            for amount in ("3000", "9000", "15000")
+        ]
+
+        self.assertEqual(amounts, [3_000, 9_000, 15_000])
+
     def test_vtb_prime_concierge_is_not_weaker_by_wording(self):
         prime = curated_for("vtb_prime_8")["concierge"]["value"]
         evaluation = _service_presence_evaluation(prime, "concierge")

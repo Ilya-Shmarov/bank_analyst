@@ -1,17 +1,17 @@
 {
-  "run_id": "run_20260724_143110",
-  "started_at": "2026-07-24T14:31:10",
-  "finished_at": "2026-07-24T14:36:58",
+  "run_id": "run_20260724_163514",
+  "started_at": "2026-07-24T16:35:14",
+  "finished_at": "2026-07-24T16:40:53",
   "banks_checked": 11,
   "sources_checked": 278,
   "documents_checked": 0,
-  "new_changes_found": 7,
-  "confirmed_changes": 7,
+  "new_changes_found": 10,
+  "confirmed_changes": 10,
   "changes_requiring_review": 0,
   "duplicate_changes_skipped": 0,
   "errors": 57,
   "quality_errors": 4,
-  "quality_warnings": 89,
+  "quality_warnings": 72,
   "quality_issues": [
     {
       "severity": "warning",
@@ -21,7 +21,7 @@
       "tier_id": "sber_premier_1",
       "field_id": "positioning",
       "message": "Конфликт источников без ручного подтверждения",
-      "value": "Сбер – Новый СберПремьер — Уровень за 2 млн ₽ или траты 150 тыс ₽ или 4000 акций (≈1,060,000₽) ; Сбер Новый СберПремьер | Системно значимый банк"
+      "value": "Сбер – Новый СберПремьер — Уровень за 2 млн ₽ или траты 150 тыс ₽ или 4000 акций (≈1,064,000₽) ; Сбер Новый СберПремьер | Системно значимый банк"
     },
     {
       "severity": "warning",
@@ -41,7 +41,7 @@
       "tier_id": "sber_premier_2",
       "field_id": "positioning",
       "message": "Конфликт источников без ручного подтверждения",
-      "value": "Сбер – Новый СберПремьер — Уровень за 3 млн ₽ или траты 200 тыс ₽ или 8000 акций (≈2,120,000₽) ; Сбер Новый СберПремьер | Системно значимый банк"
+      "value": "Сбер – Новый СберПремьер — Уровень за 3 млн ₽ или траты 200 тыс ₽ или 8000 акций (≈2,128,000₽) ; Сбер Новый СберПремьер | Системно значимый банк"
     },
     {
       "severity": "warning",
@@ -61,7 +61,7 @@
       "tier_id": "sber_premier_3",
       "field_id": "positioning",
       "message": "Конфликт источников без ручного подтверждения",
-      "value": "Сбер – Новый СберПремьер — Уровень за 6 млн ₽ или траты 350 тыс ₽ или 16000 акций (≈4,240,000₽) или 10 млн ₽ в совместном доступе ; Сбер Новый СберПремьер | Системно значимый банк"
+      "value": "Сбер – Новый СберПремьер — Уровень за 6 млн ₽ или траты 350 тыс ₽ или 16000 акций (≈4,256,000₽) или 10 млн ₽ в совместном доступе ; Сбер Новый СберПремьер | Системно значимый банк"
     },
     {
       "severity": "warning",
@@ -81,7 +81,7 @@
       "tier_id": "sber_first_4",
       "field_id": "positioning",
       "message": "Конфликт источников без ручного подтверждения",
-      "value": "Сбер – Новый СберПервый — Уровень за 15 млн ₽ или 40000 акций (≈10,600,000₽) или 20 млн ₽ в совместном доступе ; Сбер Новый СберПервый | Системно значимый банк"
+      "value": "Сбер – Новый СберПервый — Уровень за 15 млн ₽ или 40000 акций (≈10,640,000₽) или 20 млн ₽ в совместном доступе ; Сбер Новый СберПервый | Системно значимый банк"
     },
     {
       "severity": "warning",
@@ -91,7 +91,7 @@
       "tier_id": "sber_first_5",
       "field_id": "positioning",
       "message": "Конфликт источников без ручного подтверждения",
-      "value": "Сбер – Новый СберПервый — Уровень за 30 млн ₽ или 83000 акций (≈21,995,000₽) или 30 млн ₽ в совместном доступе ; Сбер Новый СберПервый | Системно значимый банк"
+      "value": "Сбер – Новый СберПервый — Уровень за 30 млн ₽ или 83000 акций (≈22,078,000₽) или 30 млн ₽ в совместном доступе ; Сбер Новый СберПервый | Системно значимый банк"
     },
     {
       "severity": "warning",
@@ -142,176 +142,6 @@
       "field_id": "other_benefits",
       "message": "Не найден обязательный маркер: Only Assist",
       "value": "• Консультации с юристом и бухгалтером\n• Альфа-Мобайл — 10 ГБ, 300 минут и 30 SMS\n• Саммари от Smart Reading\n• РБК — Подписка\n• Alfa Only Лаундж — в SVO, терминал C\n• Закрытый винный клуб SimplePrivé — статус Silver, персональный менеджер и специальные условия в SimpleWine"
-    },
-    {
-      "severity": "warning",
-      "code": "publication_blocked",
-      "bank": "ВТБ",
-      "tier": "Привилегия — уровень 1",
-      "tier_id": "vtb_privilege_1",
-      "field_id": "selection_rules",
-      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
-      "value": "Как узнать и поменять ПИН-код карты ВТБ"
-    },
-    {
-      "severity": "warning",
-      "code": "publication_blocked",
-      "bank": "ВТБ",
-      "tier": "Привилегия — уровень 1",
-      "tier_id": "vtb_privilege_1",
-      "field_id": "last_change_date",
-      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
-      "value": "Обновлено 24.07"
-    },
-    {
-      "severity": "warning",
-      "code": "publication_blocked",
-      "bank": "ВТБ",
-      "tier": "Привилегия — уровень 2",
-      "tier_id": "vtb_privilege_2",
-      "field_id": "last_change_date",
-      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
-      "value": "Обновлено 24.07"
-    },
-    {
-      "severity": "warning",
-      "code": "publication_blocked",
-      "bank": "ВТБ",
-      "tier": "Привилегия — уровень 3",
-      "tier_id": "vtb_privilege_3",
-      "field_id": "last_change_date",
-      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
-      "value": "Обновлено 24.07"
-    },
-    {
-      "severity": "warning",
-      "code": "publication_blocked",
-      "bank": "ВТБ",
-      "tier": "Привилегия — уровень 4",
-      "tier_id": "vtb_privilege_4",
-      "field_id": "last_change_date",
-      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
-      "value": "Обновлено 24.07"
-    },
-    {
-      "severity": "warning",
-      "code": "publication_blocked",
-      "bank": "ВТБ",
-      "tier": "Прайм+ — уровень 5",
-      "tier_id": "vtb_prime_5",
-      "field_id": "card_terms",
-      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
-      "value": "Банки-партнеры ВТБ: где снять наличные без комиссии | Снятие наличных в банкомате без карты"
-    },
-    {
-      "severity": "warning",
-      "code": "publication_blocked",
-      "bank": "ВТБ",
-      "tier": "Прайм+ — уровень 5",
-      "tier_id": "vtb_prime_5",
-      "field_id": "auto",
-      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
-      "value": "Онлайн-заявка на автокредит | Выгодные автокредиты | Легковые автомобили"
-    },
-    {
-      "severity": "warning",
-      "code": "publication_blocked",
-      "bank": "ВТБ",
-      "tier": "Прайм+ — уровень 5",
-      "tier_id": "vtb_prime_5",
-      "field_id": "last_change_date",
-      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
-      "value": "Обновлено 24.07"
-    },
-    {
-      "severity": "warning",
-      "code": "publication_blocked",
-      "bank": "ВТБ",
-      "tier": "Прайм+ — уровень 6",
-      "tier_id": "vtb_prime_6",
-      "field_id": "card_terms",
-      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
-      "value": "Банки-партнеры ВТБ: где снять наличные без комиссии | Снятие наличных в банкомате без карты"
-    },
-    {
-      "severity": "warning",
-      "code": "publication_blocked",
-      "bank": "ВТБ",
-      "tier": "Прайм+ — уровень 6",
-      "tier_id": "vtb_prime_6",
-      "field_id": "auto",
-      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
-      "value": "Онлайн-заявка на автокредит | Выгодные автокредиты | Легковые автомобили"
-    },
-    {
-      "severity": "warning",
-      "code": "publication_blocked",
-      "bank": "ВТБ",
-      "tier": "Прайм+ — уровень 6",
-      "tier_id": "vtb_prime_6",
-      "field_id": "last_change_date",
-      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
-      "value": "Обновлено 24.07"
-    },
-    {
-      "severity": "warning",
-      "code": "publication_blocked",
-      "bank": "ВТБ",
-      "tier": "Прайм+ — уровень 7",
-      "tier_id": "vtb_prime_7",
-      "field_id": "card_terms",
-      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
-      "value": "Банки-партнеры ВТБ: где снять наличные без комиссии | Снятие наличных в банкомате без карты"
-    },
-    {
-      "severity": "warning",
-      "code": "publication_blocked",
-      "bank": "ВТБ",
-      "tier": "Прайм+ — уровень 7",
-      "tier_id": "vtb_prime_7",
-      "field_id": "auto",
-      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
-      "value": "Онлайн-заявка на автокредит | Выгодные автокредиты | Легковые автомобили"
-    },
-    {
-      "severity": "warning",
-      "code": "publication_blocked",
-      "bank": "ВТБ",
-      "tier": "Прайм+ — уровень 7",
-      "tier_id": "vtb_prime_7",
-      "field_id": "last_change_date",
-      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
-      "value": "Обновлено 24.07"
-    },
-    {
-      "severity": "warning",
-      "code": "publication_blocked",
-      "bank": "ВТБ",
-      "tier": "Прайм+ — уровень 8",
-      "tier_id": "vtb_prime_8",
-      "field_id": "card_terms",
-      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
-      "value": "Банки-партнеры ВТБ: где снять наличные без комиссии | Снятие наличных в банкомате без карты"
-    },
-    {
-      "severity": "warning",
-      "code": "publication_blocked",
-      "bank": "ВТБ",
-      "tier": "Прайм+ — уровень 8",
-      "tier_id": "vtb_prime_8",
-      "field_id": "auto",
-      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
-      "value": "Онлайн-заявка на автокредит | Выгодные автокредиты | Легковые автомобили"
-    },
-    {
-      "severity": "warning",
-      "code": "publication_blocked",
-      "bank": "ВТБ",
-      "tier": "Прайм+ — уровень 8",
-      "tier_id": "vtb_prime_8",
-      "field_id": "last_change_date",
-      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
-      "value": "Обновлено 24.07"
     },
     {
       "severity": "warning",

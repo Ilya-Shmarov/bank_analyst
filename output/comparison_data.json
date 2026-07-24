@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-07-24T14:36:40",
-  "scan_date": "2026-07-24T14:31:10",
+  "generated_at": "2026-07-24T16:40:39",
+  "scan_date": "2026-07-24T16:35:14",
   "source_of_truth": "json",
   "source_policy": "HTML consumes this JSON only. Excel is a report view and is not read by the landing generator.",
   "rows": [
@@ -11,7 +11,7 @@
       "tier_id": "sber_premier_1",
       "tier": "СберПремьер — уровень 1",
       "segment": "0–3 млн ₽",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 8,
       "source_url": "https://www.sberbank.ru/ru/person/premium; https://www.sberbank.ru/common/img/uploaded/files/pdf/tarif_premobsl_06032026.pdf; https://www.sberbank.ru/ru/person/premium/premium_vklad; https://www.sberbank.ru/ru/person/bank_cards/debit/sberkarta_premium; https://premiumbanking.info/sber/1; https://premiumbanking.info/sber; https://www.sravni.ru/enciklopediya/info/sberbank-premer-chto-ehto-takoe/; https://bankiros.ru/bank/sberbank",
       "status": "ok",
@@ -78,7 +78,7 @@
           "field": "Позиционирование (на кого рассчитан)",
           "value": "не найдено",
           "display_value": "Не найдено в доступных источниках",
-          "raw_text": "Сбер – СберПремьер — Уровень за 2 млн ₽ или траты 150 тыс ₽ или 4000 акций (≈1,060,000₽); Сбер СберПремьер; Системно значимый банк",
+          "raw_text": "Сбер – СберПремьер — Уровень за 2 млн ₽ или траты 150 тыс ₽ или 4000 акций (≈1,064,000₽); Сбер СберПремьер; Системно значимый банк",
           "source_id": "pbi_level",
           "source_type": "premiumbanking.info",
           "source_priority": 2,
@@ -114,7 +114,7 @@
               "value": "СберБанк Премьер – что такое СберПремьер, обзор премиального пакета; Есть и дополнительые привилегии для премиальных клиентов; СберПремьер – это пакет услуг от СберБанка для клиентов, которым нужен сервис повышенного комфорта."
             }
           ],
-          "blocked_value": "Сбер – Новый СберПремьер — Уровень за 2 млн ₽ или траты 150 тыс ₽ или 4000 акций (≈1,060,000₽) ; Сбер Новый СберПремьер | Системно значимый банк",
+          "blocked_value": "Сбер – Новый СберПремьер — Уровень за 2 млн ₽ или траты 150 тыс ₽ или 4000 акций (≈1,064,000₽) ; Сбер Новый СберПремьер | Системно значимый банк",
           "note": "числа расходятся с premiumbanking.info; Конфликт источников без ручного подтверждения",
           "is_reference": false
         },
@@ -125,9 +125,9 @@
           "level": "СберПремьер — уровень 1",
           "field_id": "entry_conditions",
           "field": "Условия входа / поддержания уровня",
-          "value": "2 млн ₽; или траты 150 тыс ₽; или 4000 акций (≈1,060,000₽); или; 1990 ₽ в мес; На последний календарный день месяца",
-          "display_value": "2 млн ₽; или траты 150 тыс ₽; или 4000 акций (≈1,060,000₽); или; 1990 ₽ в мес; На последний календарный день месяца",
-          "raw_text": "2 млн ₽; или траты 150 тыс ₽; или 4000 акций (≈1,060,000₽); или; 1990 ₽ в мес; На последний календарный день месяца",
+          "value": "2 млн ₽; или траты 150 тыс ₽; или 4000 акций (≈1,064,000₽); или; 1990 ₽ в мес; На последний календарный день месяца",
+          "display_value": "2 млн ₽; или траты 150 тыс ₽; или 4000 акций (≈1,064,000₽); или; 1990 ₽ в мес; На последний календарный день месяца",
+          "raw_text": "2 млн ₽; или траты 150 тыс ₽; или 4000 акций (≈1,064,000₽); или; 1990 ₽ в мес; На последний календарный день месяца",
           "source_id": "pbi_level",
           "source_type": "premiumbanking.info",
           "source_priority": 2,
@@ -150,7 +150,7 @@
               "source_section": "СберПремьер — уровень 1",
               "date_checked": "2026-07-24",
               "quality": "structured",
-              "value": "СберПремьер за 2 млн ₽; или траты 150 тыс ₽; или 4000 акций (≈1,060,000₽); или 1990 ₽ в мес"
+              "value": "СберПремьер за 2 млн ₽; или траты 150 тыс ₽; или 4000 акций (≈1,064,000₽); или 1990 ₽ в мес"
             },
             {
               "source_name": "Sravni.ru",
@@ -792,7 +792,7 @@
       "tier_id": "sber_premier_2",
       "tier": "СберПремьер — уровень 2",
       "segment": "3–10 млн ₽",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 8,
       "source_url": "https://www.sberbank.ru/ru/person/premium; https://www.sberbank.ru/common/img/uploaded/files/pdf/tarif_premobsl_06032026.pdf; https://www.sberbank.ru/ru/person/premium/premium_vklad; https://www.sberbank.ru/ru/person/bank_cards/debit/sberkarta_premium; https://premiumbanking.info/sber/2; https://premiumbanking.info/sber; https://www.sravni.ru/enciklopediya/info/sberbank-premer-chto-ehto-takoe/; https://bankiros.ru/bank/sberbank",
       "status": "ok",
@@ -859,7 +859,7 @@
           "field": "Позиционирование (на кого рассчитан)",
           "value": "не найдено",
           "display_value": "Не найдено в доступных источниках",
-          "raw_text": "Сбер – СберПремьер — Уровень за 3 млн ₽ или траты 200 тыс ₽ или 8000 акций (≈2,120,000₽); Сбер СберПремьер; Системно значимый банк",
+          "raw_text": "Сбер – СберПремьер — Уровень за 3 млн ₽ или траты 200 тыс ₽ или 8000 акций (≈2,128,000₽); Сбер СберПремьер; Системно значимый банк",
           "source_id": "pbi_level",
           "source_type": "premiumbanking.info",
           "source_priority": 2,
@@ -895,7 +895,7 @@
               "value": "СберБанк Премьер – что такое СберПремьер, обзор премиального пакета; Есть и дополнительые привилегии для премиальных клиентов; СберПремьер – это пакет услуг от СберБанка для клиентов, которым нужен сервис повышенного комфорта."
             }
           ],
-          "blocked_value": "Сбер – Новый СберПремьер — Уровень за 3 млн ₽ или траты 200 тыс ₽ или 8000 акций (≈2,120,000₽) ; Сбер Новый СберПремьер | Системно значимый банк",
+          "blocked_value": "Сбер – Новый СберПремьер — Уровень за 3 млн ₽ или траты 200 тыс ₽ или 8000 акций (≈2,128,000₽) ; Сбер Новый СберПремьер | Системно значимый банк",
           "note": "числа расходятся с premiumbanking.info; Конфликт источников без ручного подтверждения",
           "is_reference": false
         },
@@ -906,9 +906,9 @@
           "level": "СберПремьер — уровень 2",
           "field_id": "entry_conditions",
           "field": "Условия входа / поддержания уровня",
-          "value": "3 млн ₽; или траты 200 тыс ₽; или 8000 акций (≈2,120,000₽); или; 3990 ₽ в мес; На последний календарный день месяца",
-          "display_value": "3 млн ₽; или траты 200 тыс ₽; или 8000 акций (≈2,120,000₽); или; 3990 ₽ в мес; На последний календарный день месяца",
-          "raw_text": "3 млн ₽; или траты 200 тыс ₽; или 8000 акций (≈2,120,000₽); или; 3990 ₽ в мес; На последний календарный день месяца",
+          "value": "3 млн ₽; или траты 200 тыс ₽; или 8000 акций (≈2,128,000₽); или; 3990 ₽ в мес; На последний календарный день месяца",
+          "display_value": "3 млн ₽; или траты 200 тыс ₽; или 8000 акций (≈2,128,000₽); или; 3990 ₽ в мес; На последний календарный день месяца",
+          "raw_text": "3 млн ₽; или траты 200 тыс ₽; или 8000 акций (≈2,128,000₽); или; 3990 ₽ в мес; На последний календарный день месяца",
           "source_id": "pbi_level",
           "source_type": "premiumbanking.info",
           "source_priority": 2,
@@ -931,7 +931,7 @@
               "source_section": "СберПремьер — уровень 2",
               "date_checked": "2026-07-24",
               "quality": "structured",
-              "value": "СберПремьер за 3 млн ₽; или траты 200 тыс ₽; или 8000 акций (≈2,120,000₽); или 3990 ₽ в мес"
+              "value": "СберПремьер за 3 млн ₽; или траты 200 тыс ₽; или 8000 акций (≈2,128,000₽); или 3990 ₽ в мес"
             },
             {
               "source_name": "Sravni.ru",
@@ -1603,7 +1603,7 @@
       "tier_id": "sber_premier_3",
       "tier": "СберПремьер — уровень 3",
       "segment": "3–10 млн ₽",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 8,
       "source_url": "https://www.sberbank.ru/ru/person/premium; https://www.sberbank.ru/common/img/uploaded/files/pdf/tarif_premobsl_06032026.pdf; https://www.sberbank.ru/ru/person/premium/premium_vklad; https://www.sberbank.ru/ru/person/bank_cards/debit/sberkarta_premium; https://premiumbanking.info/sber/3; https://premiumbanking.info/sber; https://www.sravni.ru/enciklopediya/info/sberbank-premer-chto-ehto-takoe/; https://bankiros.ru/bank/sberbank",
       "status": "ok",
@@ -1670,7 +1670,7 @@
           "field": "Позиционирование (на кого рассчитан)",
           "value": "не найдено",
           "display_value": "Не найдено в доступных источниках",
-          "raw_text": "Сбер – СберПремьер — Уровень за 6 млн ₽ или траты 350 тыс ₽ или 16000 акций (≈4,240,000₽) или 10 млн ₽ в совместном доступе; Сбер СберПремьер; Системно значимый банк",
+          "raw_text": "Сбер – СберПремьер — Уровень за 6 млн ₽ или траты 350 тыс ₽ или 16000 акций (≈4,256,000₽) или 10 млн ₽ в совместном доступе; Сбер СберПремьер; Системно значимый банк",
           "source_id": "pbi_level",
           "source_type": "premiumbanking.info",
           "source_priority": 2,
@@ -1706,7 +1706,7 @@
               "value": "СберБанк Премьер – что такое СберПремьер, обзор премиального пакета; Есть и дополнительые привилегии для премиальных клиентов; СберПремьер – это пакет услуг от СберБанка для клиентов, которым нужен сервис повышенного комфорта."
             }
           ],
-          "blocked_value": "Сбер – Новый СберПремьер — Уровень за 6 млн ₽ или траты 350 тыс ₽ или 16000 акций (≈4,240,000₽) или 10 млн ₽ в совместном доступе ; Сбер Новый СберПремьер | Системно значимый банк",
+          "blocked_value": "Сбер – Новый СберПремьер — Уровень за 6 млн ₽ или траты 350 тыс ₽ или 16000 акций (≈4,256,000₽) или 10 млн ₽ в совместном доступе ; Сбер Новый СберПремьер | Системно значимый банк",
           "note": "числа расходятся с premiumbanking.info; Конфликт источников без ручного подтверждения",
           "is_reference": false
         },
@@ -1717,9 +1717,9 @@
           "level": "СберПремьер — уровень 3",
           "field_id": "entry_conditions",
           "field": "Условия входа / поддержания уровня",
-          "value": "6 млн ₽; или траты 350 тыс ₽; или 16000 акций (≈4,240,000₽); или 10 млн ₽ в совместном доступе; или; 9990 ₽ в мес; На последний календарный день месяца",
-          "display_value": "6 млн ₽; или траты 350 тыс ₽; или 16000 акций (≈4,240,000₽); или 10 млн ₽ в совместном доступе; или; 9990 ₽ в мес; На последний календарный день месяца",
-          "raw_text": "6 млн ₽; или траты 350 тыс ₽; или 16000 акций (≈4,240,000₽); или 10 млн ₽ в совместном доступе; или; 9990 ₽ в мес; На последний календарный день месяца",
+          "value": "6 млн ₽; или траты 350 тыс ₽; или 16000 акций (≈4,256,000₽); или 10 млн ₽ в совместном доступе; или; 9990 ₽ в мес; На последний календарный день месяца",
+          "display_value": "6 млн ₽; или траты 350 тыс ₽; или 16000 акций (≈4,256,000₽); или 10 млн ₽ в совместном доступе; или; 9990 ₽ в мес; На последний календарный день месяца",
+          "raw_text": "6 млн ₽; или траты 350 тыс ₽; или 16000 акций (≈4,256,000₽); или 10 млн ₽ в совместном доступе; или; 9990 ₽ в мес; На последний календарный день месяца",
           "source_id": "pbi_level",
           "source_type": "premiumbanking.info",
           "source_priority": 2,
@@ -1742,7 +1742,7 @@
               "source_section": "СберПремьер — уровень 3",
               "date_checked": "2026-07-24",
               "quality": "structured",
-              "value": "СберПремьер за 6 млн ₽; или траты 350 тыс ₽; или 16000 акций (≈4,240,000₽); или 10 млн ₽ в совместном доступе; или 9990 ₽ в мес"
+              "value": "СберПремьер за 6 млн ₽; или траты 350 тыс ₽; или 16000 акций (≈4,256,000₽); или 10 млн ₽ в совместном доступе; или 9990 ₽ в мес"
             },
             {
               "source_name": "Sravni.ru",
@@ -2434,7 +2434,7 @@
       "tier_id": "sber_first_4",
       "tier": "СберПервый — уровень 4",
       "segment": "10–25 млн ₽",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 8,
       "source_url": "https://www.sberbank.ru/ru/person/premium; https://www.sberbank.ru/common/img/uploaded/files/pdf/tarif_premobsl_06032026.pdf; https://www.sberbank.ru/ru/person/sb1/vklad/vse_vklady; https://www.sberbank.ru/ru/person/bank_cards/debit/sberkarta_premium; https://premiumbanking.info/sber/4; https://premiumbanking.info/sber; https://www.sravni.ru/enciklopediya/info/sberbank-premer-chto-ehto-takoe/; https://bankiros.ru/bank/sberbank",
       "status": "ok",
@@ -2501,7 +2501,7 @@
           "field": "Позиционирование (на кого рассчитан)",
           "value": "не найдено",
           "display_value": "Не найдено в доступных источниках",
-          "raw_text": "Сбер – СберПервый — Уровень за 15 млн ₽ или 40000 акций (≈10,600,000₽) или 20 млн ₽ в совместном доступе; Сбер СберПервый; Системно значимый банк",
+          "raw_text": "Сбер – СберПервый — Уровень за 15 млн ₽ или 40000 акций (≈10,640,000₽) или 20 млн ₽ в совместном доступе; Сбер СберПервый; Системно значимый банк",
           "source_id": "pbi_level",
           "source_type": "premiumbanking.info",
           "source_priority": 2,
@@ -2537,7 +2537,7 @@
               "value": "СберБанк Премьер – что такое СберПремьер, обзор премиального пакета; Есть и дополнительые привилегии для премиальных клиентов; СберПремьер – это пакет услуг от СберБанка для клиентов, которым нужен сервис повышенного комфорта."
             }
           ],
-          "blocked_value": "Сбер – Новый СберПервый — Уровень за 15 млн ₽ или 40000 акций (≈10,600,000₽) или 20 млн ₽ в совместном доступе ; Сбер Новый СберПервый | Системно значимый банк",
+          "blocked_value": "Сбер – Новый СберПервый — Уровень за 15 млн ₽ или 40000 акций (≈10,640,000₽) или 20 млн ₽ в совместном доступе ; Сбер Новый СберПервый | Системно значимый банк",
           "note": "числа расходятся с premiumbanking.info; Конфликт источников без ручного подтверждения",
           "is_reference": false
         },
@@ -2548,9 +2548,9 @@
           "level": "СберПервый — уровень 4",
           "field_id": "entry_conditions",
           "field": "Условия входа / поддержания уровня",
-          "value": "15 млн ₽; или 40000 акций (≈10,600,000₽); или 20 млн ₽ в совместном доступе; или; 30000 ₽ в мес; На последний календарный день месяца",
-          "display_value": "15 млн ₽; или 40000 акций (≈10,600,000₽); или 20 млн ₽ в совместном доступе; или; 30000 ₽ в мес; На последний календарный день месяца",
-          "raw_text": "15 млн ₽; или 40000 акций (≈10,600,000₽); или 20 млн ₽ в совместном доступе; или; 30000 ₽ в мес; На последний календарный день месяца",
+          "value": "15 млн ₽; или 40000 акций (≈10,640,000₽); или 20 млн ₽ в совместном доступе; или; 30000 ₽ в мес; На последний календарный день месяца",
+          "display_value": "15 млн ₽; или 40000 акций (≈10,640,000₽); или 20 млн ₽ в совместном доступе; или; 30000 ₽ в мес; На последний календарный день месяца",
+          "raw_text": "15 млн ₽; или 40000 акций (≈10,640,000₽); или 20 млн ₽ в совместном доступе; или; 30000 ₽ в мес; На последний календарный день месяца",
           "source_id": "pbi_level",
           "source_type": "premiumbanking.info",
           "source_priority": 2,
@@ -2573,7 +2573,7 @@
               "source_section": "СберПервый — уровень 4",
               "date_checked": "2026-07-24",
               "quality": "structured",
-              "value": "СберПервый за 15 млн ₽; или 40000 акций (≈10,600,000₽); или 20 млн ₽ в совместном доступе; или 30000 ₽ в мес"
+              "value": "СберПервый за 15 млн ₽; или 40000 акций (≈10,640,000₽); или 20 млн ₽ в совместном доступе; или 30000 ₽ в мес"
             },
             {
               "source_name": "Sravni.ru",
@@ -3286,7 +3286,7 @@
       "tier_id": "sber_first_5",
       "tier": "СберПервый — уровень 5",
       "segment": "25–100 млн ₽",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 8,
       "source_url": "https://www.sberbank.ru/ru/person/premium; https://www.sberbank.ru/common/img/uploaded/files/pdf/tarif_premobsl_06032026.pdf; https://www.sberbank.ru/ru/person/sb1/vklad/vse_vklady; https://www.sberbank.ru/ru/person/bank_cards/debit/sberkarta_premium; https://premiumbanking.info/sber/5; https://premiumbanking.info/sber; https://www.sravni.ru/enciklopediya/info/sberbank-premer-chto-ehto-takoe/; https://bankiros.ru/bank/sberbank",
       "status": "ok",
@@ -3353,7 +3353,7 @@
           "field": "Позиционирование (на кого рассчитан)",
           "value": "не найдено",
           "display_value": "Не найдено в доступных источниках",
-          "raw_text": "Сбер – СберПервый — Уровень за 30 млн ₽ или 83000 акций (≈21,995,000₽) или 30 млн ₽ в совместном доступе; Сбер СберПервый; Системно значимый банк",
+          "raw_text": "Сбер – СберПервый — Уровень за 30 млн ₽ или 83000 акций (≈22,078,000₽) или 30 млн ₽ в совместном доступе; Сбер СберПервый; Системно значимый банк",
           "source_id": "pbi_level",
           "source_type": "premiumbanking.info",
           "source_priority": 2,
@@ -3389,7 +3389,7 @@
               "value": "СберБанк Премьер – что такое СберПремьер, обзор премиального пакета; Есть и дополнительые привилегии для премиальных клиентов; СберПремьер – это пакет услуг от СберБанка для клиентов, которым нужен сервис повышенного комфорта."
             }
           ],
-          "blocked_value": "Сбер – Новый СберПервый — Уровень за 30 млн ₽ или 83000 акций (≈21,995,000₽) или 30 млн ₽ в совместном доступе ; Сбер Новый СберПервый | Системно значимый банк",
+          "blocked_value": "Сбер – Новый СберПервый — Уровень за 30 млн ₽ или 83000 акций (≈22,078,000₽) или 30 млн ₽ в совместном доступе ; Сбер Новый СберПервый | Системно значимый банк",
           "note": "числа расходятся с premiumbanking.info; Конфликт источников без ручного подтверждения",
           "is_reference": false
         },
@@ -3400,9 +3400,9 @@
           "level": "СберПервый — уровень 5",
           "field_id": "entry_conditions",
           "field": "Условия входа / поддержания уровня",
-          "value": "30 млн ₽; или 83000 акций (≈21,995,000₽); или 30 млн ₽ в совместном доступе; или; 50000 ₽ в мес; На последний календарный день месяца",
-          "display_value": "30 млн ₽; или 83000 акций (≈21,995,000₽); или 30 млн ₽ в совместном доступе; или; 50000 ₽ в мес; На последний календарный день месяца",
-          "raw_text": "30 млн ₽; или 83000 акций (≈21,995,000₽); или 30 млн ₽ в совместном доступе; или; 50000 ₽ в мес; На последний календарный день месяца",
+          "value": "30 млн ₽; или 83000 акций (≈22,078,000₽); или 30 млн ₽ в совместном доступе; или; 50000 ₽ в мес; На последний календарный день месяца",
+          "display_value": "30 млн ₽; или 83000 акций (≈22,078,000₽); или 30 млн ₽ в совместном доступе; или; 50000 ₽ в мес; На последний календарный день месяца",
+          "raw_text": "30 млн ₽; или 83000 акций (≈22,078,000₽); или 30 млн ₽ в совместном доступе; или; 50000 ₽ в мес; На последний календарный день месяца",
           "source_id": "pbi_level",
           "source_type": "premiumbanking.info",
           "source_priority": 2,
@@ -3425,7 +3425,7 @@
               "source_section": "СберПервый — уровень 5",
               "date_checked": "2026-07-24",
               "quality": "structured",
-              "value": "СберПервый за 30 млн ₽; или 83000 акций (≈21,995,000₽); или 30 млн ₽ в совместном доступе; или 50000 ₽ в мес"
+              "value": "СберПервый за 30 млн ₽; или 83000 акций (≈22,078,000₽); или 30 млн ₽ в совместном доступе; или 50000 ₽ в мес"
             },
             {
               "source_name": "Sravni.ru",
@@ -4138,7 +4138,7 @@
       "tier_id": "sber_private_6",
       "tier": "Sber Private Banking — уровень 6",
       "segment": "25–100 млн ₽",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 7,
       "source_url": "https://www.sberbank.ru/ru/person/premium; https://www.sberbank.ru/common/img/uploaded/redirected/private/assets/tariff_sb_pb.pdf; https://www.sberbank.ru/ru/person/bank_cards/debit/sberkarta_premium; https://premiumbanking.info/sber/6; https://premiumbanking.info/sber; https://www.sravni.ru/enciklopediya/info/sberbank-premer-chto-ehto-takoe/; https://bankiros.ru/bank/sberbank",
       "status": "ok",
@@ -4969,7 +4969,7 @@
       "tier_id": "tbank_bronze",
       "tier": "Premium Bronze",
       "segment": "0–3 млн ₽",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 5,
       "source_url": "https://www.tbank.ru/tinkoff-premium/; https://www.tbank.ru/bank/help/general/premium/access/terms/; https://cdn.tbank.ru/static/documents/docs-terms-of-service-premium.pdf; https://premiumbanking.info/tbank/1; https://premiumbanking.info/tbank",
       "status": "ok",
@@ -5059,7 +5059,7 @@
               "source_section": "Premium Bronze",
               "date_checked": "2026-07-24",
               "quality": "structured",
-              "value": "Т-Банк – Bronze — Уровень за 2990 ₽ в мес или 5000 акций (≈1,245,000₽); Т-Банк Bronze; Системно значимый банк"
+              "value": "Т-Банк – Bronze — Уровень за 2990 ₽ в мес или 5000 акций (≈1,260,000₽); Т-Банк Bronze; Системно значимый банк"
             },
             {
               "source_name": "premiumbanking.info",
@@ -5118,7 +5118,7 @@
               "source_section": "Premium Bronze",
               "date_checked": "2026-07-24",
               "quality": "structured",
-              "value": "2990 ₽ в мес; или 5000 акций (≈1,245,000₽)"
+              "value": "2990 ₽ в мес; или 5000 акций (≈1,260,000₽)"
             },
             {
               "source_name": "premiumbanking.info",
@@ -5128,7 +5128,7 @@
               "source_section": "Premium Bronze",
               "date_checked": "2026-07-24",
               "quality": "structured",
-              "value": "Уровень за 2990 ₽ в мес; или 5000 акций (≈1,245,000₽)"
+              "value": "Уровень за 2990 ₽ в мес; или 5000 акций (≈1,260,000₽)"
             }
           ],
           "blocked_value": "",
@@ -5684,7 +5684,7 @@
       "tier_id": "tbank_silver",
       "tier": "Premium Silver",
       "segment": "3–10 млн ₽",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 5,
       "source_url": "https://www.tbank.ru/tinkoff-premium/; https://www.tbank.ru/bank/help/general/premium/access/what-is/; https://cdn.tbank.ru/static/documents/docs-terms-of-service-premium.pdf; https://premiumbanking.info/tbank/2; https://premiumbanking.info/tbank",
       "status": "ok",
@@ -6368,7 +6368,7 @@
       "tier_id": "tbank_gold",
       "tier": "Premium Gold",
       "segment": "3–10 млн ₽",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 4,
       "source_url": "https://www.tbank.ru/tinkoff-premium/; https://cdn.tbank.ru/static/documents/docs-terms-of-service-premium.pdf; https://premiumbanking.info/tbank/3; https://premiumbanking.info/tbank",
       "status": "ok",
@@ -7042,7 +7042,7 @@
       "tier_id": "tbank_diamond",
       "tier": "Premium Diamond",
       "segment": "10–25 млн ₽",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 4,
       "source_url": "https://www.tbank.ru/private/; https://cdn.tbank.ru/static/documents/docs-terms-of-service-private.pdf; https://premiumbanking.info/tbank/4; https://premiumbanking.info/tbank",
       "status": "ok",
@@ -7706,7 +7706,7 @@
       "tier_id": "tbank_private_30",
       "tier": "Private — 30 млн ₽",
       "segment": "25–50 млн ₽",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 4,
       "source_url": "https://www.tbank.ru/private/; https://cdn.tbank.ru/static/documents/docs-terms-of-service-private.pdf; https://premiumbanking.info/tbank/5; https://premiumbanking.info/tbank",
       "status": "ok",
@@ -7771,9 +7771,9 @@
           "level": "Private — 30 млн ₽",
           "field_id": "positioning",
           "field": "Позиционирование (на кого рассчитан)",
-          "value": "Т-Банк – Private — Уровень за 30 млн ₽ или 50000 акций (≈12,450,000₽); Т-Банк Private; Системно значимый банк",
-          "display_value": "Т-Банк – Private — Уровень за 30 млн ₽ или 50000 акций (≈12,450,000₽); Т-Банк Private; Системно значимый банк",
-          "raw_text": "Т-Банк – Private — Уровень за 30 млн ₽ или 50000 акций (≈12,450,000₽); Т-Банк Private; Системно значимый банк",
+          "value": "Т-Банк – Private — Уровень за 30 млн ₽ или 50000 акций (≈12,600,000₽); Т-Банк Private; Системно значимый банк",
+          "display_value": "Т-Банк – Private — Уровень за 30 млн ₽ или 50000 акций (≈12,600,000₽); Т-Банк Private; Системно значимый банк",
+          "raw_text": "Т-Банк – Private — Уровень за 30 млн ₽ или 50000 акций (≈12,600,000₽); Т-Банк Private; Системно значимый банк",
           "source_id": "pbi_level",
           "source_type": "premiumbanking.info",
           "source_priority": 2,
@@ -7810,9 +7810,9 @@
           "level": "Private — 30 млн ₽",
           "field_id": "entry_conditions",
           "field": "Условия входа / поддержания уровня",
-          "value": "30 млн ₽; или 50000 акций (≈12,450,000₽)",
-          "display_value": "30 млн ₽; или 50000 акций (≈12,450,000₽)",
-          "raw_text": "30 млн ₽; или 50000 акций (≈12,450,000₽)",
+          "value": "30 млн ₽; или 50000 акций (≈12,600,000₽)",
+          "display_value": "30 млн ₽; или 50000 акций (≈12,600,000₽)",
+          "raw_text": "30 млн ₽; или 50000 акций (≈12,600,000₽)",
           "source_id": "pbi_level",
           "source_type": "premiumbanking.info",
           "source_priority": 2,
@@ -7835,7 +7835,7 @@
               "source_section": "Private — 30 млн ₽",
               "date_checked": "2026-07-24",
               "quality": "structured",
-              "value": "Уровень за 30 млн ₽; или 50000 акций (≈12,450,000₽)"
+              "value": "Уровень за 30 млн ₽; или 50000 акций (≈12,600,000₽)"
             }
           ],
           "blocked_value": "",
@@ -8380,7 +8380,7 @@
       "tier_id": "tbank_private_55",
       "tier": "Private — 55 млн ₽",
       "segment": "50–100 млн ₽",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 4,
       "source_url": "https://www.tbank.ru/private/; https://cdn.tbank.ru/static/documents/docs-terms-of-service-private.pdf; https://premiumbanking.info/tbank/6; https://premiumbanking.info/tbank",
       "status": "ok",
@@ -9054,7 +9054,7 @@
       "tier_id": "tbank_private_100",
       "tier": "Private — 100 млн ₽",
       "segment": "100+ млн ₽",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 4,
       "source_url": "https://www.tbank.ru/private/; https://cdn.tbank.ru/static/documents/docs-terms-of-service-private.pdf; https://premiumbanking.info/tbank/7; https://premiumbanking.info/tbank",
       "status": "ok",
@@ -9728,7 +9728,7 @@
       "tier_id": "alfa_only_1",
       "tier": "Alfa Only — уровень 1",
       "segment": "0–3 млн ₽",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 4,
       "source_url": "https://alfabank.servicecdn.ru/site-upload/c1/65/275/Tariffs_Alfa_Only_Card.pdf; https://premiumbanking.info/alfabank/1; https://premiumbanking.info/alfabank; https://bankiros.ru/bank/alfa-bank",
       "status": "ok",
@@ -10348,7 +10348,7 @@
       "tier_id": "alfa_only_2",
       "tier": "Alfa Only — уровень 2",
       "segment": "3–10 млн ₽",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 4,
       "source_url": "https://alfabank.servicecdn.ru/site-upload/c1/65/275/Tariffs_Alfa_Only_Card.pdf; https://premiumbanking.info/alfabank/2; https://premiumbanking.info/alfabank; https://bankiros.ru/bank/alfa-bank",
       "status": "ok",
@@ -11033,7 +11033,7 @@
       "tier_id": "alfa_only_3",
       "tier": "Alfa Only — уровень 3",
       "segment": "3–10 млн ₽",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 4,
       "source_url": "https://alfabank.servicecdn.ru/site-upload/c1/65/275/Tariffs_Alfa_Only_Card.pdf; https://premiumbanking.info/alfabank/3; https://premiumbanking.info/alfabank; https://bankiros.ru/bank/alfa-bank",
       "status": "ok",
@@ -11718,7 +11718,7 @@
       "tier_id": "alfa_only_4",
       "tier": "Alfa Only — уровень 4",
       "segment": "10–25 млн ₽",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 4,
       "source_url": "https://alfabank.servicecdn.ru/site-upload/c1/65/275/Tariffs_Alfa_Only_Card.pdf; https://premiumbanking.info/alfabank/4; https://premiumbanking.info/alfabank; https://bankiros.ru/bank/alfa-bank",
       "status": "ok",
@@ -12403,7 +12403,7 @@
       "tier_id": "alfa_aclub",
       "tier": "A-Club (private)",
       "segment": "25–100 млн ₽",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 3,
       "source_url": "https://premiumbanking.info/alfabank/5; https://premiumbanking.info/alfabank; https://bankiros.ru/bank/alfa-bank",
       "status": "ok",
@@ -13138,7 +13138,7 @@
       "tier_id": "vtb_privilege_1",
       "tier": "Привилегия — уровень 1",
       "segment": "0–3 млн ₽",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 7,
       "source_url": "https://www.vtb.ru/privilegia/; https://www.vtb.ru/media-files/vtb.ru/sitepages/tarify/chastnim-licam/t-priv_pbu.pdf; https://www.vtb.ru/media-files/vtb.ru/sitepages/tarify/chastnim-licam/t_rko.xlsx; https://www.vtb.ru/personal/online-servisy/perevody-sbp/; https://premiumbanking.info/vtb/1; https://premiumbanking.info/vtb; https://bankiros.ru/bank/vtb",
       "status": "ok",
@@ -13203,9 +13203,9 @@
           "level": "Привилегия — уровень 1",
           "field_id": "positioning",
           "field": "Позиционирование (на кого рассчитан)",
-          "value": "ВТБ – Привилегия — Уровень за 3990 ₽ в мес или траты 150 тыс ₽ или 300 тыс зп или 9000 акций (≈522,000₽); ВТБ Привилегия; Системно значимый банк",
-          "display_value": "ВТБ – Привилегия — Уровень за 3990 ₽ в мес или траты 150 тыс ₽ или 300 тыс зп или 9000 акций (≈522,000₽); ВТБ Привилегия; Системно значимый банк",
-          "raw_text": "ВТБ – Привилегия — Уровень за 3990 ₽ в мес или траты 150 тыс ₽ или 300 тыс зп или 9000 акций (≈522,000₽); ВТБ Привилегия; Системно значимый банк",
+          "value": "ВТБ – Привилегия — Уровень за 3990 ₽ в мес или траты 150 тыс ₽ или 300 тыс зп или 9000 акций (≈531,000₽); ВТБ Привилегия; Системно значимый банк",
+          "display_value": "ВТБ – Привилегия — Уровень за 3990 ₽ в мес или траты 150 тыс ₽ или 300 тыс зп или 9000 акций (≈531,000₽); ВТБ Привилегия; Системно значимый банк",
+          "raw_text": "ВТБ – Привилегия — Уровень за 3990 ₽ в мес или траты 150 тыс ₽ или 300 тыс зп или 9000 акций (≈531,000₽); ВТБ Привилегия; Системно значимый банк",
           "source_id": "pbi_level",
           "source_type": "premiumbanking.info",
           "source_priority": 2,
@@ -13229,16 +13229,6 @@
               "date_checked": "2026-07-24",
               "quality": "structured",
               "value": "Банк ВТБ — Как устроена компенсация ресторанов у ВТБ Привилегии?"
-            },
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Привилегия — уровень 1",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "АО «ААА Управление Капиталом», ООО УК «Альфа-Капитал» и Уставный капитал:"
             }
           ],
           "blocked_value": "",
@@ -13277,17 +13267,7 @@
               "source_section": "Привилегия — уровень 1",
               "date_checked": "2026-07-24",
               "quality": "structured",
-              "value": "3990 ₽ в мес; или траты 150 тыс ₽; или 300 тыс зп; или 9000 акций (≈522,000₽); Среднемесячный остаток в банке и на последний календарный день месяца в брокере"
-            },
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Привилегия — уровень 1",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Подберем кредиты для бизнеса на любые цели — на недвижимость, транспорт, модернизацию производства или пополнение оборотных средств; Как узнать баланс карты ВТБ"
+              "value": "3990 ₽ в мес; или траты 150 тыс ₽; или 300 тыс зп; или 9000 акций (≈531,000₽); Среднемесячный остаток в банке и на последний календарный день месяца в брокере"
             }
           ],
           "blocked_value": "",
@@ -13407,25 +13387,14 @@
           "document_date": "",
           "date_checked": "2026-07-15",
           "quality": "curated",
-          "status": "source_conflict",
+          "status": "verified",
           "publication_status": "published",
           "publication_reason": "Ручной факт с source_url и датой проверки",
-          "conflict_status": "conflict",
-          "divergent": true,
-          "alternatives": [
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Привилегия — уровень 1",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Карта с беспроцентным периодом до 110 дней и повышенным кешбэком; Как перевести Мультибонусы втб на карту?; Личный кабинет Мультибонус ВТБ"
-            }
-          ],
+          "conflict_status": "selected",
+          "divergent": false,
+          "alternatives": [],
           "blocked_value": "",
-          "note": "Официальная страница карты ВТБ «Привилегия Mir Supreme»: кэшбэк рублями до 30 000 ₽, 3 категории из 9 и 1 для зарплатных клиентов; числа расходятся с Bankiros.ru",
+          "note": "Официальная страница карты ВТБ «Привилегия Mir Supreme»: кэшбэк рублями до 30 000 ₽, 3 категории из 9 и 1 для зарплатных клиентов",
           "is_reference": false
         },
         "card_terms": {
@@ -13451,18 +13420,7 @@
           "publication_reason": "Ручной факт с source_url и датой проверки",
           "conflict_status": "selected",
           "divergent": false,
-          "alternatives": [
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Привилегия — уровень 1",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Банки-партнеры ВТБ: где снять наличные без комиссии; Снятие наличных в банкомате без карты"
-            }
-          ],
+          "alternatives": [],
           "blocked_value": "",
           "note": "",
           "is_reference": false
@@ -13513,25 +13471,14 @@
           "document_date": "",
           "date_checked": "2026-07-02",
           "quality": "curated",
-          "status": "source_conflict",
+          "status": "verified",
           "publication_status": "published",
           "publication_reason": "Ручной факт с source_url и датой проверки",
-          "conflict_status": "conflict",
-          "divergent": true,
-          "alternatives": [
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Привилегия — уровень 1",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Банкоматы на карте, Банкоматы ВТБ банка и И банкоматы в количестве 11456 шт."
-            }
-          ],
+          "conflict_status": "selected",
+          "divergent": false,
+          "alternatives": [],
           "blocked_value": "",
-          "note": "числа расходятся с Bankiros.ru",
+          "note": "",
           "is_reference": false
         },
         "supreme": {
@@ -13580,25 +13527,14 @@
           "document_date": "",
           "date_checked": "2026-07-15",
           "quality": "curated",
-          "status": "source_conflict",
+          "status": "verified",
           "publication_status": "published",
           "publication_reason": "Ручной факт с source_url и датой проверки",
-          "conflict_status": "conflict",
-          "divergent": true,
-          "alternatives": [
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Привилегия — уровень 1",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Более 1490 вкладов в 358 банках России, Выгодные вклады и Накопительные счета"
-            }
-          ],
+          "conflict_status": "selected",
+          "divergent": false,
+          "alternatives": [],
           "blocked_value": "",
-          "note": "Официальная страница ВТБ «Привилегия»: доходность по новому накопительному ВТБ-Счёту до 13,6%; числа расходятся с Bankiros.ru",
+          "note": "Официальная страница ВТБ «Привилегия»: доходность по новому накопительному ВТБ-Счёту до 13,6%",
           "is_reference": false
         },
         "insurance": {
@@ -13624,18 +13560,7 @@
           "publication_reason": "Структурированный источник с привязкой к уровню",
           "conflict_status": "selected",
           "divergent": false,
-          "alternatives": [
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Привилегия — уровень 1",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Ипотечное страхование, Страхование жизни и здоровья и Накопительное страхование"
-            }
-          ],
+          "alternatives": [],
           "blocked_value": "",
           "note": "",
           "is_reference": false
@@ -13817,23 +13742,23 @@
           "field": "Дата последнего изменения условий",
           "value": "не найдено",
           "display_value": "Не найдено в доступных источниках",
-          "raw_text": "Обновлено 24.07",
-          "source_id": "bankiros",
-          "source_type": "other",
-          "source_priority": 3,
-          "source_url": "https://bankiros.ru/bank/vtb",
+          "raw_text": "не найдено",
+          "source_id": "",
+          "source_type": "",
+          "source_priority": 99,
+          "source_url": "",
           "retrieved_at": "2026-07-24",
           "document_date": "",
           "date_checked": "2026-07-24",
-          "quality": "snippet",
+          "quality": "",
           "status": "not_found",
-          "publication_status": "blocked",
-          "publication_reason": "Generic keyword-snippet не публикуется в HTML без подтверждения",
-          "conflict_status": "selected",
+          "publication_status": "not_found",
+          "publication_reason": "Значение не найдено в доступных источниках",
+          "conflict_status": "not_found",
           "divergent": false,
           "alternatives": [],
-          "blocked_value": "Обновлено 24.07",
-          "note": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+          "blocked_value": "",
+          "note": "",
           "is_reference": true
         }
       }
@@ -13844,7 +13769,7 @@
       "tier_id": "vtb_privilege_2",
       "tier": "Привилегия — уровень 2",
       "segment": "0–3 млн ₽",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 7,
       "source_url": "https://www.vtb.ru/privilegia/; https://www.vtb.ru/media-files/vtb.ru/sitepages/tarify/chastnim-licam/t-priv_pbu.pdf; https://www.vtb.ru/media-files/vtb.ru/sitepages/tarify/chastnim-licam/t_rko.xlsx; https://www.vtb.ru/personal/online-servisy/perevody-sbp/; https://premiumbanking.info/vtb/2; https://premiumbanking.info/vtb; https://bankiros.ru/bank/vtb",
       "status": "ok",
@@ -13935,16 +13860,6 @@
               "date_checked": "2026-07-24",
               "quality": "structured",
               "value": "ВТБ — ВТБ – Привилегия"
-            },
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Привилегия — уровень 2",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "АО «ААА Управление Капиталом», ООО УК «Альфа-Капитал» и Уставный капитал:"
             }
           ],
           "blocked_value": "",
@@ -13984,16 +13899,6 @@
               "date_checked": "2026-07-24",
               "quality": "structured",
               "value": "за 2.5 млн ₽ для Мск; 2 млн ₽ регионы; или 1.5 млн ₽ и траты 125 тыс ₽"
-            },
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Привилегия — уровень 2",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Подберем кредиты для бизнеса на любые цели — на недвижимость, транспорт, модернизацию производства или пополнение оборотных средств; Как узнать баланс карты ВТБ"
             }
           ],
           "blocked_value": "",
@@ -14134,25 +14039,14 @@
           "document_date": "",
           "date_checked": "2026-07-15",
           "quality": "curated",
-          "status": "source_conflict",
+          "status": "verified",
           "publication_status": "published",
           "publication_reason": "Ручной факт с source_url и датой проверки",
-          "conflict_status": "conflict",
-          "divergent": true,
-          "alternatives": [
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Привилегия — уровень 2",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Карта с беспроцентным периодом до 110 дней и повышенным кешбэком; Как перевести Мультибонусы втб на карту?; Личный кабинет Мультибонус ВТБ"
-            }
-          ],
+          "conflict_status": "selected",
+          "divergent": false,
+          "alternatives": [],
           "blocked_value": "",
-          "note": "Официальная страница карты ВТБ «Привилегия Mir Supreme»: кэшбэк рублями до 30 000 ₽, 3 категории из 9 и 1 для зарплатных клиентов; числа расходятся с Bankiros.ru",
+          "note": "Официальная страница карты ВТБ «Привилегия Mir Supreme»: кэшбэк рублями до 30 000 ₽, 3 категории из 9 и 1 для зарплатных клиентов",
           "is_reference": false
         },
         "card_terms": {
@@ -14178,18 +14072,7 @@
           "publication_reason": "Ручной факт с source_url и датой проверки",
           "conflict_status": "selected",
           "divergent": false,
-          "alternatives": [
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Привилегия — уровень 2",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Банки-партнеры ВТБ: где снять наличные без комиссии; Снятие наличных в банкомате без карты"
-            }
-          ],
+          "alternatives": [],
           "blocked_value": "",
           "note": "",
           "is_reference": false
@@ -14240,25 +14123,14 @@
           "document_date": "",
           "date_checked": "2026-07-02",
           "quality": "curated",
-          "status": "source_conflict",
+          "status": "verified",
           "publication_status": "published",
           "publication_reason": "Ручной факт с source_url и датой проверки",
-          "conflict_status": "conflict",
-          "divergent": true,
-          "alternatives": [
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Привилегия — уровень 2",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Банкоматы на карте, Банкоматы ВТБ банка и И банкоматы в количестве 11456 шт."
-            }
-          ],
+          "conflict_status": "selected",
+          "divergent": false,
+          "alternatives": [],
           "blocked_value": "",
-          "note": "числа расходятся с Bankiros.ru",
+          "note": "",
           "is_reference": false
         },
         "supreme": {
@@ -14307,25 +14179,14 @@
           "document_date": "",
           "date_checked": "2026-07-15",
           "quality": "curated",
-          "status": "source_conflict",
+          "status": "verified",
           "publication_status": "published",
           "publication_reason": "Ручной факт с source_url и датой проверки",
-          "conflict_status": "conflict",
-          "divergent": true,
-          "alternatives": [
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Привилегия — уровень 2",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Более 1490 вкладов в 358 банках России, Выгодные вклады и Накопительные счета"
-            }
-          ],
+          "conflict_status": "selected",
+          "divergent": false,
+          "alternatives": [],
           "blocked_value": "",
-          "note": "Официальная страница ВТБ «Привилегия»: доходность по новому накопительному ВТБ-Счёту до 13,6%; числа расходятся с Bankiros.ru",
+          "note": "Официальная страница ВТБ «Привилегия»: доходность по новому накопительному ВТБ-Счёту до 13,6%",
           "is_reference": false
         },
         "insurance": {
@@ -14361,16 +14222,6 @@
               "date_checked": "2026-07-24",
               "quality": "structured",
               "value": "$100/100 тыс, 90 дн, ассистанс Medlabel / AP Companies"
-            },
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Привилегия — уровень 2",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Ипотечное страхование, Страхование жизни и здоровья и Накопительное страхование"
             }
           ],
           "blocked_value": "",
@@ -14576,23 +14427,23 @@
           "field": "Дата последнего изменения условий",
           "value": "не найдено",
           "display_value": "Не найдено в доступных источниках",
-          "raw_text": "Обновлено 24.07",
-          "source_id": "bankiros",
-          "source_type": "other",
-          "source_priority": 3,
-          "source_url": "https://bankiros.ru/bank/vtb",
+          "raw_text": "не найдено",
+          "source_id": "",
+          "source_type": "",
+          "source_priority": 99,
+          "source_url": "",
           "retrieved_at": "2026-07-24",
           "document_date": "",
           "date_checked": "2026-07-24",
-          "quality": "snippet",
+          "quality": "",
           "status": "not_found",
-          "publication_status": "blocked",
-          "publication_reason": "Generic keyword-snippet не публикуется в HTML без подтверждения",
-          "conflict_status": "selected",
+          "publication_status": "not_found",
+          "publication_reason": "Значение не найдено в доступных источниках",
+          "conflict_status": "not_found",
           "divergent": false,
           "alternatives": [],
-          "blocked_value": "Обновлено 24.07",
-          "note": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+          "blocked_value": "",
+          "note": "",
           "is_reference": true
         }
       }
@@ -14603,7 +14454,7 @@
       "tier_id": "vtb_privilege_3",
       "tier": "Привилегия — уровень 3",
       "segment": "3–10 млн ₽",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 7,
       "source_url": "https://www.vtb.ru/privilegia/; https://www.vtb.ru/media-files/vtb.ru/sitepages/tarify/chastnim-licam/t-priv_pbu.pdf; https://www.vtb.ru/media-files/vtb.ru/sitepages/tarify/chastnim-licam/t_rko.xlsx; https://www.vtb.ru/personal/online-servisy/perevody-sbp/; https://premiumbanking.info/vtb/3; https://premiumbanking.info/vtb; https://bankiros.ru/bank/vtb",
       "status": "ok",
@@ -14694,16 +14545,6 @@
               "date_checked": "2026-07-24",
               "quality": "structured",
               "value": "ВТБ — ВТБ – Привилегия"
-            },
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Привилегия — уровень 3",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "АО «ААА Управление Капиталом», ООО УК «Альфа-Капитал» и Уставный капитал:"
             }
           ],
           "blocked_value": "",
@@ -14743,16 +14584,6 @@
               "date_checked": "2026-07-24",
               "quality": "structured",
               "value": "за 6 млн ₽"
-            },
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Привилегия — уровень 3",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Подберем кредиты для бизнеса на любые цели — на недвижимость, транспорт, модернизацию производства или пополнение оборотных средств; Как узнать баланс карты ВТБ"
             }
           ],
           "blocked_value": "",
@@ -14893,25 +14724,14 @@
           "document_date": "",
           "date_checked": "2026-07-15",
           "quality": "curated",
-          "status": "source_conflict",
+          "status": "verified",
           "publication_status": "published",
           "publication_reason": "Ручной факт с source_url и датой проверки",
-          "conflict_status": "conflict",
-          "divergent": true,
-          "alternatives": [
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Привилегия — уровень 3",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Карта с беспроцентным периодом до 110 дней и повышенным кешбэком; Как перевести Мультибонусы втб на карту?; Личный кабинет Мультибонус ВТБ"
-            }
-          ],
+          "conflict_status": "selected",
+          "divergent": false,
+          "alternatives": [],
           "blocked_value": "",
-          "note": "Официальная страница карты ВТБ «Привилегия Mir Supreme»: кэшбэк рублями до 30 000 ₽, 3 категории из 9 и 1 для зарплатных клиентов; числа расходятся с Bankiros.ru",
+          "note": "Официальная страница карты ВТБ «Привилегия Mir Supreme»: кэшбэк рублями до 30 000 ₽, 3 категории из 9 и 1 для зарплатных клиентов",
           "is_reference": false
         },
         "card_terms": {
@@ -14937,18 +14757,7 @@
           "publication_reason": "Ручной факт с source_url и датой проверки",
           "conflict_status": "selected",
           "divergent": false,
-          "alternatives": [
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Привилегия — уровень 3",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Банки-партнеры ВТБ: где снять наличные без комиссии; Снятие наличных в банкомате без карты"
-            }
-          ],
+          "alternatives": [],
           "blocked_value": "",
           "note": "",
           "is_reference": false
@@ -14999,25 +14808,14 @@
           "document_date": "",
           "date_checked": "2026-07-02",
           "quality": "curated",
-          "status": "source_conflict",
+          "status": "verified",
           "publication_status": "published",
           "publication_reason": "Ручной факт с source_url и датой проверки",
-          "conflict_status": "conflict",
-          "divergent": true,
-          "alternatives": [
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Привилегия — уровень 3",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Банкоматы на карте, Банкоматы ВТБ банка и И банкоматы в количестве 11456 шт."
-            }
-          ],
+          "conflict_status": "selected",
+          "divergent": false,
+          "alternatives": [],
           "blocked_value": "",
-          "note": "числа расходятся с Bankiros.ru",
+          "note": "",
           "is_reference": false
         },
         "supreme": {
@@ -15066,25 +14864,14 @@
           "document_date": "",
           "date_checked": "2026-07-15",
           "quality": "curated",
-          "status": "source_conflict",
+          "status": "verified",
           "publication_status": "published",
           "publication_reason": "Ручной факт с source_url и датой проверки",
-          "conflict_status": "conflict",
-          "divergent": true,
-          "alternatives": [
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Привилегия — уровень 3",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Более 1490 вкладов в 358 банках России, Выгодные вклады и Накопительные счета"
-            }
-          ],
+          "conflict_status": "selected",
+          "divergent": false,
+          "alternatives": [],
           "blocked_value": "",
-          "note": "Официальная страница ВТБ «Привилегия»: доходность по новому накопительному ВТБ-Счёту до 13,6%; числа расходятся с Bankiros.ru",
+          "note": "Официальная страница ВТБ «Привилегия»: доходность по новому накопительному ВТБ-Счёту до 13,6%",
           "is_reference": false
         },
         "insurance": {
@@ -15120,16 +14907,6 @@
               "date_checked": "2026-07-24",
               "quality": "structured",
               "value": "$100/100 тыс, 90 дн, ассистанс Medlabel / AP Companies"
-            },
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Привилегия — уровень 3",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Ипотечное страхование, Страхование жизни и здоровья и Накопительное страхование"
             }
           ],
           "blocked_value": "",
@@ -15335,23 +15112,23 @@
           "field": "Дата последнего изменения условий",
           "value": "не найдено",
           "display_value": "Не найдено в доступных источниках",
-          "raw_text": "Обновлено 24.07",
-          "source_id": "bankiros",
-          "source_type": "other",
-          "source_priority": 3,
-          "source_url": "https://bankiros.ru/bank/vtb",
+          "raw_text": "не найдено",
+          "source_id": "",
+          "source_type": "",
+          "source_priority": 99,
+          "source_url": "",
           "retrieved_at": "2026-07-24",
           "document_date": "",
           "date_checked": "2026-07-24",
-          "quality": "snippet",
+          "quality": "",
           "status": "not_found",
-          "publication_status": "blocked",
-          "publication_reason": "Generic keyword-snippet не публикуется в HTML без подтверждения",
-          "conflict_status": "selected",
+          "publication_status": "not_found",
+          "publication_reason": "Значение не найдено в доступных источниках",
+          "conflict_status": "not_found",
           "divergent": false,
           "alternatives": [],
-          "blocked_value": "Обновлено 24.07",
-          "note": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+          "blocked_value": "",
+          "note": "",
           "is_reference": true
         }
       }
@@ -15362,7 +15139,7 @@
       "tier_id": "vtb_privilege_4",
       "tier": "Привилегия — уровень 4",
       "segment": "10–25 млн ₽",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 7,
       "source_url": "https://www.vtb.ru/privilegia/; https://www.vtb.ru/media-files/vtb.ru/sitepages/tarify/chastnim-licam/t-priv_pbu.pdf; https://www.vtb.ru/media-files/vtb.ru/sitepages/tarify/chastnim-licam/t_rko.xlsx; https://www.vtb.ru/personal/online-servisy/perevody-sbp/; https://premiumbanking.info/vtb/4; https://premiumbanking.info/vtb; https://bankiros.ru/bank/vtb",
       "status": "ok",
@@ -15453,16 +15230,6 @@
               "date_checked": "2026-07-24",
               "quality": "structured",
               "value": "ВТБ — ВТБ – Привилегия"
-            },
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Привилегия — уровень 4",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "АО «ААА Управление Капиталом», ООО УК «Альфа-Капитал» и Уставный капитал:"
             }
           ],
           "blocked_value": "",
@@ -15502,16 +15269,6 @@
               "date_checked": "2026-07-24",
               "quality": "structured",
               "value": "за 10 млн ₽"
-            },
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Привилегия — уровень 4",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Подберем кредиты для бизнеса на любые цели — на недвижимость, транспорт, модернизацию производства или пополнение оборотных средств; Как узнать баланс карты ВТБ"
             }
           ],
           "blocked_value": "",
@@ -15652,25 +15409,14 @@
           "document_date": "",
           "date_checked": "2026-07-15",
           "quality": "curated",
-          "status": "source_conflict",
+          "status": "verified",
           "publication_status": "published",
           "publication_reason": "Ручной факт с source_url и датой проверки",
-          "conflict_status": "conflict",
-          "divergent": true,
-          "alternatives": [
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Привилегия — уровень 4",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Карта с беспроцентным периодом до 110 дней и повышенным кешбэком; Как перевести Мультибонусы втб на карту?; Личный кабинет Мультибонус ВТБ"
-            }
-          ],
+          "conflict_status": "selected",
+          "divergent": false,
+          "alternatives": [],
           "blocked_value": "",
-          "note": "Официальная страница карты ВТБ «Привилегия Mir Supreme»: кэшбэк рублями до 30 000 ₽, 3 категории из 9 и 1 для зарплатных клиентов; числа расходятся с Bankiros.ru",
+          "note": "Официальная страница карты ВТБ «Привилегия Mir Supreme»: кэшбэк рублями до 30 000 ₽, 3 категории из 9 и 1 для зарплатных клиентов",
           "is_reference": false
         },
         "card_terms": {
@@ -15696,18 +15442,7 @@
           "publication_reason": "Ручной факт с source_url и датой проверки",
           "conflict_status": "selected",
           "divergent": false,
-          "alternatives": [
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Привилегия — уровень 4",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Банки-партнеры ВТБ: где снять наличные без комиссии; Снятие наличных в банкомате без карты"
-            }
-          ],
+          "alternatives": [],
           "blocked_value": "",
           "note": "",
           "is_reference": false
@@ -15758,25 +15493,14 @@
           "document_date": "",
           "date_checked": "2026-07-02",
           "quality": "curated",
-          "status": "source_conflict",
+          "status": "verified",
           "publication_status": "published",
           "publication_reason": "Ручной факт с source_url и датой проверки",
-          "conflict_status": "conflict",
-          "divergent": true,
-          "alternatives": [
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Привилегия — уровень 4",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Банкоматы на карте, Банкоматы ВТБ банка и И банкоматы в количестве 11456 шт."
-            }
-          ],
+          "conflict_status": "selected",
+          "divergent": false,
+          "alternatives": [],
           "blocked_value": "",
-          "note": "числа расходятся с Bankiros.ru",
+          "note": "",
           "is_reference": false
         },
         "supreme": {
@@ -15825,25 +15549,14 @@
           "document_date": "",
           "date_checked": "2026-07-15",
           "quality": "curated",
-          "status": "source_conflict",
+          "status": "verified",
           "publication_status": "published",
           "publication_reason": "Ручной факт с source_url и датой проверки",
-          "conflict_status": "conflict",
-          "divergent": true,
-          "alternatives": [
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Привилегия — уровень 4",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Более 1490 вкладов в 358 банках России, Выгодные вклады и Накопительные счета"
-            }
-          ],
+          "conflict_status": "selected",
+          "divergent": false,
+          "alternatives": [],
           "blocked_value": "",
-          "note": "Официальная страница ВТБ «Привилегия»: доходность по новому накопительному ВТБ-Счёту до 13,6%; числа расходятся с Bankiros.ru",
+          "note": "Официальная страница ВТБ «Привилегия»: доходность по новому накопительному ВТБ-Счёту до 13,6%",
           "is_reference": false
         },
         "insurance": {
@@ -15879,16 +15592,6 @@
               "date_checked": "2026-07-24",
               "quality": "structured",
               "value": "$100/100 тыс, 90 дн, ассистанс Medlabel / AP Companies"
-            },
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Привилегия — уровень 4",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Ипотечное страхование, Страхование жизни и здоровья и Накопительное страхование"
             }
           ],
           "blocked_value": "",
@@ -16094,23 +15797,23 @@
           "field": "Дата последнего изменения условий",
           "value": "не найдено",
           "display_value": "Не найдено в доступных источниках",
-          "raw_text": "Обновлено 24.07",
-          "source_id": "bankiros",
-          "source_type": "other",
-          "source_priority": 3,
-          "source_url": "https://bankiros.ru/bank/vtb",
+          "raw_text": "не найдено",
+          "source_id": "",
+          "source_type": "",
+          "source_priority": 99,
+          "source_url": "",
           "retrieved_at": "2026-07-24",
           "document_date": "",
           "date_checked": "2026-07-24",
-          "quality": "snippet",
+          "quality": "",
           "status": "not_found",
-          "publication_status": "blocked",
-          "publication_reason": "Generic keyword-snippet не публикуется в HTML без подтверждения",
-          "conflict_status": "selected",
+          "publication_status": "not_found",
+          "publication_reason": "Значение не найдено в доступных источниках",
+          "conflict_status": "not_found",
           "divergent": false,
           "alternatives": [],
-          "blocked_value": "Обновлено 24.07",
-          "note": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+          "blocked_value": "",
+          "note": "",
           "is_reference": true
         }
       }
@@ -16121,7 +15824,7 @@
       "tier_id": "vtb_prime_5",
       "tier": "Прайм+ — уровень 5",
       "segment": "3–10 млн ₽",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 7,
       "source_url": "https://www.vtb.ru/privilegia/paket-prime/; https://private.vtb.ru/media-files/private.vtb.ru/sitepages/promo/new-pu-pm/tarify_praym_plyus_01.10.2025.pdf; https://www.vtb.ru/privilegia/karty/debetovye/privilegiya-mir-supreme/; https://www.vtb.ru/privilegia/; https://premiumbanking.info/vtb/5; https://premiumbanking.info/vtb; https://bankiros.ru/bank/vtb",
       "status": "ok",
@@ -16186,9 +15889,9 @@
           "level": "Прайм+ — уровень 5",
           "field_id": "positioning",
           "field": "Позиционирование (на кого рассчитан)",
-          "value": "ВТБ – Прайм+ — Уровень за 16667 ₽ в мес или 90000 акций (≈5,220,000₽); ВТБ Прайм+; Системно значимый банк",
-          "display_value": "ВТБ – Прайм+ — Уровень за 16667 ₽ в мес или 90000 акций (≈5,220,000₽); ВТБ Прайм+; Системно значимый банк",
-          "raw_text": "ВТБ – Прайм+ — Уровень за 16667 ₽ в мес или 90000 акций (≈5,220,000₽); ВТБ Прайм+; Системно значимый банк",
+          "value": "ВТБ – Прайм+ — Уровень за 16667 ₽ в мес или 90000 акций (≈5,310,000₽); ВТБ Прайм+; Системно значимый банк",
+          "display_value": "ВТБ – Прайм+ — Уровень за 16667 ₽ в мес или 90000 акций (≈5,310,000₽); ВТБ Прайм+; Системно значимый банк",
+          "raw_text": "ВТБ – Прайм+ — Уровень за 16667 ₽ в мес или 90000 акций (≈5,310,000₽); ВТБ Прайм+; Системно значимый банк",
           "source_id": "pbi_level",
           "source_type": "premiumbanking.info",
           "source_priority": 2,
@@ -16212,16 +15915,6 @@
               "date_checked": "2026-07-24",
               "quality": "structured",
               "value": "ВТБ — ВТБ – Прайм+"
-            },
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Прайм+ — уровень 5",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "АО «ААА Управление Капиталом», ООО УК «Альфа-Капитал» и Уставный капитал:"
             }
           ],
           "blocked_value": "",
@@ -16235,9 +15928,9 @@
           "level": "Прайм+ — уровень 5",
           "field_id": "entry_conditions",
           "field": "Условия входа / поддержания уровня",
-          "value": "16667 ₽ в мес; или 90000 акций (≈5,220,000₽); Среднемесячный остаток в банке и на последний календарный день месяца в брокере",
-          "display_value": "16667 ₽ в мес; или 90000 акций (≈5,220,000₽); Среднемесячный остаток в банке и на последний календарный день месяца в брокере",
-          "raw_text": "16667 ₽ в мес; или 90000 акций (≈5,220,000₽); Среднемесячный остаток в банке и на последний календарный день месяца в брокере",
+          "value": "16667 ₽ в мес; или 90000 акций (≈5,310,000₽); Среднемесячный остаток в банке и на последний календарный день месяца в брокере",
+          "display_value": "16667 ₽ в мес; или 90000 акций (≈5,310,000₽); Среднемесячный остаток в банке и на последний календарный день месяца в брокере",
+          "raw_text": "16667 ₽ в мес; или 90000 акций (≈5,310,000₽); Среднемесячный остаток в банке и на последний календарный день месяца в брокере",
           "source_id": "pbi_level",
           "source_type": "premiumbanking.info",
           "source_priority": 2,
@@ -16260,17 +15953,7 @@
               "source_section": "Прайм+ — уровень 5",
               "date_checked": "2026-07-24",
               "quality": "structured",
-              "value": "за 16667 ₽ в мес; или 90000 акций (≈5,220,000₽)"
-            },
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Прайм+ — уровень 5",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Подберем кредиты для бизнеса на любые цели — на недвижимость, транспорт, модернизацию производства или пополнение оборотных средств; Как узнать баланс карты ВТБ"
+              "value": "за 16667 ₽ в мес; или 90000 акций (≈5,310,000₽)"
             }
           ],
           "blocked_value": "",
@@ -16422,25 +16105,14 @@
           "document_date": "",
           "date_checked": "2026-07-15",
           "quality": "curated",
-          "status": "source_conflict",
+          "status": "verified",
           "publication_status": "published",
           "publication_reason": "Ручной факт с source_url и датой проверки",
-          "conflict_status": "conflict",
-          "divergent": true,
-          "alternatives": [
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Прайм+ — уровень 5",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Карта с беспроцентным периодом до 110 дней и повышенным кешбэком; Как перевести Мультибонусы втб на карту?; Личный кабинет Мультибонус ВТБ"
-            }
-          ],
+          "conflict_status": "selected",
+          "divergent": false,
+          "alternatives": [],
           "blocked_value": "",
-          "note": "Официальная страница карты ВТБ «Привилегия Mir Supreme»: кэшбэк рублями до 30 000 ₽, 3 категории из 9 и 1 для зарплатных клиентов; числа расходятся с Bankiros.ru",
+          "note": "Официальная страница карты ВТБ «Привилегия Mir Supreme»: кэшбэк рублями до 30 000 ₽, 3 категории из 9 и 1 для зарплатных клиентов",
           "is_reference": false
         },
         "card_terms": {
@@ -16452,23 +16124,23 @@
           "field": "Карты (тип, лимиты переводов/снятия, выпуск)",
           "value": "не найдено",
           "display_value": "Не найдено в доступных источниках",
-          "raw_text": "Банки-партнеры ВТБ: где снять наличные без комиссии; Снятие наличных в банкомате без карты",
-          "source_id": "bankiros",
-          "source_type": "other",
-          "source_priority": 3,
-          "source_url": "https://bankiros.ru/bank/vtb",
+          "raw_text": "не найдено",
+          "source_id": "",
+          "source_type": "",
+          "source_priority": 99,
+          "source_url": "",
           "retrieved_at": "2026-07-24",
           "document_date": "",
           "date_checked": "2026-07-24",
-          "quality": "snippet",
+          "quality": "",
           "status": "not_found",
-          "publication_status": "blocked",
-          "publication_reason": "Generic keyword-snippet не публикуется в HTML без подтверждения",
-          "conflict_status": "selected",
+          "publication_status": "not_found",
+          "publication_reason": "Значение не найдено в доступных источниках",
+          "conflict_status": "not_found",
           "divergent": false,
           "alternatives": [],
-          "blocked_value": "Банки-партнеры ВТБ: где снять наличные без комиссии | Снятие наличных в банкомате без карты",
-          "note": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+          "blocked_value": "",
+          "note": "",
           "is_reference": false
         },
         "transfers_payments": {
@@ -16517,25 +16189,14 @@
           "document_date": "",
           "date_checked": "2026-07-02",
           "quality": "curated",
-          "status": "source_conflict",
+          "status": "verified",
           "publication_status": "published",
           "publication_reason": "Ручной факт с source_url и датой проверки",
-          "conflict_status": "conflict",
-          "divergent": true,
-          "alternatives": [
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Прайм+ — уровень 5",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Банкоматы на карте, Банкоматы ВТБ банка и И банкоматы в количестве 11456 шт."
-            }
-          ],
+          "conflict_status": "selected",
+          "divergent": false,
+          "alternatives": [],
           "blocked_value": "",
-          "note": "числа расходятся с Bankiros.ru",
+          "note": "",
           "is_reference": false
         },
         "supreme": {
@@ -16584,25 +16245,14 @@
           "document_date": "",
           "date_checked": "2026-07-15",
           "quality": "curated",
-          "status": "source_conflict",
+          "status": "verified",
           "publication_status": "published",
           "publication_reason": "Ручной факт с source_url и датой проверки",
-          "conflict_status": "conflict",
-          "divergent": true,
-          "alternatives": [
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Прайм+ — уровень 5",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Более 1490 вкладов в 358 банках России, Выгодные вклады и Накопительные счета"
-            }
-          ],
+          "conflict_status": "selected",
+          "divergent": false,
+          "alternatives": [],
           "blocked_value": "",
-          "note": "Официальная страница ВТБ «Привилегия»: доходность по новому накопительному ВТБ-Счёту до 13,6%; числа расходятся с Bankiros.ru",
+          "note": "Официальная страница ВТБ «Привилегия»: доходность по новому накопительному ВТБ-Счёту до 13,6%",
           "is_reference": false
         },
         "insurance": {
@@ -16638,16 +16288,6 @@
               "date_checked": "2026-07-24",
               "quality": "structured",
               "value": "$500 тыс, 90 дн, ассистанс Medlabel / AP Companies"
-            },
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Прайм+ — уровень 5",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Ипотечное страхование, Страхование жизни и здоровья и Накопительное страхование"
             }
           ],
           "blocked_value": "",
@@ -16842,23 +16482,23 @@
           "field": "Дата последнего изменения условий",
           "value": "не найдено",
           "display_value": "Не найдено в доступных источниках",
-          "raw_text": "Обновлено 24.07",
-          "source_id": "bankiros",
-          "source_type": "other",
-          "source_priority": 3,
-          "source_url": "https://bankiros.ru/bank/vtb",
+          "raw_text": "не найдено",
+          "source_id": "",
+          "source_type": "",
+          "source_priority": 99,
+          "source_url": "",
           "retrieved_at": "2026-07-24",
           "document_date": "",
           "date_checked": "2026-07-24",
-          "quality": "snippet",
+          "quality": "",
           "status": "not_found",
-          "publication_status": "blocked",
-          "publication_reason": "Generic keyword-snippet не публикуется в HTML без подтверждения",
-          "conflict_status": "selected",
+          "publication_status": "not_found",
+          "publication_reason": "Значение не найдено в доступных источниках",
+          "conflict_status": "not_found",
           "divergent": false,
           "alternatives": [],
-          "blocked_value": "Обновлено 24.07",
-          "note": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+          "blocked_value": "",
+          "note": "",
           "is_reference": true
         }
       }
@@ -16869,7 +16509,7 @@
       "tier_id": "vtb_prime_6",
       "tier": "Прайм+ — уровень 6",
       "segment": "10–25 млн ₽",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 7,
       "source_url": "https://www.vtb.ru/privilegia/paket-prime/; https://private.vtb.ru/media-files/private.vtb.ru/sitepages/promo/new-pu-pm/tarify_praym_plyus_01.10.2025.pdf; https://www.vtb.ru/privilegia/karty/debetovye/privilegiya-mir-supreme/; https://www.vtb.ru/privilegia/; https://premiumbanking.info/vtb/6; https://premiumbanking.info/vtb; https://bankiros.ru/bank/vtb",
       "status": "ok",
@@ -16960,16 +16600,6 @@
               "date_checked": "2026-07-24",
               "quality": "structured",
               "value": "ВТБ — ВТБ – Прайм+"
-            },
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Прайм+ — уровень 6",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "АО «ААА Управление Капиталом», ООО УК «Альфа-Капитал» и Уставный капитал:"
             }
           ],
           "blocked_value": "",
@@ -17009,16 +16639,6 @@
               "date_checked": "2026-07-24",
               "quality": "structured",
               "value": "за 15 млн ₽"
-            },
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Прайм+ — уровень 6",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Подберем кредиты для бизнеса на любые цели — на недвижимость, транспорт, модернизацию производства или пополнение оборотных средств; Как узнать баланс карты ВТБ"
             }
           ],
           "blocked_value": "",
@@ -17159,25 +16779,14 @@
           "document_date": "",
           "date_checked": "2026-07-15",
           "quality": "curated",
-          "status": "source_conflict",
+          "status": "verified",
           "publication_status": "published",
           "publication_reason": "Ручной факт с source_url и датой проверки",
-          "conflict_status": "conflict",
-          "divergent": true,
-          "alternatives": [
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Прайм+ — уровень 6",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Карта с беспроцентным периодом до 110 дней и повышенным кешбэком; Как перевести Мультибонусы втб на карту?; Личный кабинет Мультибонус ВТБ"
-            }
-          ],
+          "conflict_status": "selected",
+          "divergent": false,
+          "alternatives": [],
           "blocked_value": "",
-          "note": "Официальная страница карты ВТБ «Привилегия Mir Supreme»: кэшбэк рублями до 30 000 ₽, 3 категории из 9 и 1 для зарплатных клиентов; числа расходятся с Bankiros.ru",
+          "note": "Официальная страница карты ВТБ «Привилегия Mir Supreme»: кэшбэк рублями до 30 000 ₽, 3 категории из 9 и 1 для зарплатных клиентов",
           "is_reference": false
         },
         "card_terms": {
@@ -17189,23 +16798,23 @@
           "field": "Карты (тип, лимиты переводов/снятия, выпуск)",
           "value": "не найдено",
           "display_value": "Не найдено в доступных источниках",
-          "raw_text": "Банки-партнеры ВТБ: где снять наличные без комиссии; Снятие наличных в банкомате без карты",
-          "source_id": "bankiros",
-          "source_type": "other",
-          "source_priority": 3,
-          "source_url": "https://bankiros.ru/bank/vtb",
+          "raw_text": "не найдено",
+          "source_id": "",
+          "source_type": "",
+          "source_priority": 99,
+          "source_url": "",
           "retrieved_at": "2026-07-24",
           "document_date": "",
           "date_checked": "2026-07-24",
-          "quality": "snippet",
+          "quality": "",
           "status": "not_found",
-          "publication_status": "blocked",
-          "publication_reason": "Generic keyword-snippet не публикуется в HTML без подтверждения",
-          "conflict_status": "selected",
+          "publication_status": "not_found",
+          "publication_reason": "Значение не найдено в доступных источниках",
+          "conflict_status": "not_found",
           "divergent": false,
           "alternatives": [],
-          "blocked_value": "Банки-партнеры ВТБ: где снять наличные без комиссии | Снятие наличных в банкомате без карты",
-          "note": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+          "blocked_value": "",
+          "note": "",
           "is_reference": false
         },
         "transfers_payments": {
@@ -17254,25 +16863,14 @@
           "document_date": "",
           "date_checked": "2026-07-02",
           "quality": "curated",
-          "status": "source_conflict",
+          "status": "verified",
           "publication_status": "published",
           "publication_reason": "Ручной факт с source_url и датой проверки",
-          "conflict_status": "conflict",
-          "divergent": true,
-          "alternatives": [
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Прайм+ — уровень 6",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Банкоматы на карте, Банкоматы ВТБ банка и И банкоматы в количестве 11456 шт."
-            }
-          ],
+          "conflict_status": "selected",
+          "divergent": false,
+          "alternatives": [],
           "blocked_value": "",
-          "note": "числа расходятся с Bankiros.ru",
+          "note": "",
           "is_reference": false
         },
         "supreme": {
@@ -17321,25 +16919,14 @@
           "document_date": "",
           "date_checked": "2026-07-15",
           "quality": "curated",
-          "status": "source_conflict",
+          "status": "verified",
           "publication_status": "published",
           "publication_reason": "Ручной факт с source_url и датой проверки",
-          "conflict_status": "conflict",
-          "divergent": true,
-          "alternatives": [
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Прайм+ — уровень 6",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Более 1490 вкладов в 358 банках России, Выгодные вклады и Накопительные счета"
-            }
-          ],
+          "conflict_status": "selected",
+          "divergent": false,
+          "alternatives": [],
           "blocked_value": "",
-          "note": "Официальная страница ВТБ «Привилегия»: доходность по новому накопительному ВТБ-Счёту до 13,6%; числа расходятся с Bankiros.ru",
+          "note": "Официальная страница ВТБ «Привилегия»: доходность по новому накопительному ВТБ-Счёту до 13,6%",
           "is_reference": false
         },
         "insurance": {
@@ -17375,16 +16962,6 @@
               "date_checked": "2026-07-24",
               "quality": "structured",
               "value": "$500 тыс, 90 дн, ассистанс Medlabel / AP Companies"
-            },
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Прайм+ — уровень 6",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Ипотечное страхование, Страхование жизни и здоровья и Накопительное страхование"
             }
           ],
           "blocked_value": "",
@@ -17579,23 +17156,23 @@
           "field": "Дата последнего изменения условий",
           "value": "не найдено",
           "display_value": "Не найдено в доступных источниках",
-          "raw_text": "Обновлено 24.07",
-          "source_id": "bankiros",
-          "source_type": "other",
-          "source_priority": 3,
-          "source_url": "https://bankiros.ru/bank/vtb",
+          "raw_text": "не найдено",
+          "source_id": "",
+          "source_type": "",
+          "source_priority": 99,
+          "source_url": "",
           "retrieved_at": "2026-07-24",
           "document_date": "",
           "date_checked": "2026-07-24",
-          "quality": "snippet",
+          "quality": "",
           "status": "not_found",
-          "publication_status": "blocked",
-          "publication_reason": "Generic keyword-snippet не публикуется в HTML без подтверждения",
-          "conflict_status": "selected",
+          "publication_status": "not_found",
+          "publication_reason": "Значение не найдено в доступных источниках",
+          "conflict_status": "not_found",
           "divergent": false,
           "alternatives": [],
-          "blocked_value": "Обновлено 24.07",
-          "note": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+          "blocked_value": "",
+          "note": "",
           "is_reference": true
         }
       }
@@ -17606,7 +17183,7 @@
       "tier_id": "vtb_prime_7",
       "tier": "Прайм+ — уровень 7",
       "segment": "25–100 млн ₽",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 7,
       "source_url": "https://www.vtb.ru/privilegia/paket-prime/; https://private.vtb.ru/media-files/private.vtb.ru/sitepages/promo/new-pu-pm/tarify_praym_plyus_01.10.2025.pdf; https://www.vtb.ru/privilegia/karty/debetovye/privilegiya-mir-supreme/; https://www.vtb.ru/privilegia/; https://premiumbanking.info/vtb/7; https://premiumbanking.info/vtb; https://bankiros.ru/bank/vtb",
       "status": "ok",
@@ -17697,16 +17274,6 @@
               "date_checked": "2026-07-24",
               "quality": "structured",
               "value": "ВТБ — ВТБ – Прайм+"
-            },
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Прайм+ — уровень 7",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "АО «ААА Управление Капиталом», ООО УК «Альфа-Капитал» и Уставный капитал:"
             }
           ],
           "blocked_value": "",
@@ -17746,16 +17313,6 @@
               "date_checked": "2026-07-24",
               "quality": "structured",
               "value": "за 50 млн ₽ для Мск и 30 млн ₽ регионы"
-            },
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Прайм+ — уровень 7",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Подберем кредиты для бизнеса на любые цели — на недвижимость, транспорт, модернизацию производства или пополнение оборотных средств; Как узнать баланс карты ВТБ"
             }
           ],
           "blocked_value": "",
@@ -17896,25 +17453,14 @@
           "document_date": "",
           "date_checked": "2026-07-15",
           "quality": "curated",
-          "status": "source_conflict",
+          "status": "verified",
           "publication_status": "published",
           "publication_reason": "Ручной факт с source_url и датой проверки",
-          "conflict_status": "conflict",
-          "divergent": true,
-          "alternatives": [
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Прайм+ — уровень 7",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Карта с беспроцентным периодом до 110 дней и повышенным кешбэком; Как перевести Мультибонусы втб на карту?; Личный кабинет Мультибонус ВТБ"
-            }
-          ],
+          "conflict_status": "selected",
+          "divergent": false,
+          "alternatives": [],
           "blocked_value": "",
-          "note": "Официальная страница карты ВТБ «Привилегия Mir Supreme»: кэшбэк рублями до 30 000 ₽, 3 категории из 9 и 1 для зарплатных клиентов; числа расходятся с Bankiros.ru",
+          "note": "Официальная страница карты ВТБ «Привилегия Mir Supreme»: кэшбэк рублями до 30 000 ₽, 3 категории из 9 и 1 для зарплатных клиентов",
           "is_reference": false
         },
         "card_terms": {
@@ -17926,23 +17472,23 @@
           "field": "Карты (тип, лимиты переводов/снятия, выпуск)",
           "value": "не найдено",
           "display_value": "Не найдено в доступных источниках",
-          "raw_text": "Банки-партнеры ВТБ: где снять наличные без комиссии; Снятие наличных в банкомате без карты",
-          "source_id": "bankiros",
-          "source_type": "other",
-          "source_priority": 3,
-          "source_url": "https://bankiros.ru/bank/vtb",
+          "raw_text": "не найдено",
+          "source_id": "",
+          "source_type": "",
+          "source_priority": 99,
+          "source_url": "",
           "retrieved_at": "2026-07-24",
           "document_date": "",
           "date_checked": "2026-07-24",
-          "quality": "snippet",
+          "quality": "",
           "status": "not_found",
-          "publication_status": "blocked",
-          "publication_reason": "Generic keyword-snippet не публикуется в HTML без подтверждения",
-          "conflict_status": "selected",
+          "publication_status": "not_found",
+          "publication_reason": "Значение не найдено в доступных источниках",
+          "conflict_status": "not_found",
           "divergent": false,
           "alternatives": [],
-          "blocked_value": "Банки-партнеры ВТБ: где снять наличные без комиссии | Снятие наличных в банкомате без карты",
-          "note": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+          "blocked_value": "",
+          "note": "",
           "is_reference": false
         },
         "transfers_payments": {
@@ -17991,25 +17537,14 @@
           "document_date": "",
           "date_checked": "2026-07-02",
           "quality": "curated",
-          "status": "source_conflict",
+          "status": "verified",
           "publication_status": "published",
           "publication_reason": "Ручной факт с source_url и датой проверки",
-          "conflict_status": "conflict",
-          "divergent": true,
-          "alternatives": [
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Прайм+ — уровень 7",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Банкоматы на карте, Банкоматы ВТБ банка и И банкоматы в количестве 11456 шт."
-            }
-          ],
+          "conflict_status": "selected",
+          "divergent": false,
+          "alternatives": [],
           "blocked_value": "",
-          "note": "числа расходятся с Bankiros.ru",
+          "note": "",
           "is_reference": false
         },
         "supreme": {
@@ -18058,25 +17593,14 @@
           "document_date": "",
           "date_checked": "2026-07-15",
           "quality": "curated",
-          "status": "source_conflict",
+          "status": "verified",
           "publication_status": "published",
           "publication_reason": "Ручной факт с source_url и датой проверки",
-          "conflict_status": "conflict",
-          "divergent": true,
-          "alternatives": [
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Прайм+ — уровень 7",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Более 1490 вкладов в 358 банках России, Выгодные вклады и Накопительные счета"
-            }
-          ],
+          "conflict_status": "selected",
+          "divergent": false,
+          "alternatives": [],
           "blocked_value": "",
-          "note": "Официальная страница ВТБ «Привилегия»: доходность по новому накопительному ВТБ-Счёту до 13,6%; числа расходятся с Bankiros.ru",
+          "note": "Официальная страница ВТБ «Привилегия»: доходность по новому накопительному ВТБ-Счёту до 13,6%",
           "is_reference": false
         },
         "insurance": {
@@ -18112,16 +17636,6 @@
               "date_checked": "2026-07-24",
               "quality": "structured",
               "value": "$500 тыс, 90 дн, ассистанс Medlabel / AP Companies"
-            },
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Прайм+ — уровень 7",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Ипотечное страхование, Страхование жизни и здоровья и Накопительное страхование"
             }
           ],
           "blocked_value": "",
@@ -18316,23 +17830,23 @@
           "field": "Дата последнего изменения условий",
           "value": "не найдено",
           "display_value": "Не найдено в доступных источниках",
-          "raw_text": "Обновлено 24.07",
-          "source_id": "bankiros",
-          "source_type": "other",
-          "source_priority": 3,
-          "source_url": "https://bankiros.ru/bank/vtb",
+          "raw_text": "не найдено",
+          "source_id": "",
+          "source_type": "",
+          "source_priority": 99,
+          "source_url": "",
           "retrieved_at": "2026-07-24",
           "document_date": "",
           "date_checked": "2026-07-24",
-          "quality": "snippet",
+          "quality": "",
           "status": "not_found",
-          "publication_status": "blocked",
-          "publication_reason": "Generic keyword-snippet не публикуется в HTML без подтверждения",
-          "conflict_status": "selected",
+          "publication_status": "not_found",
+          "publication_reason": "Значение не найдено в доступных источниках",
+          "conflict_status": "not_found",
           "divergent": false,
           "alternatives": [],
-          "blocked_value": "Обновлено 24.07",
-          "note": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+          "blocked_value": "",
+          "note": "",
           "is_reference": true
         }
       }
@@ -18343,7 +17857,7 @@
       "tier_id": "vtb_prime_8",
       "tier": "Прайм+ — уровень 8",
       "segment": "25–100 млн ₽",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 7,
       "source_url": "https://www.vtb.ru/privilegia/paket-prime/; https://private.vtb.ru/media-files/private.vtb.ru/sitepages/promo/new-pu-pm/tarify_praym_plyus_01.10.2025.pdf; https://www.vtb.ru/privilegia/karty/debetovye/privilegiya-mir-supreme/; https://www.vtb.ru/privilegia/; https://premiumbanking.info/vtb/8; https://premiumbanking.info/vtb; https://bankiros.ru/bank/vtb",
       "status": "ok",
@@ -18434,16 +17948,6 @@
               "date_checked": "2026-07-24",
               "quality": "structured",
               "value": "ВТБ — ВТБ – Прайм+"
-            },
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Прайм+ — уровень 8",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "АО «ААА Управление Капиталом», ООО УК «Альфа-Капитал» и Уставный капитал:"
             }
           ],
           "blocked_value": "",
@@ -18483,16 +17987,6 @@
               "date_checked": "2026-07-24",
               "quality": "structured",
               "value": "за 100 млн ₽ для Мск и 50 млн ₽ регионы"
-            },
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Прайм+ — уровень 8",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Подберем кредиты для бизнеса на любые цели — на недвижимость, транспорт, модернизацию производства или пополнение оборотных средств; Как узнать баланс карты ВТБ"
             }
           ],
           "blocked_value": "",
@@ -18633,25 +18127,14 @@
           "document_date": "",
           "date_checked": "2026-07-15",
           "quality": "curated",
-          "status": "source_conflict",
+          "status": "verified",
           "publication_status": "published",
           "publication_reason": "Ручной факт с source_url и датой проверки",
-          "conflict_status": "conflict",
-          "divergent": true,
-          "alternatives": [
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Прайм+ — уровень 8",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Карта с беспроцентным периодом до 110 дней и повышенным кешбэком; Как перевести Мультибонусы втб на карту?; Личный кабинет Мультибонус ВТБ"
-            }
-          ],
+          "conflict_status": "selected",
+          "divergent": false,
+          "alternatives": [],
           "blocked_value": "",
-          "note": "Официальная страница карты ВТБ «Привилегия Mir Supreme»: кэшбэк рублями до 30 000 ₽, 3 категории из 9 и 1 для зарплатных клиентов; числа расходятся с Bankiros.ru",
+          "note": "Официальная страница карты ВТБ «Привилегия Mir Supreme»: кэшбэк рублями до 30 000 ₽, 3 категории из 9 и 1 для зарплатных клиентов",
           "is_reference": false
         },
         "card_terms": {
@@ -18663,23 +18146,23 @@
           "field": "Карты (тип, лимиты переводов/снятия, выпуск)",
           "value": "не найдено",
           "display_value": "Не найдено в доступных источниках",
-          "raw_text": "Банки-партнеры ВТБ: где снять наличные без комиссии; Снятие наличных в банкомате без карты",
-          "source_id": "bankiros",
-          "source_type": "other",
-          "source_priority": 3,
-          "source_url": "https://bankiros.ru/bank/vtb",
+          "raw_text": "не найдено",
+          "source_id": "",
+          "source_type": "",
+          "source_priority": 99,
+          "source_url": "",
           "retrieved_at": "2026-07-24",
           "document_date": "",
           "date_checked": "2026-07-24",
-          "quality": "snippet",
+          "quality": "",
           "status": "not_found",
-          "publication_status": "blocked",
-          "publication_reason": "Generic keyword-snippet не публикуется в HTML без подтверждения",
-          "conflict_status": "selected",
+          "publication_status": "not_found",
+          "publication_reason": "Значение не найдено в доступных источниках",
+          "conflict_status": "not_found",
           "divergent": false,
           "alternatives": [],
-          "blocked_value": "Банки-партнеры ВТБ: где снять наличные без комиссии | Снятие наличных в банкомате без карты",
-          "note": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+          "blocked_value": "",
+          "note": "",
           "is_reference": false
         },
         "transfers_payments": {
@@ -18728,25 +18211,14 @@
           "document_date": "",
           "date_checked": "2026-07-02",
           "quality": "curated",
-          "status": "source_conflict",
+          "status": "verified",
           "publication_status": "published",
           "publication_reason": "Ручной факт с source_url и датой проверки",
-          "conflict_status": "conflict",
-          "divergent": true,
-          "alternatives": [
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Прайм+ — уровень 8",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Банкоматы на карте, Банкоматы ВТБ банка и И банкоматы в количестве 11456 шт."
-            }
-          ],
+          "conflict_status": "selected",
+          "divergent": false,
+          "alternatives": [],
           "blocked_value": "",
-          "note": "числа расходятся с Bankiros.ru",
+          "note": "",
           "is_reference": false
         },
         "supreme": {
@@ -18795,25 +18267,14 @@
           "document_date": "",
           "date_checked": "2026-07-15",
           "quality": "curated",
-          "status": "source_conflict",
+          "status": "verified",
           "publication_status": "published",
           "publication_reason": "Ручной факт с source_url и датой проверки",
-          "conflict_status": "conflict",
-          "divergent": true,
-          "alternatives": [
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Прайм+ — уровень 8",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Более 1490 вкладов в 358 банках России, Выгодные вклады и Накопительные счета"
-            }
-          ],
+          "conflict_status": "selected",
+          "divergent": false,
+          "alternatives": [],
           "blocked_value": "",
-          "note": "Официальная страница ВТБ «Привилегия»: доходность по новому накопительному ВТБ-Счёту до 13,6%; числа расходятся с Bankiros.ru",
+          "note": "Официальная страница ВТБ «Привилегия»: доходность по новому накопительному ВТБ-Счёту до 13,6%",
           "is_reference": false
         },
         "insurance": {
@@ -18849,16 +18310,6 @@
               "date_checked": "2026-07-24",
               "quality": "structured",
               "value": "$500 тыс, 90 дн, ассистанс Medlabel / AP Companies"
-            },
-            {
-              "source_name": "Bankiros.ru",
-              "source_id": "bankiros",
-              "source_type": "other",
-              "source_url": "https://bankiros.ru/bank/vtb",
-              "source_section": "Прайм+ — уровень 8",
-              "date_checked": "2026-07-24",
-              "quality": "snippet",
-              "value": "Ипотечное страхование, Страхование жизни и здоровья и Накопительное страхование"
             }
           ],
           "blocked_value": "",
@@ -19053,23 +18504,23 @@
           "field": "Дата последнего изменения условий",
           "value": "не найдено",
           "display_value": "Не найдено в доступных источниках",
-          "raw_text": "Обновлено 24.07",
-          "source_id": "bankiros",
-          "source_type": "other",
-          "source_priority": 3,
-          "source_url": "https://bankiros.ru/bank/vtb",
+          "raw_text": "не найдено",
+          "source_id": "",
+          "source_type": "",
+          "source_priority": 99,
+          "source_url": "",
           "retrieved_at": "2026-07-24",
           "document_date": "",
           "date_checked": "2026-07-24",
-          "quality": "snippet",
+          "quality": "",
           "status": "not_found",
-          "publication_status": "blocked",
-          "publication_reason": "Generic keyword-snippet не публикуется в HTML без подтверждения",
-          "conflict_status": "selected",
+          "publication_status": "not_found",
+          "publication_reason": "Значение не найдено в доступных источниках",
+          "conflict_status": "not_found",
           "divergent": false,
           "alternatives": [],
-          "blocked_value": "Обновлено 24.07",
-          "note": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+          "blocked_value": "",
+          "note": "",
           "is_reference": true
         }
       }
@@ -19080,7 +18531,7 @@
       "tier_id": "gpb_premium_1",
       "tier": "Премиум — уровень 1",
       "segment": "0–3 млн ₽",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 5,
       "source_url": "https://www.gazprombank.ru/premium/; https://www.gazprombank.ru/premium/gazprom-bonus/; https://premiumbanking.info/gazprombank/1; https://premiumbanking.info/gazprombank; https://bankiros.ru/bank/gazprombank",
       "status": "ok",
@@ -19992,7 +19443,7 @@
       "tier_id": "gpb_premium_2",
       "tier": "Премиум — уровень 2",
       "segment": "3–10 млн ₽",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 4,
       "source_url": "https://www.gazprombank.ru/premium/; https://premiumbanking.info/gazprombank/2; https://premiumbanking.info/gazprombank; https://bankiros.ru/bank/gazprombank",
       "status": "ok",
@@ -20760,7 +20211,7 @@
       "tier_id": "gpb_premium_3",
       "tier": "Премиум — уровень 3",
       "segment": "10–25 млн ₽",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 4,
       "source_url": "https://www.gazprombank.ru/premium/; https://premiumbanking.info/gazprombank/3; https://premiumbanking.info/gazprombank; https://bankiros.ru/bank/gazprombank",
       "status": "ok",
@@ -21518,7 +20969,7 @@
       "tier_id": "gpb_private",
       "tier": "Private Banking",
       "segment": "25–100 млн ₽",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 4,
       "source_url": "https://www.gazprombank.ru/private/; https://premiumbanking.info/gazprombank/4; https://premiumbanking.info/gazprombank; https://bankiros.ru/bank/gazprombank",
       "status": "ok",
@@ -22213,7 +21664,7 @@
       "tier_id": "ozonbank_ultra_bronze",
       "tier": "Ultra Bronze",
       "segment": "0–3 млн ₽",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 5,
       "source_url": "https://finance.ozon.ru/products; https://finance.ozon.ru/promo/savings/landing; https://finance.ozon.ru/promo/deposit/landing; https://premiumbanking.info/ozon/1; https://premiumbanking.info/ozon",
       "status": "ok",
@@ -22877,7 +22328,7 @@
       "tier_id": "ozonbank_ultra_silver",
       "tier": "Ultra Silver",
       "segment": "3–10 млн ₽",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 5,
       "source_url": "https://finance.ozon.ru/products; https://finance.ozon.ru/promo/savings/landing; https://finance.ozon.ru/promo/deposit/landing; https://premiumbanking.info/ozon/2; https://premiumbanking.info/ozon",
       "status": "ok",
@@ -23530,7 +22981,7 @@
       "tier_id": "ozonbank_ultra_gold",
       "tier": "Ultra Gold",
       "segment": "3–10 млн ₽",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 5,
       "source_url": "https://finance.ozon.ru/products; https://finance.ozon.ru/promo/savings/landing; https://finance.ozon.ru/promo/deposit/landing; https://premiumbanking.info/ozon/3; https://premiumbanking.info/ozon",
       "status": "ok",
@@ -24183,7 +23634,7 @@
       "tier_id": "ozonbank_ultra_platinum",
       "tier": "Ultra Platinum",
       "segment": "10–25 млн ₽",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 5,
       "source_url": "https://finance.ozon.ru/products; https://finance.ozon.ru/promo/savings/landing; https://finance.ozon.ru/promo/deposit/landing; https://premiumbanking.info/ozon/4; https://premiumbanking.info/ozon",
       "status": "ok",
@@ -24836,7 +24287,7 @@
       "tier_id": "raif_premium_1",
       "tier": "Premium — платное обслуживание",
       "segment": "0–3 млн ₽",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 4,
       "source_url": "https://www.raiffeisen.ru/premium/; https://www.raiffeisen.ru/common/img/uploaded/files/retail/package/tariffs_pakety_uslug.pdf; https://premiumbanking.info/raiffeisen/1; https://premiumbanking.info/raiffeisen",
       "status": "ok",
@@ -25541,7 +24992,7 @@
       "tier_id": "raif_premium_2",
       "tier": "Premium — по обороту покупок",
       "segment": "0–3 млн ₽",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 4,
       "source_url": "https://www.raiffeisen.ru/premium/; https://www.raiffeisen.ru/common/img/uploaded/files/retail/package/tariffs_pakety_uslug.pdf; https://premiumbanking.info/raiffeisen/2; https://premiumbanking.info/raiffeisen",
       "status": "ok",
@@ -26204,7 +25655,7 @@
       "tier_id": "raif_premium_3",
       "tier": "Premium — от 1.5 млн ₽",
       "segment": "0–3 млн ₽",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 4,
       "source_url": "https://www.raiffeisen.ru/premium/; https://www.raiffeisen.ru/common/img/uploaded/files/retail/package/tariffs_pakety_uslug.pdf; https://premiumbanking.info/raiffeisen/3; https://premiumbanking.info/raiffeisen",
       "status": "ok",
@@ -26908,7 +26359,7 @@
       "tier_id": "raif_premium_4",
       "tier": "Premium — от 5 млн ₽",
       "segment": "3–10 млн ₽",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 4,
       "source_url": "https://www.raiffeisen.ru/premium/; https://www.raiffeisen.ru/common/img/uploaded/files/retail/package/tariffs_pakety_uslug.pdf; https://premiumbanking.info/raiffeisen/4; https://premiumbanking.info/raiffeisen",
       "status": "ok",
@@ -27612,7 +27063,7 @@
       "tier_id": "revolut_premium",
       "tier": "Premium",
       "segment": "digital-first (межд.)",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 0,
       "source_url": "",
       "status": "недоступен",
@@ -28158,7 +27609,7 @@
       "tier_id": "revolut_metal",
       "tier": "Metal",
       "segment": "digital-first (межд.)",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 0,
       "source_url": "",
       "status": "недоступен",
@@ -28704,7 +28155,7 @@
       "tier_id": "revolut_ultra",
       "tier": "Ultra",
       "segment": "digital-first (межд.)",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 0,
       "source_url": "",
       "status": "недоступен",
@@ -29250,7 +28701,7 @@
       "tier_id": "n26_go",
       "tier": "Go (экс-You)",
       "segment": "digital-first (межд.)",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 1,
       "source_url": "https://n26.com/en-eu/you-bank-account-with-travel-insurance",
       "status": "ok",
@@ -29862,7 +29313,7 @@
       "tier_id": "n26_metal",
       "tier": "Metal",
       "segment": "digital-first (межд.)",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 1,
       "source_url": "https://n26.com/en-eu/metal",
       "status": "ok",
@@ -30474,7 +29925,7 @@
       "tier_id": "wise_main",
       "tier": "Wise (multi-currency, без тиров)",
       "segment": "digital-first (межд.)",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 1,
       "source_url": "https://wise.com/us/pricing/",
       "status": "ok",
@@ -31042,7 +30493,7 @@
       "tier_id": "monzo_extra",
       "tier": "Extra",
       "segment": "digital-first (межд.)",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 1,
       "source_url": "https://monzo.com/current-account/plans",
       "status": "ok",
@@ -31621,7 +31072,7 @@
       "tier_id": "monzo_perks",
       "tier": "Perks",
       "segment": "digital-first (межд.)",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 1,
       "source_url": "https://monzo.com/current-account/perks",
       "status": "ok",
@@ -32189,7 +31640,7 @@
       "tier_id": "monzo_max",
       "tier": "Max",
       "segment": "digital-first (межд.)",
-      "scan_date": "2026-07-24T14:31:10",
+      "scan_date": "2026-07-24T16:35:14",
       "sources_ok": 1,
       "source_url": "https://monzo.com/current-account/plans",
       "status": "ok",
