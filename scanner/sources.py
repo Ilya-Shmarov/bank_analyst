@@ -282,10 +282,12 @@ _OZON_PRODUCTS_OFFICIAL = "https://finance.ozon.ru/products"
 _OZON_SAVINGS_OFFICIAL = "https://finance.ozon.ru/promo/savings/landing"
 _OZON_DEPOSIT_OFFICIAL = "https://finance.ozon.ru/promo/deposit/landing"
 _VTB_PRIVILEGE_TARIFF_PDF = "https://www.vtb.ru/media-files/vtb.ru/sitepages/tarify/chastnim-licam/t-priv_pbu.pdf"
+_VTB_RKO_TARIFF_XLSX = "https://www.vtb.ru/media-files/vtb.ru/sitepages/tarify/chastnim-licam/t_rko.xlsx"
 _VTB_PRIME_PLUS_TARIFF_PDF = "https://private.vtb.ru/media-files/private.vtb.ru/sitepages/promo/new-pu-pm/tarify_praym_plyus_01.10.2025.pdf"
 _VTB_PRIVILEGE_OFFICIAL = "https://www.vtb.ru/privilegia/"
 _VTB_PRIME_PLUS_OFFICIAL = "https://www.vtb.ru/privilegia/paket-prime/"
 _VTB_PRIVILEGE_CARD = "https://www.vtb.ru/privilegia/karty/debetovye/privilegiya-mir-supreme/"
+_VTB_SBP_OFFICIAL = "https://www.vtb.ru/personal/online-servisy/perevody-sbp/"
 _RAIF_PACKAGE_TARIFF_PDF = "https://www.raiffeisen.ru/common/img/uploaded/files/retail/package/tariffs_pakety_uslug.pdf"
 _RAIF_PREMIUM_OFFICIAL = "https://www.raiffeisen.ru/premium/"
 _GPB_PREMIUM_BONUS_TARIFF_PDF = "https://www.gazprombank.ru/upload/files/iblock/9ff/1ha4uno7pm7yti3z20ke9bdre727aog7/Tarify-po-predostavleniyu-fizicheskim-litsam-_-klientam-Banka-GPB-servisa-Gazprom-Bonus-_Premium_-_s-27.01.2026_.pdf"
@@ -313,6 +315,7 @@ PRIORITY_SOURCE_URLS = {
         "tbank_private": _TBANK_PRIVATE_TARIFF_PDF,
         "ozon_ultra": _OZON_ULTRA_TARIFF_PDF,
         "vtb_privilege": _VTB_PRIVILEGE_TARIFF_PDF,
+        "vtb_rko": _VTB_RKO_TARIFF_XLSX,
         "vtb_prime_plus": _VTB_PRIME_PLUS_TARIFF_PDF,
         "raiffeisen": _RAIF_PACKAGE_TARIFF_PDF,
         "gazprombank": _GPB_PREMIUM_BONUS_TARIFF_PDF,
@@ -330,6 +333,7 @@ PRIORITY_SOURCE_URLS = {
         "tbank_private": _TBANK_PRIVATE_OFFICIAL,
         "ozon_products": _OZON_PRODUCTS_OFFICIAL,
         "vtb_privilege": _VTB_PRIVILEGE_OFFICIAL,
+        "vtb_sbp": _VTB_SBP_OFFICIAL,
         "vtb_prime_plus": _VTB_PRIME_PLUS_OFFICIAL,
         "raiffeisen": _RAIF_PREMIUM_OFFICIAL,
         "gazprombank_premium": _GPB_PREMIUM_OFFICIAL,
@@ -630,6 +634,8 @@ BANKS = [
                 "sources": [
                     _src("official", _VTB_PRIVILEGE_OFFICIAL),
                     _src("official", _VTB_PRIVILEGE_TARIFF_PDF),
+                    _src("official", _VTB_RKO_TARIFF_XLSX),
+                    _src("official", _VTB_SBP_OFFICIAL),
                     _src("pbi", _PBI_VTB, f"{_PBI_VTB}/1"),
                 ],
             },
@@ -640,6 +646,8 @@ BANKS = [
                 "sources": [
                     _src("official", _VTB_PRIVILEGE_OFFICIAL),
                     _src("official", _VTB_PRIVILEGE_TARIFF_PDF),
+                    _src("official", _VTB_RKO_TARIFF_XLSX),
+                    _src("official", _VTB_SBP_OFFICIAL),
                     _src("pbi", _PBI_VTB, f"{_PBI_VTB}/2"),
                 ],
             },
@@ -650,6 +658,8 @@ BANKS = [
                 "sources": [
                     _src("official", _VTB_PRIVILEGE_OFFICIAL),
                     _src("official", _VTB_PRIVILEGE_TARIFF_PDF),
+                    _src("official", _VTB_RKO_TARIFF_XLSX),
+                    _src("official", _VTB_SBP_OFFICIAL),
                     _src("pbi", _PBI_VTB, f"{_PBI_VTB}/3"),
                 ],
             },
@@ -660,6 +670,8 @@ BANKS = [
                 "sources": [
                     _src("official", _VTB_PRIVILEGE_OFFICIAL),
                     _src("official", _VTB_PRIVILEGE_TARIFF_PDF),
+                    _src("official", _VTB_RKO_TARIFF_XLSX),
+                    _src("official", _VTB_SBP_OFFICIAL),
                     _src("pbi", _PBI_VTB, f"{_PBI_VTB}/4"),
                 ],
             },

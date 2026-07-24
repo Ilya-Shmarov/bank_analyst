@@ -62,6 +62,8 @@ Registered priority official URLs:
 - Ozon Bank Ultra: `https://cdn1.ozone.ru/s3/ob-landing/static/docs/ecom/products/rules/2026.05.18%20-%20Тариф%20Ultra.pdf`
 - Ozon Bank products: `https://finance.ozon.ru/products`
 - VTB Privilege: `https://www.vtb.ru/media-files/vtb.ru/sitepages/tarify/chastnim-licam/t-priv_pbu.pdf`
+- VTB settlement tariffs: `https://www.vtb.ru/media-files/vtb.ru/sitepages/tarify/chastnim-licam/t_rko.xlsx`
+- VTB Faster Payments System: `https://www.vtb.ru/personal/online-servisy/perevody-sbp/`
 - VTB Prime+: `https://private.vtb.ru/media-files/private.vtb.ru/sitepages/promo/new-pu-pm/tarify_praym_plyus_01.10.2025.pdf`
 - VTB Privilege landing: `https://www.vtb.ru/privilegia/`
 - VTB Prime+ landing: `https://www.vtb.ru/privilegia/paket-prime/`

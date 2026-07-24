@@ -509,6 +509,11 @@ _VTB_SERVICES = "https://www.vtb.ru/privilegia/premialnye-servisy/"
 _VTB_CARD = ("https://www.vtb.ru/privilegia/karty/debetovye/"
              "privilegiya-mir-supreme/")
 _VTB_MAIN = "https://www.vtb.ru/privilegia/"
+_VTB_SBP = "https://www.vtb.ru/personal/online-servisy/perevody-sbp/"
+_VTB_RKO_TARIFF = (
+    "https://www.vtb.ru/media-files/vtb.ru/sitepages/tarify/"
+    "chastnim-licam/t_rko.xlsx"
+)
 _VTB_CHECKED = "2026-07-15"
 
 _VTB_PRIVILEGE_1_ENTRY = _fact(
@@ -539,6 +544,17 @@ _VTB_DEPOSITS = _fact(
     "накопительному ВТБ-Счёту до 13,6%",
     _VTB_CHECKED)
 
+_VTB_PRIVILEGE_TRANSFERS = _fact(
+    "Переводы через СБП на счета третьих лиц — без комиссии: до 1 млн ₽ "
+    "за один перевод и в сутки, до 10 млн ₽ в месяц. Переводы через СБП "
+    "на свои счета в других банках — без комиссии до 30 млн ₽ в месяц",
+    _VTB_SBP,
+    "Официальная страница СБП ВТБ: отдельная стоимость для владельцев ПУ "
+    "«Привилегия Мультикарта» и операционные лимиты. Перепроверено по "
+    f"официальному сборнику РКО {_VTB_RKO_TARIFF}: раздел 3, пп. "
+    "3.1.4.1.1 и 3.1.4.2.3",
+    date_checked="2026-07-24")
+
 _VTB_PRIVILEGE_SHARED = {
     "concierge": _fact(
         "Есть — круглосуточный консьерж-сервис, бесплатно для всех клиентов "
@@ -547,6 +563,7 @@ _VTB_PRIVILEGE_SHARED = {
         _VTB_SERVICES, ""),
     "cashback": _VTB_CASHBACK,
     "deposits": _VTB_DEPOSITS,
+    "transfers_payments": _VTB_PRIVILEGE_TRANSFERS,
     "card_terms": _fact(
         "Карта «Привилегия Mir Supreme» (есть цифровая версия). Снятие без "
         "комиссии в банкоматах ВТБ и партнёров группы: до 350 000 ₽/день, "

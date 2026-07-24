@@ -1766,6 +1766,25 @@ class PremiumStructuredTests(unittest.TestCase):
         self.assertIn("активном сервисе Private", private["supreme"]["value"])
         self.assertIn("docs-terms-of-service-private.pdf", private["supreme"]["source_url"])
 
+    def test_vtb_privilege_sbp_limits_are_curated_from_official_sources(self):
+        for tier_id in (
+            "vtb_privilege_1",
+            "vtb_privilege_2",
+            "vtb_privilege_3",
+            "vtb_privilege_4",
+        ):
+            with self.subTest(tier_id=tier_id):
+                fact = curated_for(tier_id)["transfers_payments"]
+                self.assertIn("до 1 млн ₽ за один перевод и в сутки", fact["value"])
+                self.assertIn("до 10 млн ₽ в месяц", fact["value"])
+                self.assertIn("до 30 млн ₽ в месяц", fact["value"])
+                self.assertEqual(
+                    fact["source_url"],
+                    "https://www.vtb.ru/personal/online-servisy/perevody-sbp/",
+                )
+                self.assertIn("t_rko.xlsx", fact["note"])
+                self.assertEqual(fact["date_checked"], "2026-07-24")
+
     def test_ozon_ultra_pdf_transfer_cash_and_supreme_curated(self):
         bronze = curated_for("ozonbank_ultra_bronze")
         platinum = curated_for("ozonbank_ultra_platinum")
