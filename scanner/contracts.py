@@ -87,14 +87,17 @@ FIELD_MARKERS = {
     "sber_private_6": {
         "other_benefits": ("СберПрайм", "Okko", "СберПраво", "Сбер Мобайл", "Pb Service"),
     },
+    "alfa_only_1": {
+        "other_benefits": ("SimplePrivé", "Only Assist"),
+    },
     "alfa_only_2": {
-        "other_benefits": ("Консультации", "Альфа-Мобайл", "Smart Reading", "Only Assist", "Alfa Only Лаундж"),
+        "other_benefits": ("Консультации", "Альфа-Мобайл", "Smart Reading", "Only Assist", "Alfa Only Лаундж", "SimplePrivé"),
     },
     "alfa_only_3": {
-        "other_benefits": ("Консультации", "Альфа-Мобайл", "Smart Reading", "РБК", "Only Assist", "Alfa Only Лаундж"),
+        "other_benefits": ("Консультации", "Альфа-Мобайл", "Smart Reading", "РБК", "Only Assist", "Alfa Only Лаундж", "SimplePrivé"),
     },
     "alfa_only_4": {
-        "other_benefits": ("Консультации", "Альфа-Мобайл", "Smart Reading", "РБК", "Only Assist", "Alfa Only Лаундж"),
+        "other_benefits": ("Консультации", "Альфа-Мобайл", "Smart Reading", "РБК", "Only Assist", "Alfa Only Лаундж", "SimplePrivé"),
     },
     "alfa_aclub": {
         "other_benefits": ("Альфа-Мобайл", "PRIME", "Alfa Only Лаундж", "А-Клуб Лаундж", "SimplePrivé", "Медицинский консьерж"),

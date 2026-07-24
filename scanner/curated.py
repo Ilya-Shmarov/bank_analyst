@@ -582,6 +582,14 @@ _VTB_PRIVILEGE_SHARED = {
         _VTB_SERVICES, ""),
 }
 
+_VTB_PRIME_CONCIERGE = _fact(
+    "АМА консьерж включён в пакет Прайм+ и доступен круглосуточно (24/7)",
+    f"{_VTB_MAIN}; https://premiumbanking.info/vtb",
+    "Страницы каждого уровня Прайм+ подтверждают АМА консьерж в составе "
+    "привилегий; официальный сайт ВТБ описывает консьерж-сервис как помощь "
+    "24/7",
+    date_checked="2026-07-24")
+
 # ---------- Озон Банк (Ultra) ----------
 _OZON_PRODUCTS = "https://finance.ozon.ru/products"
 _OZON_HELP = "https://help-bank.ozon.ru/individuals/bonuses-and-promotions"
@@ -662,6 +670,7 @@ _OZONBANK_SHARED = {
 _GPB_BONUS = "https://www.gazprombank.ru/premium/gazprom-bonus/"
 _GPB_PREMIUM = "https://www.gazprombank.ru/premium/"
 _GPB_PRIVATE = "https://www.gazprombank.ru/private/"
+_GPB_PRIVATE_DEPOSITS_PAGE = "https://www.gazprombank.ru/private/deposits/"
 
 _GPB_PREMIUM_1_ENTRY = _fact(
     "2,5 млн ₽ среднемесячных остатков; или траты 150 тыс ₽ в месяц; или "
@@ -702,13 +711,25 @@ _GPB_PREMIUM_SUPREME = _fact(
     "Официальная страница премиальной карты Газпромбанка")
 
 _GPB_PRIVATE_DEPOSITS = _fact(
-    "Вклады и накопительные счета: выгодные условия для клиентов Private Banking",
-    _GPB_PRIVATE,
-    "Официальная страница Gazprombank Private Banking")
+    "Вклады Private: фиксированная ставка до 13,65% годовых; плавающая "
+    "ставка до 16,85% годовых; накопительные счета до 13,30% годовых",
+    _GPB_PRIVATE_DEPOSITS_PAGE,
+    "Официальная страница вкладов и накопительных счетов Газпромбанк Private",
+    date_checked="2026-07-24")
 
 # ---------- Альфа-Банк ----------
 _ALFA_ONLY = "https://alfabank.ru/everyday/alfa-only/"
 _ALFA_ONLY_DEPOSIT = "https://alfabank.ru/everyday/package/premium/vklad/"
+_ALFA_ONLY_SUPREME_PAGE = (
+    "https://alfabank.ru/everyday/debit-cards/mir-supreme-short/"
+)
+_ALFA_ONLY_LOYALTY_RULES = (
+    "https://alfabank.servicecdn.ru/site-upload/27/2a/2366/prog_loyal_v46.pdf"
+)
+_ALFA_ACLUB_DEPOSIT_RATES = (
+    "https://alfabank.servicecdn.ru/site-upload/06/72/2363/"
+    "deposits_alfa_fin_club_26062026.pdf"
+)
 _ALFA_ONLY_SALARY = (
     "https://alfabank.ru/everyday/debit-cards/premium/zarplatnaya-karta/"
 )
@@ -771,11 +792,43 @@ _ALFA_ONLY_CASH_WITHDRAWAL = _fact(
     "Официальный тарифный PDF по карте Alfa Only, пункт 3")
 
 _ALFA_ONLY_SUPREME = _fact(
-    "Supreme в тарифе карты Alfa Only не заявлен; в Alfa Only бесплатно "
-    "выпускаются и обслуживаются карты Alfa Only, Alfa Only Aeroflot и "
-    "Alfa Only Travel",
-    _ALFA_ONLY_CARD_TARIFFS,
-    "Официальный тарифный PDF по карте Alfa Only, блок премиальных карт")
+    "Дебетовая Альфа-Карта МИР Supreme доступна клиентам Alfa Only",
+    _ALFA_ONLY_SUPREME_PAGE,
+    "Официальная страница заявки на дебетовую Альфа-Карту МИР Supreme; "
+    "условие действует для сервиса Alfa Only на всех его уровнях",
+    date_checked="2026-07-24")
+
+_ALFA_ONLY_SIMPLE_PRIVE = _fact(
+    "Сервис SimplePrivé: статус Silver, персональный менеджер и специальные "
+    "условия в SimpleWine",
+    _ALFA_ONLY_LOYALTY_RULES,
+    "Официальные правила программы Alfa Only, п. 6.3: статус Silver доступен "
+    "участникам всех уровней Alfa Only; точные скидки не добавлены, поскольку "
+    "в правилах банка они не зафиксированы",
+    date_checked="2026-07-24")
+
+
+def _alfa_only_ecosystem(level: int, include_rbc: bool = False) -> dict:
+    items = [
+        "Консультации с юристом и бухгалтером",
+        "Альфа-Мобайл — 10 ГБ, 300 минут и 30 SMS",
+        "Саммари от Smart Reading",
+    ]
+    if include_rbc:
+        items.append("Подписка РБК")
+    items.extend([
+        "Alfa Only Лаундж в SVO, терминал C",
+        "Сервис SimplePrivé: статус Silver, персональный менеджер и "
+        "специальные условия в SimpleWine",
+    ])
+    return _fact(
+        " | ".join(items),
+        f"https://premiumbanking.info/alfabank/{level}; "
+        f"{_ALFA_ONLY_LOYALTY_RULES}",
+        "Состав уровня — ПБИ; SimplePrivé Silver для всех уровней Alfa Only — "
+        "официальные правила программы, п. 6.3",
+        date_checked="2026-07-24",
+    )
 
 _ALFA_ONLY_DEPOSITS = _fact(
     "Премиум-вклад Alfa Only: до 13,8% годовых в рублях или до 4% годовых "
@@ -787,9 +840,18 @@ _ALFA_ONLY_DEPOSITS = _fact(
     date_checked="2026-07-21")
 
 _ALFA_ACLUB_DEPOSITS = _fact(
-    "Повышенный доход по накопительным счетам и вкладам",
+    "Альфа-Вклад «Новые деньги» для А-Клуба: до 14% годовых с "
+    "капитализацией; минимальная сумма 10 000 ₽",
+    _ALFA_ACLUB_DEPOSIT_RATES,
+    "Официальная таблица ставок А-Клуба, действует с 26 июня 2026 года",
+    date_checked="2026-07-24")
+
+_ALFA_ACLUB_SUPREME = _fact(
+    "Доступны продукты МИР Supreme: кредитная Alfa Travel Мир Supreme и "
+    "платёжные кольца с привилегиями Мир Supreme",
     _ALFA_ACLUB_OFFICIAL,
-    "Официальная страница A-Club")
+    "Текущая официальная страница А-Клуба, раздел «Платёжные аксессуары»",
+    date_checked="2026-07-24")
 
 # ---------- Райффайзен ----------
 _RAIF_PREMIUM = "https://www.raiffeisen.ru/premium/"
@@ -798,6 +860,18 @@ _RAIF_ADDONS_ABSENT = _fact(
     "— (докупаемых опций нет: Premium — фиксированный пакет, различаются "
     "только способы бесплатного входа: плата/траты/остаток)",
     _RAIF_PREMIUM, "Отсутствие по официальным условиям")
+
+_RAIF_PREMIUM_4_ECOSYSTEM = _fact(
+    "Автоконсьерж | Сервис «Лучи»: медицинские онлайн-консультации, "
+    "10 посещений по ДМС «Лучи» на тарифе «Бизнес» и компенсация чекапа "
+    "за рубежом и чекап «Здоровый образ жизни» | Акция «Привилегии на "
+    "выбор»: промокоды на 2 000 ₽ от Яндекс Еды, Яндекс Go и Детского "
+    "Мира, безлимитные проходы в бизнес-залы, сертификаты на 7 000 ₽ "
+    "в отдельные рестораны Москвы и Санкт-Петербурга",
+    "https://premiumbanking.info/raiffeisen/4",
+    "Профильный источник уровня 5 млн ₽, актуальность июль 2026; "
+    "официальная страница Райффайзен не раскрывает состав акции по уровням",
+    date_checked="2026-07-24")
 
 # ---------- Lifestyle ----------
 _OZON_PREMIUM_DOCS = ("https://docs.ozon.ru/common/pravila-prodayoi-i-rekvizity/"
@@ -859,12 +933,14 @@ _COMPETITOR_FACTS = {
                         "service_cost": _free_on_conditions(
                             "https://premiumbanking.info/vtb/4")},
     "vtb_prime_5": {
+        "concierge": _VTB_PRIME_CONCIERGE,
         "cashback": _VTB_CASHBACK,
         "deposits": _VTB_DEPOSITS,
         "cash_withdrawal": _VTB_PRIVILEGE_SHARED["cash_withdrawal"],
         "supreme": _VTB_PRIVILEGE_SHARED["supreme"],
     },
     "vtb_prime_6": {
+        "concierge": _VTB_PRIME_CONCIERGE,
         "cashback": _VTB_CASHBACK,
         "deposits": _VTB_DEPOSITS,
         "cash_withdrawal": _VTB_PRIVILEGE_SHARED["cash_withdrawal"],
@@ -872,6 +948,7 @@ _COMPETITOR_FACTS = {
         "service_cost": _free_on_conditions("https://premiumbanking.info/vtb/6"),
     },
     "vtb_prime_7": {
+        "concierge": _VTB_PRIME_CONCIERGE,
         "cashback": _VTB_CASHBACK,
         "deposits": _VTB_DEPOSITS,
         "cash_withdrawal": _VTB_PRIVILEGE_SHARED["cash_withdrawal"],
@@ -879,6 +956,7 @@ _COMPETITOR_FACTS = {
         "service_cost": _free_on_conditions("https://premiumbanking.info/vtb/7"),
     },
     "vtb_prime_8": {
+        "concierge": _VTB_PRIME_CONCIERGE,
         "cashback": _VTB_CASHBACK,
         "deposits": _VTB_DEPOSITS,
         "cash_withdrawal": _VTB_PRIVILEGE_SHARED["cash_withdrawal"],
@@ -947,6 +1025,7 @@ _COMPETITOR_FACTS = {
     "alfa_only_1": {"entry_conditions": _ALFA_ONLY_1_ENTRY,
                     "addons": _ALFA_ADDONS_ABSENT,
                     "concierge": _ALFA_CONCIERGE_FACT,
+                    "ecosystem": _ALFA_ONLY_SIMPLE_PRIVE,
                     "cashback": _ALFA_ONLY_CASHBACK,
                     "card_terms": _ALFA_ONLY_CARD_FREE,
                     "transfers_payments": _ALFA_ONLY_TRANSFERS,
@@ -955,6 +1034,7 @@ _COMPETITOR_FACTS = {
                     "deposits": _ALFA_ONLY_DEPOSITS},
     "alfa_only_2": {"addons": _ALFA_ADDONS_ABSENT,
                     "concierge": _ALFA_CONCIERGE_FACT,
+                    "ecosystem": _alfa_only_ecosystem(2),
                     "cashback": _ALFA_ONLY_CASHBACK,
                     "card_terms": _ALFA_ONLY_CARD_FREE,
                     "transfers_payments": _ALFA_ONLY_TRANSFERS,
@@ -965,6 +1045,7 @@ _COMPETITOR_FACTS = {
                         "https://premiumbanking.info/alfabank/2")},
     "alfa_only_3": {"addons": _ALFA_ADDONS_ABSENT,
                     "concierge": _ALFA_CONCIERGE_FACT,
+                    "ecosystem": _alfa_only_ecosystem(3, include_rbc=True),
                     "cashback": _ALFA_ONLY_CASHBACK,
                     "card_terms": _ALFA_ONLY_CARD_FREE,
                     "transfers_payments": _ALFA_ONLY_TRANSFERS,
@@ -975,6 +1056,7 @@ _COMPETITOR_FACTS = {
                         "https://premiumbanking.info/alfabank/3")},
     "alfa_only_4": {"addons": _ALFA_ADDONS_ABSENT,
                     "concierge": _ALFA_CONCIERGE_FACT,
+                    "ecosystem": _alfa_only_ecosystem(4, include_rbc=True),
                     "cashback": _ALFA_ONLY_CASHBACK,
                     "card_terms": _ALFA_ONLY_CARD_FREE,
                     "transfers_payments": _ALFA_ONLY_TRANSFERS,
@@ -995,7 +1077,10 @@ _COMPETITOR_FACTS = {
             _PBI_ACLUB,
             "Fallback после недоступности официальной страницы A-Club"),
         "restaurants": _fact(
-            "Рестораны — безлимит по 2 500 ₽",
+            "Рестораны — безлимит по 2 500 ₽; один чек за одну дату до "
+            "5 000 ₽ списывает две компенсации по 2 500 ₽; доступно при "
+            "вылете и прилёте, в дату поездки и один календарный день до "
+            "или после неё; общий лимит с бизнес-залами",
             _PBI_ACLUB,
             "Fallback после недоступности официальной страницы A-Club"),
         "taxi": _fact(
@@ -1029,6 +1114,7 @@ _COMPETITOR_FACTS = {
             "Постоянная программа кэшбэка A-Club в доступных источниках "
             "не подтверждена; временные акции не используются как тарифный факт"),
         "deposits": _ALFA_ACLUB_DEPOSITS,
+        "supreme": _ALFA_ACLUB_SUPREME,
         "card_terms": _fact(
             "не найдено",
             _PBI_ACLUB,
@@ -1049,6 +1135,7 @@ _COMPETITOR_FACTS = {
                        "service_cost": _free_on_conditions(
                            "https://premiumbanking.info/raiffeisen/3")},
     "raif_premium_4": {"addons": _RAIF_ADDONS_ABSENT,
+                       "ecosystem": _RAIF_PREMIUM_4_ECOSYSTEM,
                        "service_cost": _free_on_conditions(
                            "https://premiumbanking.info/raiffeisen/4")},
     # ----- Lifestyle -----

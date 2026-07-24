@@ -347,6 +347,8 @@ def _is_core_duplicate(title: str, description: str) -> bool:
     low = f"{title} {description}".lower()
     if title.strip().lower().startswith("пакет «"):
         return False
+    if "промокод" in low or "сертификат" in low:
+        return False
     if title.strip().lower() in {"консьерж", "aspire"}:
         return True
     if "бизнес-зал сбер" in low or "alfa only lounge" in low:
@@ -401,7 +403,9 @@ def _too_generic(text: str) -> bool:
 def _looks_like_rule(text: str) -> bool:
     low = text.lower()
     return ("можно выбрать" in low or "можно сменить" in low
-            or "выбранная опция" in low)
+            or "выбранная опция" in low
+            or low.startswith("по тарифам платно")
+            or low.startswith(("учёт остатков", "учет остатков")))
 
 
 def _auto_status(fields: dict) -> str:

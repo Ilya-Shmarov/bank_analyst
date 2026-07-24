@@ -1,18 +1,379 @@
 {
-  "run_id": "run_20260724_112258",
-  "started_at": "2026-07-24T11:22:58",
-  "finished_at": "2026-07-24T11:23:45",
+  "run_id": "run_20260724_142113",
+  "started_at": "2026-07-24T14:21:13",
+  "finished_at": "2026-07-24T14:21:35",
   "banks_checked": 1,
-  "sources_checked": 64,
+  "sources_checked": 20,
   "documents_checked": 0,
-  "new_changes_found": 3,
-  "confirmed_changes": 3,
+  "new_changes_found": 1,
+  "confirmed_changes": 1,
   "changes_requiring_review": 0,
   "duplicate_changes_skipped": 0,
-  "errors": 8,
+  "errors": 4,
   "quality_errors": 0,
-  "quality_warnings": 0,
-  "quality_issues": [],
+  "quality_warnings": 36,
+  "quality_issues": [
+    {
+      "severity": "warning",
+      "code": "publication_blocked",
+      "bank": "Райффайзен Банк",
+      "tier": "Premium — платное обслуживание",
+      "tier_id": "raif_premium_1",
+      "field_id": "concierge",
+      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+      "value": "Автоконсьерж предоставляется ООО «ДЕОС ГРУПП» и является бесплатной для владельцев пакетов услуг «Премиальный 5» /«Премиальный»."
+    },
+    {
+      "severity": "warning",
+      "code": "publication_blocked",
+      "bank": "Райффайзен Банк",
+      "tier": "Premium — платное обслуживание",
+      "tier_id": "raif_premium_1",
+      "field_id": "cashback",
+      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+      "value": "Без ограничений максимальной суммы кэшбэка. | Без условий по минимальной сумме расходной операции, на которую начисляется кэшбэк. | Кэшбэк — возврат средств, без ограничений максимальной суммы кэшбэка и условий по минимальной сумме расходной операции."
+    },
+    {
+      "severity": "warning",
+      "code": "publication_blocked",
+      "bank": "Райффайзен Банк",
+      "tier": "Premium — платное обслуживание",
+      "tier_id": "raif_premium_1",
+      "field_id": "card_terms",
+      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+      "value": "Премиальная карта | Премиальная карта Mir Supreme. | За следующие расходные операции, в том числе те, которым в ТСП присвоен четырехзначный МСС-код, кэшбэк не начисляется: денежные переводы — МСС-код 4829, 6530, 6531, 6533, 6534, 6536, 6537, 6538; комиссии, квази-кэш-операции; операции в пользу кредитных организаций; пополнение электронных кошельков —"
+    },
+    {
+      "severity": "warning",
+      "code": "publication_blocked",
+      "bank": "Райффайзен Банк",
+      "tier": "Premium — платное обслуживание",
+      "tier_id": "raif_premium_1",
+      "field_id": "cash_withdrawal",
+      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+      "value": "Офисы и банкоматы | За следующие расходные операции, в том числе те, которым в ТСП присвоен четырехзначный МСС-код, кэшбэк не начисляется: денежные переводы — МСС-код 4829, 6530, 6531, 6533, 6534, 6536, 6537, 6538; комиссии, квази-кэш-операции; операции в пользу кредитных организаций; пополнение электронных кошельков —"
+    },
+    {
+      "severity": "warning",
+      "code": "publication_blocked",
+      "bank": "Райффайзен Банк",
+      "tier": "Premium — платное обслуживание",
+      "tier_id": "raif_premium_1",
+      "field_id": "supreme",
+      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+      "value": "Премиальная карта Mir Supreme."
+    },
+    {
+      "severity": "warning",
+      "code": "publication_blocked",
+      "bank": "Райффайзен Банк",
+      "tier": "Premium — платное обслуживание",
+      "tier_id": "raif_premium_1",
+      "field_id": "deposits",
+      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+      "value": "Накопительное страхование | Учитываются остатки на рублевых вкладах, текущих, накопительных и брокерских счетах, расчетная сумма активов по курсу ЦБ в Райффайзен Инвестициях и УК Райффайзен и деньги на кредитной карте свыше кредитного лимита. | Информация о процентных ставках по договорам банковского вклада с физическими лицами"
+    },
+    {
+      "severity": "warning",
+      "code": "publication_blocked",
+      "bank": "Райффайзен Банк",
+      "tier": "Premium — платное обслуживание",
+      "tier_id": "raif_premium_1",
+      "field_id": "auto",
+      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+      "value": "Доставим автомобиль в сервисный центр и обратно — без вашего участия | Автоконсьерж предоставляется ООО «ДЕОС ГРУПП» и является бесплатной для владельцев пакетов услуг «Премиальный 5» /«Премиальный»."
+    },
+    {
+      "severity": "warning",
+      "code": "publication_blocked",
+      "bank": "Райффайзен Банк",
+      "tier": "Premium — платное обслуживание",
+      "tier_id": "raif_premium_1",
+      "field_id": "selection_rules",
+      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+      "value": "Промокод активен один раз в месяц и доступен в мобильном приложении Райффайзен Онлайн."
+    },
+    {
+      "severity": "warning",
+      "code": "required_field",
+      "bank": "Райффайзен Банк",
+      "tier": "Premium — платное обслуживание",
+      "tier_id": "raif_premium_1",
+      "field_id": "concierge",
+      "message": "Ключевое поле не найдено",
+      "value": "не найдено"
+    },
+    {
+      "severity": "warning",
+      "code": "publication_blocked",
+      "bank": "Райффайзен Банк",
+      "tier": "Premium — по обороту покупок",
+      "tier_id": "raif_premium_2",
+      "field_id": "concierge",
+      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+      "value": "Автоконсьерж предоставляется ООО «ДЕОС ГРУПП» и является бесплатной для владельцев пакетов услуг «Премиальный 5» /«Премиальный»."
+    },
+    {
+      "severity": "warning",
+      "code": "publication_blocked",
+      "bank": "Райффайзен Банк",
+      "tier": "Premium — по обороту покупок",
+      "tier_id": "raif_premium_2",
+      "field_id": "cashback",
+      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+      "value": "Без ограничений максимальной суммы кэшбэка. | Без условий по минимальной сумме расходной операции, на которую начисляется кэшбэк. | Кэшбэк — возврат средств, без ограничений максимальной суммы кэшбэка и условий по минимальной сумме расходной операции."
+    },
+    {
+      "severity": "warning",
+      "code": "publication_blocked",
+      "bank": "Райффайзен Банк",
+      "tier": "Premium — по обороту покупок",
+      "tier_id": "raif_premium_2",
+      "field_id": "card_terms",
+      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+      "value": "Премиальная карта | Премиальная карта Mir Supreme. | За следующие расходные операции, в том числе те, которым в ТСП присвоен четырехзначный МСС-код, кэшбэк не начисляется: денежные переводы — МСС-код 4829, 6530, 6531, 6533, 6534, 6536, 6537, 6538; комиссии, квази-кэш-операции; операции в пользу кредитных организаций; пополнение электронных кошельков —"
+    },
+    {
+      "severity": "warning",
+      "code": "publication_blocked",
+      "bank": "Райффайзен Банк",
+      "tier": "Premium — по обороту покупок",
+      "tier_id": "raif_premium_2",
+      "field_id": "cash_withdrawal",
+      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+      "value": "Офисы и банкоматы | За следующие расходные операции, в том числе те, которым в ТСП присвоен четырехзначный МСС-код, кэшбэк не начисляется: денежные переводы — МСС-код 4829, 6530, 6531, 6533, 6534, 6536, 6537, 6538; комиссии, квази-кэш-операции; операции в пользу кредитных организаций; пополнение электронных кошельков —"
+    },
+    {
+      "severity": "warning",
+      "code": "publication_blocked",
+      "bank": "Райффайзен Банк",
+      "tier": "Premium — по обороту покупок",
+      "tier_id": "raif_premium_2",
+      "field_id": "supreme",
+      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+      "value": "Премиальная карта Mir Supreme."
+    },
+    {
+      "severity": "warning",
+      "code": "publication_blocked",
+      "bank": "Райффайзен Банк",
+      "tier": "Premium — по обороту покупок",
+      "tier_id": "raif_premium_2",
+      "field_id": "deposits",
+      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+      "value": "Накопительное страхование | Учитываются остатки на рублевых вкладах, текущих, накопительных и брокерских счетах, расчетная сумма активов по курсу ЦБ в Райффайзен Инвестициях и УК Райффайзен и деньги на кредитной карте свыше кредитного лимита. | Информация о процентных ставках по договорам банковского вклада с физическими лицами"
+    },
+    {
+      "severity": "warning",
+      "code": "publication_blocked",
+      "bank": "Райффайзен Банк",
+      "tier": "Premium — по обороту покупок",
+      "tier_id": "raif_premium_2",
+      "field_id": "auto",
+      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+      "value": "Доставим автомобиль в сервисный центр и обратно — без вашего участия | Автоконсьерж предоставляется ООО «ДЕОС ГРУПП» и является бесплатной для владельцев пакетов услуг «Премиальный 5» /«Премиальный»."
+    },
+    {
+      "severity": "warning",
+      "code": "publication_blocked",
+      "bank": "Райффайзен Банк",
+      "tier": "Premium — по обороту покупок",
+      "tier_id": "raif_premium_2",
+      "field_id": "selection_rules",
+      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+      "value": "Промокод активен один раз в месяц и доступен в мобильном приложении Райффайзен Онлайн."
+    },
+    {
+      "severity": "warning",
+      "code": "required_field",
+      "bank": "Райффайзен Банк",
+      "tier": "Premium — по обороту покупок",
+      "tier_id": "raif_premium_2",
+      "field_id": "concierge",
+      "message": "Ключевое поле не найдено",
+      "value": "не найдено"
+    },
+    {
+      "severity": "warning",
+      "code": "publication_blocked",
+      "bank": "Райффайзен Банк",
+      "tier": "Premium — от 1.5 млн ₽",
+      "tier_id": "raif_premium_3",
+      "field_id": "concierge",
+      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+      "value": "Автоконсьерж предоставляется ООО «ДЕОС ГРУПП» и является бесплатной для владельцев пакетов услуг «Премиальный 5» /«Премиальный»."
+    },
+    {
+      "severity": "warning",
+      "code": "publication_blocked",
+      "bank": "Райффайзен Банк",
+      "tier": "Premium — от 1.5 млн ₽",
+      "tier_id": "raif_premium_3",
+      "field_id": "cashback",
+      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+      "value": "Без ограничений максимальной суммы кэшбэка. | Без условий по минимальной сумме расходной операции, на которую начисляется кэшбэк. | Кэшбэк — возврат средств, без ограничений максимальной суммы кэшбэка и условий по минимальной сумме расходной операции."
+    },
+    {
+      "severity": "warning",
+      "code": "publication_blocked",
+      "bank": "Райффайзен Банк",
+      "tier": "Premium — от 1.5 млн ₽",
+      "tier_id": "raif_premium_3",
+      "field_id": "card_terms",
+      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+      "value": "Премиальная карта | Премиальная карта Mir Supreme. | За следующие расходные операции, в том числе те, которым в ТСП присвоен четырехзначный МСС-код, кэшбэк не начисляется: денежные переводы — МСС-код 4829, 6530, 6531, 6533, 6534, 6536, 6537, 6538; комиссии, квази-кэш-операции; операции в пользу кредитных организаций; пополнение электронных кошельков —"
+    },
+    {
+      "severity": "warning",
+      "code": "publication_blocked",
+      "bank": "Райффайзен Банк",
+      "tier": "Premium — от 1.5 млн ₽",
+      "tier_id": "raif_premium_3",
+      "field_id": "cash_withdrawal",
+      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+      "value": "Офисы и банкоматы | За следующие расходные операции, в том числе те, которым в ТСП присвоен четырехзначный МСС-код, кэшбэк не начисляется: денежные переводы — МСС-код 4829, 6530, 6531, 6533, 6534, 6536, 6537, 6538; комиссии, квази-кэш-операции; операции в пользу кредитных организаций; пополнение электронных кошельков —"
+    },
+    {
+      "severity": "warning",
+      "code": "publication_blocked",
+      "bank": "Райффайзен Банк",
+      "tier": "Premium — от 1.5 млн ₽",
+      "tier_id": "raif_premium_3",
+      "field_id": "supreme",
+      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+      "value": "Премиальная карта Mir Supreme."
+    },
+    {
+      "severity": "warning",
+      "code": "publication_blocked",
+      "bank": "Райффайзен Банк",
+      "tier": "Premium — от 1.5 млн ₽",
+      "tier_id": "raif_premium_3",
+      "field_id": "deposits",
+      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+      "value": "Накопительное страхование | Учитываются остатки на рублевых вкладах, текущих, накопительных и брокерских счетах, расчетная сумма активов по курсу ЦБ в Райффайзен Инвестициях и УК Райффайзен и деньги на кредитной карте свыше кредитного лимита. | Информация о процентных ставках по договорам банковского вклада с физическими лицами"
+    },
+    {
+      "severity": "warning",
+      "code": "publication_blocked",
+      "bank": "Райффайзен Банк",
+      "tier": "Premium — от 1.5 млн ₽",
+      "tier_id": "raif_premium_3",
+      "field_id": "auto",
+      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+      "value": "Доставим автомобиль в сервисный центр и обратно — без вашего участия | Автоконсьерж предоставляется ООО «ДЕОС ГРУПП» и является бесплатной для владельцев пакетов услуг «Премиальный 5» /«Премиальный»."
+    },
+    {
+      "severity": "warning",
+      "code": "publication_blocked",
+      "bank": "Райффайзен Банк",
+      "tier": "Premium — от 1.5 млн ₽",
+      "tier_id": "raif_premium_3",
+      "field_id": "selection_rules",
+      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+      "value": "Промокод активен один раз в месяц и доступен в мобильном приложении Райффайзен Онлайн."
+    },
+    {
+      "severity": "warning",
+      "code": "required_field",
+      "bank": "Райффайзен Банк",
+      "tier": "Premium — от 1.5 млн ₽",
+      "tier_id": "raif_premium_3",
+      "field_id": "concierge",
+      "message": "Ключевое поле не найдено",
+      "value": "не найдено"
+    },
+    {
+      "severity": "warning",
+      "code": "publication_blocked",
+      "bank": "Райффайзен Банк",
+      "tier": "Premium — от 5 млн ₽",
+      "tier_id": "raif_premium_4",
+      "field_id": "concierge",
+      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+      "value": "Автоконсьерж предоставляется ООО «ДЕОС ГРУПП» и является бесплатной для владельцев пакетов услуг «Премиальный 5» /«Премиальный»."
+    },
+    {
+      "severity": "warning",
+      "code": "publication_blocked",
+      "bank": "Райффайзен Банк",
+      "tier": "Premium — от 5 млн ₽",
+      "tier_id": "raif_premium_4",
+      "field_id": "cashback",
+      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+      "value": "Без ограничений максимальной суммы кэшбэка. | Без условий по минимальной сумме расходной операции, на которую начисляется кэшбэк. | Кэшбэк — возврат средств, без ограничений максимальной суммы кэшбэка и условий по минимальной сумме расходной операции."
+    },
+    {
+      "severity": "warning",
+      "code": "publication_blocked",
+      "bank": "Райффайзен Банк",
+      "tier": "Premium — от 5 млн ₽",
+      "tier_id": "raif_premium_4",
+      "field_id": "card_terms",
+      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+      "value": "Премиальная карта | Премиальная карта Mir Supreme. | За следующие расходные операции, в том числе те, которым в ТСП присвоен четырехзначный МСС-код, кэшбэк не начисляется: денежные переводы — МСС-код 4829, 6530, 6531, 6533, 6534, 6536, 6537, 6538; комиссии, квази-кэш-операции; операции в пользу кредитных организаций; пополнение электронных кошельков —"
+    },
+    {
+      "severity": "warning",
+      "code": "publication_blocked",
+      "bank": "Райффайзен Банк",
+      "tier": "Premium — от 5 млн ₽",
+      "tier_id": "raif_premium_4",
+      "field_id": "cash_withdrawal",
+      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+      "value": "Офисы и банкоматы | За следующие расходные операции, в том числе те, которым в ТСП присвоен четырехзначный МСС-код, кэшбэк не начисляется: денежные переводы — МСС-код 4829, 6530, 6531, 6533, 6534, 6536, 6537, 6538; комиссии, квази-кэш-операции; операции в пользу кредитных организаций; пополнение электронных кошельков —"
+    },
+    {
+      "severity": "warning",
+      "code": "publication_blocked",
+      "bank": "Райффайзен Банк",
+      "tier": "Premium — от 5 млн ₽",
+      "tier_id": "raif_premium_4",
+      "field_id": "supreme",
+      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+      "value": "Премиальная карта Mir Supreme."
+    },
+    {
+      "severity": "warning",
+      "code": "publication_blocked",
+      "bank": "Райффайзен Банк",
+      "tier": "Premium — от 5 млн ₽",
+      "tier_id": "raif_premium_4",
+      "field_id": "deposits",
+      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+      "value": "Накопительное страхование | Учитываются остатки на рублевых вкладах, текущих, накопительных и брокерских счетах, расчетная сумма активов по курсу ЦБ в Райффайзен Инвестициях и УК Райффайзен и деньги на кредитной карте свыше кредитного лимита. | Информация о процентных ставках по договорам банковского вклада с физическими лицами"
+    },
+    {
+      "severity": "warning",
+      "code": "publication_blocked",
+      "bank": "Райффайзен Банк",
+      "tier": "Premium — от 5 млн ₽",
+      "tier_id": "raif_premium_4",
+      "field_id": "auto",
+      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+      "value": "Доставим автомобиль в сервисный центр и обратно — без вашего участия | Автоконсьерж предоставляется ООО «ДЕОС ГРУПП» и является бесплатной для владельцев пакетов услуг «Премиальный 5» /«Премиальный»."
+    },
+    {
+      "severity": "warning",
+      "code": "publication_blocked",
+      "bank": "Райффайзен Банк",
+      "tier": "Premium — от 5 млн ₽",
+      "tier_id": "raif_premium_4",
+      "field_id": "selection_rules",
+      "message": "Generic keyword-snippet не публикуется в HTML без подтверждения",
+      "value": "Промокод активен один раз в месяц и доступен в мобильном приложении Райффайзен Онлайн."
+    },
+    {
+      "severity": "warning",
+      "code": "required_field",
+      "bank": "Райффайзен Банк",
+      "tier": "Premium — от 5 млн ₽",
+      "tier_id": "raif_premium_4",
+      "field_id": "concierge",
+      "message": "Ключевое поле не найдено",
+      "value": "не найдено"
+    }
+  ],
   "excel_updated": true,
   "html_generated": false,
   "github_pages_published": false

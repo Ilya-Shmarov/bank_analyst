@@ -29,6 +29,20 @@ from scanner.sources import NOT_FOUND, NOT_FOUND_AVAILABLE
 
 INTL_SEGMENT = "digital-first (межд.)"
 
+# Официальные курсы Банка России на дату текущего набора данных.
+# Источник: https://www.cbr.ru/currency_base/daily/
+# Значения нужны только для сопоставления страховых сумм в USD и EUR;
+# исходная валюта и сумма продолжают отображаться без изменений.
+INSURANCE_FX_RUB_PER_UNIT = {
+    "$": 78.4049,
+    "€": 89.4443,
+}
+INSURANCE_FX_DATE = "2026-07-24"
+INSURANCE_FX_SOURCE_URL = (
+    "https://www.cbr.ru/currency_base/daily/"
+    "?UniDbQuery.Posted=True&UniDbQuery.To=24.07.2026"
+)
+
 FIELD_COLUMNS = {
     "entry_conditions": "Условия входа / поддержания уровня",
     "service_cost": "Стоимость обслуживания",
@@ -277,10 +291,25 @@ def _attr_metric(field: str, row: dict) -> dict:
 
 
 def _sber_landing_override(field: str, row: dict):
-    """Narrow presentation fixes for Sber levels on the Sber VS landing."""
-    if row.get("bank") != "Сбер":
-        return None
+    """Narrow, source-backed presentation fixes for named landing levels."""
+    bank = row.get("bank")
     tier_id = row.get("tier_id")
+    if bank == "Альфа-Банк" and field == "restaurants" and tier_id == "alfa_aclub":
+        value = (
+            "Включено постоянно: безлимит по 2 500 ₽. Ограничения: один чек "
+            "за одну дату до 5 000 ₽ списывает две компенсации по 2 500 ₽; "
+            "только в аэропорту при вылете или прилёте, в дату поездки и один "
+            "календарный день до или после неё; общий лимит с бизнес-залами."
+        )
+        return {
+            "value": value,
+            "score": _comparison_score(field, value),
+            "note": value,
+            "details": "",
+            "evaluation_text": value,
+        }
+    if bank != "Сбер":
+        return None
     text_by_field = {
         "lounge_access": {
             "sber_first_4": (
@@ -298,6 +327,10 @@ def _sber_landing_override(field: str, row: dict):
         },
         "restaurants": {
             "sber_premier_2": "1 посещение в месяц на 2000 ₽ — опция «Такси и рестораны».",
+            "sber_private_6": (
+                "Включено постоянно: безлимит по 5000 ₽ — опция «Рестораны» "
+                "2 чека в день"
+            ),
         },
     }
     other_benefits_by_tier = {
@@ -1240,12 +1273,8 @@ def _deposits_evaluation(text: str, scan_date: str) -> dict:
         return _incomparable_evaluation(
             "Ставка или надбавка не опубликована.", _shorten(text, 110)
         )
-    if len(set(rates)) > 1:
-        return _incomparable_evaluation(
-            "Указано несколько ставок без единой сопоставимой комбинации срока и суммы.",
-            _shorten(text, 110),
-        )
-    metrics = {"rate": rates[0]}
+    rate = max(rates)
+    metrics = {"rate": rate}
     directions = {"rate": "higher"}
     minimum = re.search(
         r"(?:от|min(?:imum)?)\s*(\d[\d\s.,]*)\s*(тыс|млн)?\s*₽", text,
@@ -1271,9 +1300,13 @@ def _deposits_evaluation(text: str, scan_date: str) -> dict:
         metrics[key] = amount
         directions[key] = direction
     return _evaluation(
-        "dominance", metrics, directions, f"{rates[0]:g}%",
+        "dominance", metrics, directions,
+        f"до {rate:g}%" if len(set(rates)) > 1 else f"{rate:g}%",
         scope={"scan_date": scan_date},
-        reason="Ставки сравниваются только на одну дату и при сопоставимых ограничениях.",
+        reason=(
+            "При нескольких опубликованных ставках сравнивается максимальная "
+            "ставка категории; даты проверки должны совпадать."
+        ),
     )
 
 
@@ -1299,10 +1332,18 @@ def _insurance_evaluation(text: str) -> dict:
         second_value = float(second.replace(",", ".")) if second else first
         unit = (coverage_match.group(4) or "").lower()
         multiplier = 1_000_000 if unit == "млн" else 1000 if unit == "тыс" else 1
+        currency = coverage_match.group(1)
         metrics["coverage"] = first * multiplier
+        metrics["coverage_rub"] = (
+            metrics["coverage"] * INSURANCE_FX_RUB_PER_UNIT[currency]
+        )
         if second is not None:
             metrics["secondary_coverage"] = second_value * multiplier
-        scope["currency"] = coverage_match.group(1)
+            metrics["secondary_coverage_rub"] = (
+                metrics["secondary_coverage"]
+                * INSURANCE_FX_RUB_PER_UNIT[currency]
+            )
+        scope["currency"] = currency
     days = [float(value) for value in re.findall(r"(\d+)\s*(?:дн|дней|дня)", low)]
     if days:
         metrics["trip_days"] = max(days)
@@ -1333,7 +1374,8 @@ def _insurance_evaluation(text: str) -> dict:
         "dominance", metrics, {key: "higher" for key in metrics},
         ", ".join(summary_parts) or "Подтверждённое страхование", scope=scope,
         reason=("Учитываются сумма, срок, территория и статус подключения. "
-                "Страховые суммы сравниваются только в одинаковой валюте."),
+                "Покрытия в долларах и евро сопоставляются в рублёвом "
+                f"эквиваленте по официальному курсу ЦБ на {INSURANCE_FX_DATE}."),
     )
 
 
@@ -1372,7 +1414,7 @@ def _service_presence_evaluation(text: str, field: str) -> dict:
         )
     if any(marker in low for marker in ("при актив", "при выполн", "покупк от", "может быть")):
         rank, label = 2, "Доступно при выполнении условий"
-    elif "бесплат" in low:
+    elif "бесплат" in low or "включён в пакет" in low or "включен в пакет" in low:
         rank, label = 4, "Бесплатно включено"
     elif re.search(r"(?<!бес)платн", low) or re.search(
         r"(?:стоимост|обслуживан|выпуск)[^.;]{0,28}\d[\d\s]*\s*₽", text,
@@ -1408,13 +1450,29 @@ def _benefit_rub_total(description: str):
     """Return a confirmed total when one benefit states count × rubles."""
     match = re.search(
         r"(\d+(?:[.,]\d+)?)\s*"
-        r"(?:заказ(?:а|ов)?|посещени(?:е|я|й)|поезд(?:ка|ки|ок))\s+"
-        r"по\s+(\d[\d\s.,]*)\s*(тыс|млн)?\s*₽",
+        r"(?:заказ(?:а|ов)?|посещени(?:е|я|й)|поезд(?:ка|ки|ок))"
+        r"(?:\s+в\s+месяц)?\s+(?:по|на)\s+"
+        r"(\d[\d\s.,]*)\s*(тыс|млн)?\s*₽",
         description,
         flags=re.IGNORECASE,
     )
     if not match:
-        return None
+        promo = re.search(
+            r"промокод(?:ы|ов)?\s+на\s+(\d[\d\s.,]*)\s*(тыс|млн)?(?:\s*₽)?",
+            description,
+            flags=re.IGNORECASE,
+        )
+        if not promo:
+            return None
+        amount = _parse_rub_number(promo.group(1))
+        if amount is None:
+            return None
+        unit = (promo.group(2) or "").lower()
+        if unit == "тыс":
+            amount *= 1000
+        elif unit == "млн":
+            amount *= 1_000_000
+        return amount
     count = _parse_float(match.group(1))
     amount = _parse_rub_number(match.group(2))
     if count is None or amount is None:
@@ -1428,13 +1486,17 @@ def _benefit_rub_total(description: str):
 
 
 def _benefits_evaluation(raw_value, display_value) -> dict:
-    raw = _public_text(raw_value)
+    source_text = str(raw_value or "")
+    raw = _public_text(source_text)
     if _is_missing(raw):
         return _missing_evaluation()
-    items = display_value if isinstance(display_value, list) else _benefits_list(raw)
+    items = (
+        display_value
+        if isinstance(display_value, list)
+        else _benefits_list(source_text)
+    )
     benefits = {}
     labels = {}
-    unknown = []
     status_rank = {"selectable": 1, "always_included": 2}
     for item in items:
         if item.get("availability") == "rule":
@@ -1443,20 +1505,15 @@ def _benefits_evaluation(raw_value, display_value) -> dict:
         if not key:
             continue
         availability = item.get("availability", "")
-        if availability not in status_rank:
-            unknown.append(item.get("title", key))
-            continue
-        benefit = {"status": status_rank[availability]}
+        benefit = {
+            "status": status_rank.get(availability, 1),
+            "status_known": 1 if availability in status_rank else 0,
+        }
         rub_total = _benefit_rub_total(item.get("description", ""))
         if rub_total is not None:
             benefit["rub_total"] = rub_total
         benefits[key] = benefit
         labels[key] = item.get("title", key)
-    if unknown:
-        return _incomparable_evaluation(
-            "Не для всех привилегий подтверждён статус «включено постоянно» или «на выбор».",
-            f"Неполная классификация: {', '.join(unknown[:3])}",
-        )
     if not benefits:
         return _incomparable_evaluation(
             "Не найден набор привилегий с подтверждённым статусом.",
@@ -1467,8 +1524,18 @@ def _benefits_evaluation(raw_value, display_value) -> dict:
     )
     selectable_count = sum(
         1 for benefit in benefits.values() if benefit["status"] == 1
+        and benefit["status_known"] == 1
     )
-    summary = f"{always_count} постоянно, {selectable_count} на выбор"
+    confirmed_count = sum(
+        1 for benefit in benefits.values() if benefit["status_known"] == 0
+    )
+    summary_parts = [
+        f"{always_count} постоянно",
+        f"{selectable_count} на выбор",
+    ]
+    if confirmed_count:
+        summary_parts.append(f"{confirmed_count} с подтверждённым наличием")
+    summary = ", ".join(summary_parts)
     valued = [
         f"{labels[key]}: {_compact_rub(benefit['rub_total'])}"
         for key, benefit in benefits.items()
@@ -1478,8 +1545,11 @@ def _benefits_evaluation(raw_value, display_value) -> dict:
         summary += f"; {', '.join(valued)}"
     return _evaluation(
         "benefit_set", {"benefits": benefits, "labels": labels}, {}, summary,
-        reason=("Наборы сравниваются по включению одинаковых привилегий, "
-                "их статусу и подтверждённому номиналу одинаковых услуг."),
+        reason=(
+            "Наборы сравниваются по подтверждённому наличию одинаковых "
+            "привилегий, известному статусу включения и подтверждённому "
+            "номиналу одинаковых услуг."
+        ),
     )
 
 
@@ -2552,23 +2622,6 @@ function rankEvaluations(entries) {
   );
   if (!available.length) return entries.map((entry) => results.get(entry.side));
 
-  if (available[0].attr.id === 'insurance') {
-    const currencies = new Set(available
-      .map((entry) => entry.evaluation.scope && entry.evaluation.scope.currency)
-      .filter(Boolean));
-    if (currencies.size > 1) {
-      available.forEach((entry) => {
-        results.set(entry.side, {
-          side: entry.side,
-          status: 'incomparable',
-          summary: entry.evaluation.summary,
-          reason: 'Страховые суммы указаны в разных валютах и не пересчитываются без подтверждённого курса.'
-        });
-      });
-      return entries.map((entry) => results.get(entry.side));
-    }
-  }
-
   if (available.every((entry) => entry.evaluation.status === 'comparable')) {
     const totals = new Map(available.map((entry) => [entry.side, 0]));
     let structuredOrder = true;
@@ -2743,7 +2796,8 @@ function fallbackRankVector(entry) {
       metric('availability')];
   }
   if (attr.id === 'insurance') {
-    return [metric('coverage'), metric('secondary_coverage'),
+    return [metric('coverage_rub', metric('coverage')),
+      metric('secondary_coverage_rub', metric('secondary_coverage')),
       metric('trip_days'), metric('availability')];
   }
   if (attr.id === 'concierge' || attr.id === 'supreme') {
@@ -2759,7 +2813,7 @@ function fallbackRankVector(entry) {
     const rubTotal = benefitValues.reduce(
       (total, item) => total + (Number(item.rub_total) || 0), 0
     );
-    return [always, selectable, confirmed, rubTotal];
+    return [confirmed, rubTotal, always, selectable];
   }
   return [legacyScore ?? 0];
 }
